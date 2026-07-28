@@ -2,8 +2,6 @@
 
 A from-scratch RISC-V System-on-Chip built on the open-source **GF180MCU (180nm)** process, using the Ibex RV32IMC core. Front-end flow: RTL → simulation → synthesized netlist.
 
-Rebuild of the Columbia EE6350 RISC-V SoC, retargeted from TSMC 65nm to the open GF180MCU PDK.
-
 ## Contents
 
 | Path | What's inside |
