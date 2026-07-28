@@ -1,17 +1,17 @@
 // ============================================================================
-// ibex_to_ahb.sv - Ibex -> AHB-Lite master. Write-data alignment fixed.
+// ibex_to_ahb.sv - Ibex -> AHB-Lite master.
 //
-// THE FIX: I used to register the write data (wdata_q <= wdata on gnt&we), which
-// delayed HWDATA by a cycle. But the APB bridge captures HWDATA in its SETUP
-// cycle, which lined up with the OLD registered value - so a write following
-// another write sent stale data (e.g. the UART got the previous GPIO byte).
+// FIX (v0.2 integration): Ibex's data port needs rvalid to pulse for WRITES as
+// well as reads - that's how its load/store unit knows a store completed and it
+// can move on. My earlier version only tracked reads (read_inflight = gnt & ~we),
+// so after a store rvalid never fired and the CPU stalled forever waiting.
 //
-// Ibex holds wdata stable while its request is outstanding, so I can just drive
-// HWDATA = wdata directly (combinational). That way the write data is valid in
-// the data phase exactly when any slave (including the bridge) captures it.
+// Now I track ANY granted access (read or write) as "in flight" and pulse rvalid
+// one cycle after it completes. For a read that also delivers the data; for a
+// write it's just the completion acknowledge Ibex is waiting for.
 //
-// Reads still tracked via read_inflight; rvalid registered to align with the
-// interconnect's registered response.
+// Write data is driven combinationally (Ibex holds it stable during the request);
+// registering it caused stale data on back-to-back writes.
 // ============================================================================
 
 module ibex_to_ahb (
@@ -47,21 +47,20 @@ module ibex_to_ahb (
 
     assign gnt = req & HREADY;
 
-    // Write data: drive it directly. Ibex holds wdata stable during the request,
-    // so it's valid when a slave captures it in the data phase. No extra register
-    // (that register is what caused stale write data on back-to-back writes).
+    // write data driven directly (stable during the request).
     assign HWDATA = wdata;
 
-    // Read tracking, aligned with the interconnect's registered response.
-    logic read_inflight;
+    // Track ANY granted access (read OR write) as in-flight, so rvalid pulses on
+    // completion for both. This is the fix: writes now get a completion pulse.
+    logic access_inflight;
     always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n)              read_inflight <= 1'b0;
-        else if (gnt & ~we)      read_inflight <= 1'b1;
-        else if (HREADY)         read_inflight <= 1'b0;
+        if (!rst_n)         access_inflight <= 1'b0;
+        else if (gnt)       access_inflight <= 1'b1;   // any granted access (read or write)
+        else if (HREADY)    access_inflight <= 1'b0;
     end
 
     logic data_phase_done;
-    assign data_phase_done = read_inflight & HREADY;
+    assign data_phase_done = access_inflight & HREADY;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) rvalid <= 1'b0;
