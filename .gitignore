@@ -1,0 +1,11 @@
+
+sim_sram
+sim_wrap
+*.vcd
+*.fst
+*.out
+*.vvp
+*.log
+.DS_Store
+EOD
+.DS_Store
