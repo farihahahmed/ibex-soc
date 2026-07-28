@@ -8,7 +8,7 @@ A from-scratch RISC-V System-on-Chip built on the open-source **GF180MCU (180nm)
 | A | Foundations & toolchain | ✅ |
 | B | Architecture & design | ✅ |
 | C | RTL block development | 🚧 (9/12) |
-| D | Integration | 🚧 (v0.1 in progress) |
+| D | Integration | 🚧 (v0.1 ✅) |
 | E | Synthesis → netlist | ⬜ |
 ---
 ## Phase A — Foundations & Toolchain ✅
@@ -54,7 +54,7 @@ The full two-tier bus (Ibex → AHB-Lite → bridge → APB → peripherals) is 
 ## Phase D — Integration 🚧
 | Milestone | Description | Status |
 |-----------|-------------|--------|
-| v0.1 | Memory subsystem + Ibex (`chip_top`, build in progress) | 🚧 |
+| v0.1 | Memory subsystem + Ibex — CPU executes a program from custom SRAM | ✅ |
 | v0.2 | AHB bus + APB bridge | ⬜ |
 | v0.3 | GPIO (C program drives a pin) | ⬜ |
 | v0.4 | UART (TX/RX) | ⬜ |
