@@ -9,3 +9,8 @@ sim_wrap
 .DS_Store
 EOD
 .DS_Store
+obj_dir/
+tb/tb_chip_smoke.sv
+tb/tb_chip_smoke2.sv
+tb/tb_chip_smoke3.sv
+tb/tb_chip_smoke4.sv
