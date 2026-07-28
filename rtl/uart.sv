@@ -1,21 +1,18 @@
 // ============================================================================
-// uart.sv - my UART (serial port). Now with BOTH TX and RX.
+// uart.sv - my UART with TX + RX. Now with SEPARATE status and data registers.
 //
-// TX: send a byte one bit at a time. IDLE->START->DATA->STOP.
-// RX: receive a byte someone else sends. The hard part: I don't control their
-//     timing, so I detect the start bit, then sample each bit in the MIDDLE of
-//     its bit-time (safest point, away from edges).
+// THE FIX: before, ANY read cleared rx_valid. That broke polling - the same read
+// that would show rx_valid=1 also cleared it, so software could never catch it.
+// Real UARTs split this into two registers:
+//   STATUS reg (offset 0): read PEEKS tx_busy/rx_valid - does NOT clear anything.
+//   DATA   reg (offset 4): read returns rx_data AND clears rx_valid (byte consumed).
+// So software polls STATUS until rx_valid=1, then reads DATA to get the byte.
 //
-// The rx line comes from outside the chip (async), so I run it through a 2-flop
-// synchronizer first - same metastability fix as my reset and gpio inputs.
+// I pick status vs data using addr[2] (offset 0 vs 4 -> bit 2 is 0 vs 1).
 //
-// Register interface (bus wrapper drives it):
-//   write we=1        -> load wdata[7:0] into TX, start sending.
-//   read              -> status/data:
-//        bit 0        = tx_busy   (1 = TX still sending)
-//        bit 1        = rx_valid  (1 = a received byte is waiting)
-//        bits [15:8]  = rx_data   (the received byte)
-//   (reading clears rx_valid - the CPU has taken the byte.)
+// Writes (we=1) still load a byte into TX regardless of offset.
+//
+// Frame: idle high, start bit low, 8 data LSB-first, stop bit high.
 // ============================================================================
 
 module uart #(
@@ -27,17 +24,18 @@ module uart #(
 
     input  logic        sel,
     input  logic        we,
+    input  logic [31:0] addr,       // NEW: I look at addr[2] to pick status vs data.
     input  logic [31:0] wdata,
     output logic [31:0] rdata,
 
-    output logic        tx,         // serial out. Idles high.
-    input  logic        rx          // serial in. Idles high.
+    output logic        tx,
+    input  logic        rx
 );
 
     localparam int BAUD_DIV = CLK_FREQ / BAUD_RATE;
 
     // ====================================================================
-    // TX SIDE (unchanged from before)
+    // TX SIDE
     // ====================================================================
     logic [$clog2(BAUD_DIV)-1:0] baud_cnt;
     logic                        baud_tick;
@@ -77,7 +75,7 @@ module uart #(
             case (tstate)
                 T_IDLE: begin
                     tx <= 1'b1;
-                    if (sel && we) begin
+                    if (sel && we) begin          // a write loads a byte to send.
                         tx_shift <= wdata[7:0];
                         tx_busy  <= 1'b1;
                         tx_index <= 3'h0;
@@ -110,12 +108,10 @@ module uart #(
     // ====================================================================
     // RX SIDE
     // ====================================================================
-
-    // 1) Synchronize the async rx line through 2 flops.
     logic rx_sync1, rx_sync2;
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            rx_sync1 <= 1'b1;    // idle high.
+            rx_sync1 <= 1'b1;
             rx_sync2 <= 1'b1;
         end else begin
             rx_sync1 <= rx;
@@ -123,19 +119,21 @@ module uart #(
         end
     end
     logic rx_in;
-    assign rx_in = rx_sync2;     // the clean, synchronized rx line I actually use.
+    assign rx_in = rx_sync2;
 
-    // 2) A separate baud counter for RX (it runs on the incoming frame's timing,
-    //    independent of TX). I need to hit half-bit and full-bit points.
     logic [$clog2(BAUD_DIV)-1:0] rx_cnt;
-    logic                        rx_active;   // am I in the middle of receiving?
+    logic                        rx_active;
 
     typedef enum logic [1:0] {R_IDLE, R_START, R_DATA, R_STOP} rx_state_t;
     rx_state_t rstate;
     logic [7:0] rx_shift;
     logic [2:0] rx_index;
-    logic [7:0] rx_data;        // the finished received byte.
-    logic       rx_valid;       // 1 = a byte is waiting for the CPU.
+    logic [7:0] rx_data;
+    logic       rx_valid;
+
+    // "read the DATA register" = selected, a read (we=0), and addr offset 4 (addr[2]=1).
+    logic data_read;
+    assign data_read = sel && !we && addr[2];
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -147,68 +145,61 @@ module uart #(
             rx_valid <= 1'b0;
             rx_active<= 1'b0;
         end else begin
-            // reading the register clears rx_valid (CPU took the byte).
-            if (sel && !we) rx_valid <= 1'b0;
+            // ONLY a DATA-register read clears rx_valid (the byte is consumed).
+            // A status read no longer clears it -> polling works.
+            if (data_read) rx_valid <= 1'b0;
 
             case (rstate)
                 R_IDLE: begin
                     rx_cnt <= '0;
-                    if (rx_in == 1'b0) begin      // line dropped -> possible start bit.
+                    if (rx_in == 1'b0) begin
                         rstate    <= R_START;
                         rx_active <= 1'b1;
                     end
                 end
-
                 R_START: begin
-                    // wait HALF a bit-time to reach the center of the start bit.
                     if (rx_cnt == (BAUD_DIV/2)-1) begin
                         rx_cnt <= '0;
-                        if (rx_in == 1'b0) begin  // still low? -> real start.
+                        if (rx_in == 1'b0) begin
                             rstate   <= R_DATA;
                             rx_index <= 3'h0;
                         end else begin
-                            rstate    <= R_IDLE;  // was noise, bail out.
+                            rstate    <= R_IDLE;
                             rx_active <= 1'b0;
                         end
-                    end else begin
-                        rx_cnt <= rx_cnt + 1'b1;
-                    end
+                    end else rx_cnt <= rx_cnt + 1'b1;
                 end
-
                 R_DATA: begin
-                    // wait a FULL bit-time between samples; sample at each center.
                     if (rx_cnt == BAUD_DIV-1) begin
-                        rx_cnt <= '0;
-                        rx_shift <= {rx_in, rx_shift[7:1]};   // shift in, LSB first.
+                        rx_cnt   <= '0;
+                        rx_shift <= {rx_in, rx_shift[7:1]};
                         if (rx_index == 3'd7) rstate <= R_STOP;
                         else                  rx_index <= rx_index + 1'b1;
-                    end else begin
-                        rx_cnt <= rx_cnt + 1'b1;
-                    end
+                    end else rx_cnt <= rx_cnt + 1'b1;
                 end
-
                 R_STOP: begin
-                    // wait one more full bit-time for the stop bit, then finish.
                     if (rx_cnt == BAUD_DIV-1) begin
                         rx_cnt    <= '0;
-                        rx_data   <= rx_shift;    // the assembled byte.
-                        rx_valid  <= 1'b1;        // tell the CPU a byte arrived.
+                        rx_data   <= rx_shift;
+                        rx_valid  <= 1'b1;        // a byte arrived (overrides any clear this cycle).
                         rx_active <= 1'b0;
                         rstate    <= R_IDLE;
-                    end else begin
-                        rx_cnt <= rx_cnt + 1'b1;
-                    end
+                    end else rx_cnt <= rx_cnt + 1'b1;
                 end
             endcase
         end
     end
 
     // ====================================================================
-    // STATUS / DATA READ.
-    //   bit 0       = tx_busy
-    //   bit 1       = rx_valid
-    //   bits [15:8] = rx_data
+    // READ MUX: status vs data by addr[2].
+    //   offset 0 (addr[2]=0) = STATUS: bit0=tx_busy, bit1=rx_valid. (peek, no clear)
+    //   offset 4 (addr[2]=1) = DATA:   bits[7:0]=rx_data. (clears rx_valid, above)
     // ====================================================================
-    assign rdata = {16'b0, rx_data, 6'b0, rx_valid, tx_busy};
+    always_comb begin
+        if (addr[2])
+            rdata = {24'b0, rx_data};             // DATA register.
+        else
+            rdata = {30'b0, rx_valid, tx_busy};   // STATUS register.
+    end
 
 endmodule

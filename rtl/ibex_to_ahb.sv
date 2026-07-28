@@ -1,12 +1,17 @@
 // ============================================================================
-// ibex_to_ahb.sv - Ibex protocol -> AHB-Lite master (rvalid aligned to data)
+// ibex_to_ahb.sv - Ibex -> AHB-Lite master. Write-data alignment fixed.
 //
-// Handles stalling slaves. The subtlety fixed here: the interconnect registers
-// its response selection by one cycle (correct AHB pipelining), so read data on
-// HRDATA/rdata arrives ONE CYCLE after HREADY completes the transfer. So I must
-// assert rvalid the cycle the data is actually present - which is one cycle after
-// the address phase completes. I register a "data coming next cycle" flag and use
-// it to time rvalid to the data.
+// THE FIX: I used to register the write data (wdata_q <= wdata on gnt&we), which
+// delayed HWDATA by a cycle. But the APB bridge captures HWDATA in its SETUP
+// cycle, which lined up with the OLD registered value - so a write following
+// another write sent stale data (e.g. the UART got the previous GPIO byte).
+//
+// Ibex holds wdata stable while its request is outstanding, so I can just drive
+// HWDATA = wdata directly (combinational). That way the write data is valid in
+// the data phase exactly when any slave (including the bridge) captures it.
+//
+// Reads still tracked via read_inflight; rvalid registered to align with the
+// interconnect's registered response.
 // ============================================================================
 
 module ibex_to_ahb (
@@ -42,22 +47,12 @@ module ibex_to_ahb (
 
     assign gnt = req & HREADY;
 
-    // write data one cycle after accepted address phase.
-    logic [31:0] wdata_q;
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) wdata_q <= 32'h0;
-        else if (gnt & we) wdata_q <= wdata;
-    end
-    assign HWDATA = wdata_q;
+    // Write data: drive it directly. Ibex holds wdata stable during the request,
+    // so it's valid when a slave captures it in the data phase. No extra register
+    // (that register is what caused stale write data on back-to-back writes).
+    assign HWDATA = wdata;
 
-    // Read completion tracking, timed to when the DATA is actually present.
-    // When a read address phase is accepted (gnt & ~we), the transfer's data
-    // phase completes when HREADY next goes high; the interconnect then presents
-    // the data ONE more cycle later. So:
-    //   read_accepted : the cycle the read address phase is granted.
-    //   read_done     : the cycle HREADY completes the data phase (data valid
-    //                   on HRDATA the NEXT cycle due to interconnect register).
-    // I pulse rvalid the cycle the data is actually on rdata.
+    // Read tracking, aligned with the interconnect's registered response.
     logic read_inflight;
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)              read_inflight <= 1'b0;
@@ -65,12 +60,9 @@ module ibex_to_ahb (
         else if (HREADY)         read_inflight <= 1'b0;
     end
 
-    // the data phase completes this cycle when a read is in flight and HREADY=1.
     logic data_phase_done;
     assign data_phase_done = read_inflight & HREADY;
 
-    // the interconnect delivers the data one cycle after that, so register the
-    // "valid" pulse by one cycle to line rvalid up with rdata.
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) rvalid <= 1'b0;
         else        rvalid <= data_phase_done;

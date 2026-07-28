@@ -1,23 +1,14 @@
 // ============================================================================
-// ahb_to_apb.sv - AHB-to-APB bridge (reworked for correct stalling handshake)
+// ahb_to_apb.sv - AHB-to-APB bridge (read-data timing fixed)
 //
-// AHB slave on one side, APB master on the other. Translates an AHB transfer
-// into APB's SETUP/ACCESS phases, stalling AHB (HREADY low) while APB runs.
+// AHB slave on one side, APB master on the other. IDLE -> SETUP -> ACCESS.
 //
-// KEY FIX vs my first attempt:
-//   - AHB write data (HWDATA) is valid in the DATA phase, one cycle AFTER the
-//     address phase. My first version grabbed it too early (in IDLE), so PWDATA
-//     was always 0. Now I capture the address/control in the address phase, and
-//     grab HWDATA on the FIRST bridge-busy cycle (when the data phase is valid).
-//   - I hold HREADY low correctly through the whole APB transfer and only raise
-//     it (completing the AHB transfer) when APB finishes.
-//
-// State machine: IDLE -> SETUP -> ACCESS -> IDLE.
-//   IDLE   : ready. When AHB selects me, capture address/control, go SETUP.
-//   SETUP  : APB setup phase (PSEL=1,PENABLE=0). Also the AHB data phase, so I
-//            capture HWDATA here. Always 1 cycle.
-//   ACCESS : APB access phase (PSEL=1,PENABLE=1). When PREADY, finish: raise
-//            HREADY so the AHB side completes, and grab read data.
+// FIXES so far:
+//   - Capture HWDATA in the SETUP cycle (the AHB data phase), not too early.
+//   - Read data: drive HRDATA COMBINATIONALLY from PRDATA in the ACCESS-complete
+//     cycle, so it's present the SAME cycle HREADY goes high. My earlier version
+//     registered the read data, which delayed it one cycle past HREADY/rvalid and
+//     made the read look invalid. Now HRDATA and HREADY line up.
 // ============================================================================
 
 module ahb_to_apb (
@@ -50,8 +41,7 @@ module ahb_to_apb (
     logic ahb_access;
     assign ahb_access = HSEL & HTRANS[1];
 
-    // Capture address + control in the ADDRESS phase (when the AHB access arrives
-    // while I'm IDLE). These are held stable across the whole APB transfer.
+    // capture address + control in the address phase.
     logic [31:0] addr_q;
     logic        write_q;
     always_ff @(posedge HCLK or negedge HRESETn) begin
@@ -63,15 +53,13 @@ module ahb_to_apb (
         end
     end
 
-    // Capture write DATA in the SETUP cycle. That's one cycle after the address
-    // phase = the AHB data phase = when HWDATA is actually valid. THIS is the fix.
+    // capture write data in the SETUP cycle (= AHB data phase).
     logic [31:0] wdata_q;
     always_ff @(posedge HCLK or negedge HRESETn) begin
         if (!HRESETn) wdata_q <= 32'h0;
-        else if (state == SETUP) wdata_q <= HWDATA;   // grab HWDATA in the data phase.
+        else if (state == SETUP) wdata_q <= HWDATA;
     end
 
-    // Next-state logic.
     always_comb begin
         next_state = state;
         case (state)
@@ -86,7 +74,6 @@ module ahb_to_apb (
         else          state <= next_state;
     end
 
-    // APB outputs.
     always_comb begin
         PSEL    = (state == SETUP) || (state == ACCESS);
         PENABLE = (state == ACCESS);
@@ -95,16 +82,11 @@ module ahb_to_apb (
     assign PADDR  = addr_q;
     assign PWDATA = wdata_q;
 
-    // Capture read data at APB completion.
-    logic [31:0] rdata_q;
-    always_ff @(posedge HCLK or negedge HRESETn) begin
-        if (!HRESETn) rdata_q <= 32'h0;
-        else if (state == ACCESS && PREADY) rdata_q <= PRDATA;
-    end
-    assign HRDATA = rdata_q;
+    // READ DATA: drive HRDATA straight from PRDATA (combinational). During the
+    // ACCESS phase PRDATA is valid, and that's the same cycle HREADY completes
+    // the transfer - so HRDATA and HREADY line up, and rvalid sees correct data.
+    assign HRDATA = PRDATA;
 
-    // HREADY: ready when idle (and not just-selected), or the cycle APB completes.
-    // Low while the transfer is in flight -> stalls AHB correctly.
     always_comb begin
         if (state == IDLE && !ahb_access)
             HREADY = 1'b1;
