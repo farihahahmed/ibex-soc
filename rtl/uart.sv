@@ -1,53 +1,47 @@
 // ============================================================================
-// uart.sv - my UART (serial port). TX first; RX added later.
+// uart.sv - my UART (serial port). Now with BOTH TX and RX.
 //
-// UART sends a byte one bit at a time down a single wire. No shared clock with
-// the other end - both sides just agree on a BAUD RATE (bits per second) and a
-// FRAME format:
-//   idle = line HIGH
-//   start bit = line LOW for 1 bit-time  (tells the receiver a byte is coming)
-//   8 data bits, LSB first, 1 bit-time each
-//   stop bit = line HIGH for 1 bit-time  (marks the end)
-// So one byte = a 10-bit frame (1 start + 8 data + 1 stop).
+// TX: send a byte one bit at a time. IDLE->START->DATA->STOP.
+// RX: receive a byte someone else sends. The hard part: I don't control their
+//     timing, so I detect the start bit, then sample each bit in the MIDDLE of
+//     its bit-time (safest point, away from edges).
 //
-// Two pieces in here:
-//   1. Baud generator - divides my fast clock down to "one tick per bit-time".
-//   2. TX state machine - IDLE -> START -> DATA(x8) -> STOP -> IDLE, shifting the
-//      byte out one bit per baud tick.
+// The rx line comes from outside the chip (async), so I run it through a 2-flop
+// synchronizer first - same metastability fix as my reset and gpio inputs.
 //
-// Simple register interface (the bus wrapper will drive it):
-//   write with we=1 -> load a byte into TX and start sending.
-//   read  -> status: bit 0 = tx_busy (1 = still sending, don't write yet).
+// Register interface (bus wrapper drives it):
+//   write we=1        -> load wdata[7:0] into TX, start sending.
+//   read              -> status/data:
+//        bit 0        = tx_busy   (1 = TX still sending)
+//        bit 1        = rx_valid  (1 = a received byte is waiting)
+//        bits [15:8]  = rx_data   (the received byte)
+//   (reading clears rx_valid - the CPU has taken the byte.)
 // ============================================================================
 
 module uart #(
-    parameter int CLK_FREQ  = 10_000_000,   // my system clock in Hz.
-    parameter int BAUD_RATE = 115200        // bits per second.
+    parameter int CLK_FREQ  = 10_000_000,
+    parameter int BAUD_RATE = 115200
 )(
     input  logic        clk,
     input  logic        rst_n,
 
-    // ---- simple register interface ----
-    input  logic        sel,        // this access is for me.
-    input  logic        we,         // 1 = write (load a byte to send), 0 = read (status).
-    input  logic [31:0] wdata,      // byte to send is in wdata[7:0].
-    output logic [31:0] rdata,      // status read.
+    input  logic        sel,
+    input  logic        we,
+    input  logic [31:0] wdata,
+    output logic [31:0] rdata,
 
-    // ---- serial pin ----
-    output logic        tx          // the TX wire. Idles high.
+    output logic        tx,         // serial out. Idles high.
+    input  logic        rx          // serial in. Idles high.
 );
 
-    // How many clock cycles is one bit-time? e.g. 10MHz / 115200 = 87 cycles.
     localparam int BAUD_DIV = CLK_FREQ / BAUD_RATE;
 
-    // --------------------------------------------------------------------
-    // 1) BAUD GENERATOR. Count clock cycles; every BAUD_DIV cycles, pulse
-    //    "baud_tick" high for one cycle. That tick paces the TX bits.
-    //    I only run it while transmitting (saves it free-running when idle).
-    // --------------------------------------------------------------------
-    logic [$clog2(BAUD_DIV)-1:0] baud_cnt;   // counter wide enough to hold BAUD_DIV.
-    logic                        baud_tick;  // 1 for one cycle each bit-time.
-    logic                        tx_busy;    // am I currently sending?
+    // ====================================================================
+    // TX SIDE (unchanged from before)
+    // ====================================================================
+    logic [$clog2(BAUD_DIV)-1:0] baud_cnt;
+    logic                        baud_tick;
+    logic                        tx_busy;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -56,80 +50,165 @@ module uart #(
         end else if (tx_busy) begin
             if (baud_cnt == BAUD_DIV-1) begin
                 baud_cnt  <= '0;
-                baud_tick <= 1'b1;           // one bit-time elapsed -> tick.
+                baud_tick <= 1'b1;
             end else begin
                 baud_cnt  <= baud_cnt + 1'b1;
                 baud_tick <= 1'b0;
             end
         end else begin
-            baud_cnt  <= '0;                 // reset counter when idle.
+            baud_cnt  <= '0;
             baud_tick <= 1'b0;
         end
     end
 
-    // --------------------------------------------------------------------
-    // 2) TX STATE MACHINE.
-    //    IDLE  : line high, waiting. When the CPU writes a byte, latch it and go.
-    //    START : drive line low for one bit-time (the start bit).
-    //    DATA  : shift out 8 bits, LSB first, one per baud tick.
-    //    STOP  : drive line high for one bit-time (the stop bit), then IDLE.
-    // --------------------------------------------------------------------
-    typedef enum logic [1:0] {IDLE, START, DATA, STOP} tx_state_t;
-    tx_state_t state;
-
-    logic [7:0] shift_reg;          // holds the byte while I shift it out.
-    logic [2:0] bit_index;          // which data bit I'm on (0..7).
+    typedef enum logic [1:0] {T_IDLE, T_START, T_DATA, T_STOP} tx_state_t;
+    tx_state_t tstate;
+    logic [7:0] tx_shift;
+    logic [2:0] tx_index;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            state     <= IDLE;
-            tx        <= 1'b1;       // idle high.
-            tx_busy   <= 1'b0;
-            shift_reg <= 8'h0;
-            bit_index <= 3'h0;
+            tstate   <= T_IDLE;
+            tx       <= 1'b1;
+            tx_busy  <= 1'b0;
+            tx_shift <= 8'h0;
+            tx_index <= 3'h0;
         end else begin
-            case (state)
-                IDLE: begin
-                    tx <= 1'b1;                      // keep line high while idle.
-                    if (sel && we) begin             // CPU wrote a byte -> start sending.
-                        shift_reg <= wdata[7:0];     // latch the byte.
-                        tx_busy   <= 1'b1;           // now busy (also kicks the baud gen).
-                        bit_index <= 3'h0;
-                        state     <= START;
+            case (tstate)
+                T_IDLE: begin
+                    tx <= 1'b1;
+                    if (sel && we) begin
+                        tx_shift <= wdata[7:0];
+                        tx_busy  <= 1'b1;
+                        tx_index <= 3'h0;
+                        tstate   <= T_START;
                     end
                 end
-
-                START: begin
-                    tx <= 1'b0;                      // start bit = low.
-                    if (baud_tick) state <= DATA;    // after one bit-time, send data.
+                T_START: begin
+                    tx <= 1'b0;
+                    if (baud_tick) tstate <= T_DATA;
                 end
-
-                DATA: begin
-                    tx <= shift_reg[0];              // drive the current LSB.
+                T_DATA: begin
+                    tx <= tx_shift[0];
                     if (baud_tick) begin
-                        shift_reg <= {1'b0, shift_reg[7:1]};  // shift right -> next bit to LSB.
-                        if (bit_index == 3'd7)
-                            state <= STOP;           // sent all 8 bits.
-                        else
-                            bit_index <= bit_index + 1'b1;
+                        tx_shift <= {1'b0, tx_shift[7:1]};
+                        if (tx_index == 3'd7) tstate <= T_STOP;
+                        else                  tx_index <= tx_index + 1'b1;
                     end
                 end
-
-                STOP: begin
-                    tx <= 1'b1;                      // stop bit = high.
+                T_STOP: begin
+                    tx <= 1'b1;
                     if (baud_tick) begin
-                        tx_busy <= 1'b0;             // done sending.
-                        state   <= IDLE;
+                        tx_busy <= 1'b0;
+                        tstate  <= T_IDLE;
                     end
                 end
             endcase
         end
     end
 
-    // --------------------------------------------------------------------
-    // 3) STATUS READ. bit 0 = tx_busy (1 = still sending). CPU polls this before
-    //    writing the next byte.
-    // --------------------------------------------------------------------
-    assign rdata = {31'b0, tx_busy};
+    // ====================================================================
+    // RX SIDE
+    // ====================================================================
+
+    // 1) Synchronize the async rx line through 2 flops.
+    logic rx_sync1, rx_sync2;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rx_sync1 <= 1'b1;    // idle high.
+            rx_sync2 <= 1'b1;
+        end else begin
+            rx_sync1 <= rx;
+            rx_sync2 <= rx_sync1;
+        end
+    end
+    logic rx_in;
+    assign rx_in = rx_sync2;     // the clean, synchronized rx line I actually use.
+
+    // 2) A separate baud counter for RX (it runs on the incoming frame's timing,
+    //    independent of TX). I need to hit half-bit and full-bit points.
+    logic [$clog2(BAUD_DIV)-1:0] rx_cnt;
+    logic                        rx_active;   // am I in the middle of receiving?
+
+    typedef enum logic [1:0] {R_IDLE, R_START, R_DATA, R_STOP} rx_state_t;
+    rx_state_t rstate;
+    logic [7:0] rx_shift;
+    logic [2:0] rx_index;
+    logic [7:0] rx_data;        // the finished received byte.
+    logic       rx_valid;       // 1 = a byte is waiting for the CPU.
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rstate   <= R_IDLE;
+            rx_cnt   <= '0;
+            rx_index <= 3'h0;
+            rx_shift <= 8'h0;
+            rx_data  <= 8'h0;
+            rx_valid <= 1'b0;
+            rx_active<= 1'b0;
+        end else begin
+            // reading the register clears rx_valid (CPU took the byte).
+            if (sel && !we) rx_valid <= 1'b0;
+
+            case (rstate)
+                R_IDLE: begin
+                    rx_cnt <= '0;
+                    if (rx_in == 1'b0) begin      // line dropped -> possible start bit.
+                        rstate    <= R_START;
+                        rx_active <= 1'b1;
+                    end
+                end
+
+                R_START: begin
+                    // wait HALF a bit-time to reach the center of the start bit.
+                    if (rx_cnt == (BAUD_DIV/2)-1) begin
+                        rx_cnt <= '0;
+                        if (rx_in == 1'b0) begin  // still low? -> real start.
+                            rstate   <= R_DATA;
+                            rx_index <= 3'h0;
+                        end else begin
+                            rstate    <= R_IDLE;  // was noise, bail out.
+                            rx_active <= 1'b0;
+                        end
+                    end else begin
+                        rx_cnt <= rx_cnt + 1'b1;
+                    end
+                end
+
+                R_DATA: begin
+                    // wait a FULL bit-time between samples; sample at each center.
+                    if (rx_cnt == BAUD_DIV-1) begin
+                        rx_cnt <= '0;
+                        rx_shift <= {rx_in, rx_shift[7:1]};   // shift in, LSB first.
+                        if (rx_index == 3'd7) rstate <= R_STOP;
+                        else                  rx_index <= rx_index + 1'b1;
+                    end else begin
+                        rx_cnt <= rx_cnt + 1'b1;
+                    end
+                end
+
+                R_STOP: begin
+                    // wait one more full bit-time for the stop bit, then finish.
+                    if (rx_cnt == BAUD_DIV-1) begin
+                        rx_cnt    <= '0;
+                        rx_data   <= rx_shift;    // the assembled byte.
+                        rx_valid  <= 1'b1;        // tell the CPU a byte arrived.
+                        rx_active <= 1'b0;
+                        rstate    <= R_IDLE;
+                    end else begin
+                        rx_cnt <= rx_cnt + 1'b1;
+                    end
+                end
+            endcase
+        end
+    end
+
+    // ====================================================================
+    // STATUS / DATA READ.
+    //   bit 0       = tx_busy
+    //   bit 1       = rx_valid
+    //   bits [15:8] = rx_data
+    // ====================================================================
+    assign rdata = {16'b0, rx_data, 6'b0, rx_valid, tx_busy};
 
 endmodule
