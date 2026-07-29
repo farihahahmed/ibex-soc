@@ -80,7 +80,10 @@ module chip_top import ibex_pkg::*; #(
         .instr_req_i(instr_req), .instr_gnt_o(instr_gnt), .instr_addr_i(instr_addr),
         .instr_rvalid_o(instr_rvalid), .instr_rdata_o(instr_rdata),
         .data_req_i(1'b0), .data_gnt_o(), .data_we_i(1'b0), .data_be_i(4'b0),
-        .data_addr_i(32'b0), .data_wdata_i(32'b0), .data_rvalid_o(), .data_rdata_o()
+        .data_addr_i(32'b0), .data_wdata_i(32'b0), .data_rvalid_o(), .data_rdata_o(),
+        // scan-load port tied off in v0.5 (no scan chain wired here)
+        .scan_owns_mem(1'b0), .scan_we(1'b0), .scan_addr(16'b0),
+        .scan_wdata(32'b0), .scan_sel_dmem(1'b0)
     );
 
     // ---- data-side AHB bus ----

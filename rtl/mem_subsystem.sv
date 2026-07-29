@@ -1,85 +1,149 @@
 // ============================================================================
 // mem_subsystem.sv - my whole memory system in one block
 //
-// This is where I glue together the pieces I already built and verified:
-//   - rst_sync        -> gives me one clean, synchronized reset for both memories
-//   - mem_wrapper      -> translates Ibex's handshake to my bank (x2, one per memory)
-//   - sram_bank_2k     -> the actual 2 KB storage (lives inside each wrapper)
+// Pieces I built and verified: rst_sync (one clean reset), mem_wrapper (x2,
+// Ibex handshake -> bank), sram_bank_2k (2 KB storage inside each wrapper).
 //
-// Ibex has TWO separate memory ports, so I build TWO memories:
-//   u_imem  - instruction memory. Ibex only READS from here (it never writes
-//             instructions), so I tie the write signals off.
-//   u_dmem  - data memory. Ibex reads AND writes here (loads and stores).
+// Ibex has TWO memory ports -> TWO memories:
+//   u_imem  - instruction memory. Ibex only READS. (never writes instructions)
+//   u_dmem  - data memory. Ibex reads AND writes.
 //
-// Naming: my ports line up with Ibex's port names so hooking this up later is clean.
-// Ibex's "_o" = output from Ibex (input to me), "_i" = input to Ibex (output from me).
+// NEW (scan-load path): to load a program after tapeout, the SCAN CHAIN needs to
+// WRITE imem/dmem before the CPU runs. So I add a scan write port and mux it in:
+//   when scan_owns_mem = 1 (during the FSM's LOAD state), the scan chain drives
+//   the memory write signals; when 0 (RUN), imem is read-only and dmem follows
+//   the CPU as before. This is how the chip loads its own program.
+//
+// The scan chain provides a WORD-addressed write (scan_addr counts words 0,1,2..).
+// My mem_wrapper expects a BYTE address (it does addr[10:2] internally), so I
+// shift the scan word address left by 2 to make a byte address.
 // ============================================================================
 
 module mem_subsystem (
-    input  logic        clk,             // system clock.
-    input  logic        rst_n_in,        // raw reset from outside (async). I'll clean it up inside.
+    input  logic        clk,
+    input  logic        rst_n_in,
 
-    // ---- instruction memory port (Ibex fetches instructions here) ----
-    input  logic        instr_req_i,     // Ibex requesting an instruction fetch (its instr_req_o).
-    output logic        instr_gnt_o,     // I grant it (goes to Ibex's instr_gnt_i).
-    input  logic [31:0] instr_addr_i,    // fetch address (Ibex's instr_addr_o).
-    output logic        instr_rvalid_o,  // instruction data valid (Ibex's instr_rvalid_i).
-    output logic [31:0] instr_rdata_o,   // the instruction word (Ibex's instr_rdata_i).
+    // ---- instruction memory port (Ibex fetches here) ----
+    input  logic        instr_req_i,
+    output logic        instr_gnt_o,
+    input  logic [31:0] instr_addr_i,
+    output logic        instr_rvalid_o,
+    output logic [31:0] instr_rdata_o,
 
     // ---- data memory port (Ibex loads/stores here) ----
-    input  logic        data_req_i,      // Ibex requesting a data access (its data_req_o).
-    output logic        data_gnt_o,      // I grant it (Ibex's data_gnt_i).
-    input  logic        data_we_i,       // 1 = store (write), 0 = load (read) (Ibex's data_we_o).
-    input  logic [3:0]  data_be_i,       // byte enables (Ibex's data_be_o).
-    input  logic [31:0] data_addr_i,     // data address (Ibex's data_addr_o).
-    input  logic [31:0] data_wdata_i,    // data to store (Ibex's data_wdata_o).
-    output logic        data_rvalid_o,   // data-read valid (Ibex's data_rvalid_i).
-    output logic [31:0] data_rdata_o     // the loaded data (Ibex's data_rdata_i).
+    input  logic        data_req_i,
+    output logic        data_gnt_o,
+    input  logic        data_we_i,
+    input  logic [3:0]  data_be_i,
+    input  logic [31:0] data_addr_i,
+    input  logic [31:0] data_wdata_i,
+    output logic        data_rvalid_o,
+    output logic [31:0] data_rdata_o,
+
+    // ---- NEW: scan-load write port (from the scan chain, during LOAD) ----
+    input  logic        scan_owns_mem,   // 1 = scan chain owns the write path (FSM LOAD state).
+    input  logic        scan_we,         // scan write-enable.
+    input  logic [15:0] scan_addr,       // scan WORD address (0,1,2,... per word).
+    input  logic [31:0] scan_wdata,      // scan write data.
+    input  logic        scan_sel_dmem    // 0 = write imem, 1 = write dmem (which memory to load).
 );
 
     // --------------------------------------------------------------------
-    // 1) Clean up the reset once, here, and feed the synchronized version
-    //    to both memories.
+    // 1) One clean synchronized reset for both memories.
     // --------------------------------------------------------------------
-    logic rst_n;                          // my clean, synchronized reset.
+    logic rst_n;
     rst_sync u_rst_sync (
         .clk      (clk),
-        .rst_n_in (rst_n_in),             // raw async reset in.
-        .rst_n_out(rst_n)                 // clean synchronized reset out -> used below.
+        .rst_n_in (rst_n_in),
+        .rst_n_out(rst_n)
     );
 
     // --------------------------------------------------------------------
-    // 2) Instruction memory. Read-only from Ibex's side, so I hardwire the
-    //    write controls to 0 (never writing, no bytes enabled). wdata is unused
-    //    for reads, so I just feed it zeros.
+    // Scan address is a WORD index; the wrapper wants a BYTE address, so <<2.
     // --------------------------------------------------------------------
+    logic [31:0] scan_byte_addr;
+    assign scan_byte_addr = {14'b0, scan_addr, 2'b00};   // word -> byte address.
+
+    // --------------------------------------------------------------------
+    // 2) Instruction memory. Normally read-only from Ibex. During scan LOAD of
+    //    imem, the scan chain drives the write signals instead.
+    // --------------------------------------------------------------------
+    logic        imem_we;
+    logic [3:0]  imem_be;
+    logic [31:0] imem_addr;
+    logic [31:0] imem_wdata;
+    logic        imem_req;
+
+    always_comb begin
+        if (scan_owns_mem && !scan_sel_dmem) begin
+            // scan chain is loading INSTRUCTION memory
+            imem_req   = scan_we;             // request a write when scanning a word in
+            imem_we    = scan_we;
+            imem_be    = 4'b1111;             // write the whole word
+            imem_addr  = scan_byte_addr;
+            imem_wdata = scan_wdata;
+        end else begin
+            // normal: Ibex fetches (read-only)
+            imem_req   = instr_req_i;
+            imem_we    = 1'b0;
+            imem_be    = 4'b0000;
+            imem_addr  = instr_addr_i;
+            imem_wdata = 32'b0;
+        end
+    end
+
     mem_wrapper u_imem (
         .clk   (clk),
-        .rst_n (rst_n),                   // the clean reset.
-        .req   (instr_req_i),             // fetch request from Ibex.
-        .gnt   (instr_gnt_o),             // grant back to Ibex.
-        .we    (1'b0),                    // instruction memory is READ-ONLY -> never write.
-        .be    (4'b0000),                 // no byte-enables needed for reads.
-        .addr  (instr_addr_i),            // fetch address.
-        .wdata (32'b0),                   // unused on reads, tie to 0.
-        .rvalid(instr_rvalid_o),          // instruction-valid back to Ibex.
-        .rdata (instr_rdata_o)            // the instruction word back to Ibex.
+        .rst_n (rst_n),
+        .req   (imem_req),
+        .gnt   (instr_gnt_o),
+        .we    (imem_we),
+        .be    (imem_be),
+        .addr  (imem_addr),
+        .wdata (imem_wdata),
+        .rvalid(instr_rvalid_o),
+        .rdata (instr_rdata_o)
     );
 
     // --------------------------------------------------------------------
-    // 3) Data memory. Full read/write - I pass Ibex's write controls straight through.
+    // 3) Data memory. Ibex read/write normally; during scan LOAD of dmem, the
+    //    scan chain drives the write signals instead.
     // --------------------------------------------------------------------
+    logic        dmem_we;
+    logic [3:0]  dmem_be;
+    logic [31:0] dmem_addr;
+    logic [31:0] dmem_wdata;
+    logic        dmem_req;
+
+    always_comb begin
+        if (scan_owns_mem && scan_sel_dmem) begin
+            // scan chain is loading DATA memory
+            dmem_req   = scan_we;
+            dmem_we    = scan_we;
+            dmem_be    = 4'b1111;
+            dmem_addr  = scan_byte_addr;
+            dmem_wdata = scan_wdata;
+        end else begin
+            // normal: Ibex loads/stores
+            dmem_req   = data_req_i;
+            dmem_we    = data_we_i;
+            dmem_be    = data_be_i;
+            dmem_addr  = data_addr_i;
+            dmem_wdata = data_wdata_i;
+        end
+    end
+
     mem_wrapper u_dmem (
         .clk   (clk),
-        .rst_n (rst_n),                   // same clean reset.
-        .req   (data_req_i),              // data access request.
-        .gnt   (data_gnt_o),              // grant back.
-        .we    (data_we_i),              // write-enable straight from Ibex.
-        .be    (data_be_i),              // byte-enables straight from Ibex.
-        .addr  (data_addr_i),            // data address.
-        .wdata (data_wdata_i),           // data to store.
-        .rvalid(data_rvalid_o),          // read-valid back to Ibex.
-        .rdata (data_rdata_o)            // loaded data back to Ibex.
+        .rst_n (rst_n),
+        .req   (dmem_req),
+        .gnt   (data_gnt_o),
+        .we    (dmem_we),
+        .be    (dmem_be),
+        .addr  (dmem_addr),
+        .wdata (dmem_wdata),
+        .rvalid(data_rvalid_o),
+        .rdata (data_rdata_o)
     );
 
 endmodule
