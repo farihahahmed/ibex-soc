@@ -92,9 +92,13 @@ Integration proceeds incrementally: each version wires one additional block into
 ## Repository layout
 
 ibex_soc/
+
 ├── rtl/ # synthesizable design (.sv)
+
 ├── tb/ # self-checking testbenches
+
 ├── memory_map.md
+
 └── README.md
 
 ## Running a testbench
