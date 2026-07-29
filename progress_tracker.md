@@ -7,7 +7,7 @@ A from-scratch RISC-V System-on-Chip built on the open-source **GF180MCU (180nm)
 |-------|-------------|--------|
 | A | Foundations & toolchain | ✅ |
 | B | Architecture & design | ✅ |
-| C | RTL block development | 🚧 (9/12) |
+| C | RTL block development | ✅ (12/12) |
 | D | Integration | 🚧 (v0.5 ✅ — full SoC on the bus) |
 | E | Synthesis → netlist | ⬜ |
 ---
@@ -45,9 +45,9 @@ A from-scratch RISC-V System-on-Chip built on the open-source **GF180MCU (180nm)
 | `apb_uart` | UART as APB slave | full chain, 0 errors | ✅ |
 | `spi` | SPI master (Mode 0), clock divider + shift FSM | loopback, 0 errors | ✅ |
 | `apb_spi` | SPI as APB slave | full chain, 0 errors | ✅ |
-| `scan_chain` | 248-cell scan chain (program load) | — | ⬜ |
-| `clk_gen` | Ring-oscillator clock generator | — | ⬜ |
-| `test_fsm` | Debug gating FSM | — | ⬜ |
+| `scan_chain` | 248-cell scan chain (program load) | serial load + read-back, 0 errors | ✅ |
+| `clk_gen` | Ring-oscillator clock generator | behavioral sim model (real version = physical) | ✅ |
+| `test_fsm` | Load/run sequencing FSM | full state sequence, 0 errors | ✅ |
 
 The full two-tier bus (Ibex → AHB-Lite → bridge → APB → peripherals) is verified end-to-end, with GPIO, UART, and SPI on APB at their memory-map addresses.
 
