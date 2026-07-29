@@ -8,7 +8,7 @@ A from-scratch RISC-V System-on-Chip built on the open-source **GF180MCU (180nm)
 | A | Foundations & toolchain | ✅ |
 | B | Architecture & design | ✅ |
 | C | RTL block development | ✅ (12/12) |
-| D | Integration | 🚧 (v0.5 ✅ — full SoC on the bus) |
+| D | Integration | ✅ (v0.8 - complete SoC) |
 | E | Synthesis → netlist | ⬜ |
 ---
 ## Phase A — Foundations & Toolchain ✅
@@ -69,9 +69,9 @@ RTL memory control (`cen = ~cs`) is correct for silicon.
 | v0.3 | GPIO on the bus — CPU drives output pins through AHB→bridge→APB→GPIO | ✅ |
 | v0.4 | UART on the bus — CPU transmits a byte over serial | ✅ |
 | v0.5 | SPI on the bus — CPU drives MOSI; full peripheral set integrated | ✅ |
-| v0.6 | Scan chain (load program, run) | ⬜ |
-| v0.7 | Clock generator + test FSM | ⬜ |
-| v0.8 | Full `chip_top`, multi-function demo | ⬜ |
+| v0.6 | Scan chain + test FSM: chip loads program serially, then runs it | ✅ |
+| v0.7 | On-chip clock generator drives downstream logic | ✅ |
+| v0.8 | Complete SoC: scan-load program drives GPIO+UART+SPI | ✅ |
 
 ### v0.1 — Ibex + memory subsystem
 `chip_top` instantiates `ibex_top` (RV32IMC, ICache/PMP/DbgTrigger off, `RV32MFast`)
