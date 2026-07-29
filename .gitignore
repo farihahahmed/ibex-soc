@@ -14,3 +14,8 @@ tb/tb_chip_smoke.sv
 tb/tb_chip_smoke2.sv
 tb/tb_chip_smoke3.sv
 tb/tb_chip_smoke4.sv
+
+# compiled simulation binaries (iverilog output) - regenerated on every run
+sim_*
+sim
+*.vvp
