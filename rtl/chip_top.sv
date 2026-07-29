@@ -1,27 +1,37 @@
 // ============================================================================
-// chip_top.sv - my SoC top level (v0.4: Ibex + memory + GPIO + UART on the bus).
+// chip_top.sv - my SoC top level (v0.5: FULL SoC - Ibex + memory + GPIO + UART + SPI).
 //
-// Adds to v0.3: apb_uart hangs on the APB decoder (peripheral 2, @ 0x0002_xxxx).
-// Data-side topology:
+// Adds to v0.4: apb_spi hangs on the APB decoder (peripheral 3, @ 0x0003_xxxx).
+// This is the complete Columbia peripheral set on the two-tier bus:
 //   Ibex data -> ibex_to_ahb -> ahb_interconnect -+-> ahb_mem   (slave 0, mem @ 0x0000)
 //                                                  +-> bridge -> apb_decoder -+-> apb_gpio (@0x0001)
 //                                                                             +-> apb_uart (@0x0002)
-// Instruction port straight to imem. SPI (peripheral 3) still tied off -> v0.5.
+//                                                                             +-> apb_spi  (@0x0003)
+// Instruction port straight to imem.
 //
-// tx/rx are brought to the top level (UART pins go to chip pads).
+// All peripheral regions (0x0001/0x0002/0x0003 -> HSEL[1]/[2]/[3]) route through
+// the single bridge; the interconnect's s1/s2/s3 response inputs all come from
+// the bridge so any selected peripheral returns the bridge's response.
+//
+// Top-level pins: gpio_out/in, uart_tx/rx, spi sclk/mosi/miso/cs_n -> chip pads.
 // ============================================================================
 
 module chip_top import ibex_pkg::*; #(
     parameter int NUM_IO    = 8,
-    parameter int CLK_FREQ  = 8,     // sim-friendly baud ratio (matches standalone UART tests)
-    parameter int BAUD_RATE = 1
+    parameter int CLK_FREQ  = 8,
+    parameter int BAUD_RATE = 1,
+    parameter int SPI_CLK_DIV = 2
 )(
     input  logic clk,
     input  logic rst_n,
     output logic [NUM_IO-1:0] gpio_out,
     input  logic [NUM_IO-1:0] gpio_in,
     output logic uart_tx,
-    input  logic uart_rx
+    input  logic uart_rx,
+    output logic spi_sclk,
+    output logic spi_mosi,
+    input  logic spi_miso,
+    output logic spi_cs_n
 );
 
     // ---- Ibex ports ----
@@ -100,11 +110,10 @@ module chip_top import ibex_pkg::*; #(
         .HSEL(HSEL), .slv_HADDR(slv_HADDR), .slv_HTRANS(slv_HTRANS),
         .slv_HWRITE(slv_HWRITE), .slv_HWDATA(slv_HWDATA),
         .s0_HRDATA(s0_HRDATA), .s0_HREADY(s0_HREADY), .s0_HRESP(s0_HRESP),
-        // GPIO (s1) and UART (s2) share the bridge, so both response inputs come
-        // from the bridge - whichever region is selected returns the bridge's data.
+        // GPIO/UART/SPI (s1/s2/s3) all share the bridge -> all response inputs = bridge.
         .s1_HRDATA(s1_HRDATA), .s1_HREADY(s1_HREADY), .s1_HRESP(s1_HRESP),
         .s2_HRDATA(s1_HRDATA), .s2_HREADY(s1_HREADY), .s2_HRESP(s1_HRESP),
-        .s3_HRDATA(32'h0), .s3_HREADY(1'b1), .s3_HRESP(1'b0)
+        .s3_HRDATA(s1_HRDATA), .s3_HREADY(s1_HREADY), .s3_HRESP(s1_HRESP)
     );
 
     ahb_mem u_dmem_slave (
@@ -114,15 +123,13 @@ module chip_top import ibex_pkg::*; #(
         .HRDATA(s0_HRDATA), .HREADY(s0_HREADY), .HRESP(s0_HRESP)
     );
 
-    // ---- peripheral tier: bridge -> decoder -> {gpio, uart} ----
-    // NOTE: GPIO region is 0x0001 -> HSEL[1]; UART region is 0x0002 -> HSEL[2].
-    // Both peripheral regions must select the bridge.
+    // ---- peripheral tier: bridge -> decoder -> {gpio, uart, spi} ----
     logic        PSEL, PENABLE, PWRITE, PREADY;
     logic [31:0] PADDR, PWDATA, PRDATA;
 
     ahb_to_apb u_bridge (
         .HCLK(clk), .HRESETn(rst_n),
-        .HSEL(HSEL[1] | HSEL[2]),        // GPIO (s1) or UART (s2) both go through the bridge.
+        .HSEL(HSEL[1] | HSEL[2] | HSEL[3]),   // any peripheral region -> the bridge.
         .HADDR(slv_HADDR), .HTRANS(slv_HTRANS), .HWRITE(slv_HWRITE), .HWDATA(slv_HWDATA),
         .HRDATA(s1_HRDATA), .HREADY(s1_HREADY), .HRESP(s1_HRESP),
         .PSEL(PSEL), .PENABLE(PENABLE), .PWRITE(PWRITE),
@@ -130,8 +137,8 @@ module chip_top import ibex_pkg::*; #(
     );
 
     logic        gpio_PSEL, uart_PSEL, spi_PSEL;
-    logic [31:0] gpio_PRDATA, uart_PRDATA;
-    logic        gpio_PREADY, uart_PREADY;
+    logic [31:0] gpio_PRDATA, uart_PRDATA, spi_PRDATA;
+    logic        gpio_PREADY, uart_PREADY, spi_PREADY;
     logic        p_PENABLE, p_PWRITE;
     logic [31:0] p_PADDR, p_PWDATA;
 
@@ -140,7 +147,7 @@ module chip_top import ibex_pkg::*; #(
         .PADDR(PADDR), .PWDATA(PWDATA), .PRDATA(PRDATA), .PREADY(PREADY),
         .gpio_PSEL(gpio_PSEL), .gpio_PRDATA(gpio_PRDATA), .gpio_PREADY(gpio_PREADY),
         .uart_PSEL(uart_PSEL), .uart_PRDATA(uart_PRDATA), .uart_PREADY(uart_PREADY),
-        .spi_PSEL(spi_PSEL),  .spi_PRDATA(32'h0),  .spi_PREADY(1'b1),   // SPI tied off (v0.5)
+        .spi_PSEL(spi_PSEL),  .spi_PRDATA(spi_PRDATA),  .spi_PREADY(spi_PREADY),
         .p_PENABLE(p_PENABLE), .p_PWRITE(p_PWRITE), .p_PADDR(p_PADDR), .p_PWDATA(p_PWDATA)
     );
 
@@ -156,6 +163,13 @@ module chip_top import ibex_pkg::*; #(
         .PSEL(uart_PSEL), .PENABLE(p_PENABLE), .PWRITE(p_PWRITE),
         .PADDR(p_PADDR), .PWDATA(p_PWDATA), .PRDATA(uart_PRDATA), .PREADY(uart_PREADY),
         .tx(uart_tx), .rx(uart_rx)
+    );
+
+    apb_spi #(.CLK_DIV(SPI_CLK_DIV)) u_spi (
+        .PCLK(clk), .PRESETn(rst_n),
+        .PSEL(spi_PSEL), .PENABLE(p_PENABLE), .PWRITE(p_PWRITE),
+        .PADDR(p_PADDR), .PWDATA(p_PWDATA), .PRDATA(spi_PRDATA), .PREADY(spi_PREADY),
+        .sclk(spi_sclk), .mosi(spi_mosi), .miso(spi_miso), .cs_n(spi_cs_n)
     );
 
 endmodule
