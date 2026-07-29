@@ -1,5 +1,7 @@
 # Ibex SoC on GF180MCU — Progress Tracker
-A from-scratch RISC-V System-on-Chip built on the open-source **GF180MCU (180nm)** process, using the Ibex RV32IMC core. Front-end flow: RTL → simulation → synthesized netlist.
+
+Front-end flow: RTL → simulation → synthesized netlist.
+
 **Legend:** ✅ done & verified  🚧 in progress  ⬜ not started
 ---
 ## Status at a glance
@@ -88,11 +90,13 @@ Integration proceeds incrementally: each version wires one additional block into
 | Core area budget | 2051 × 2051 µm |
 
 ## Repository layout
+
 ibex_soc/
 ├── rtl/ # synthesizable design (.sv)
 ├── tb/ # self-checking testbenches
 ├── memory_map.md
 └── README.md
+
 ## Running a testbench
 ```bash
 iverilog -g2012 -o sim -s tb_sram_bank \
