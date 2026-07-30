@@ -29,7 +29,8 @@ A single-core RISC-V SoC that can be loaded and run on real silicon through a ha
 
 Three parts: **(1)** the Ibex core + instruction/data SRAM; **(2)** the communication peripherals (GPIO, UART, SPI) on a memory-mapped bus; **(3)** the control/debug blocks (scan chain, test FSM, clock generator) — present because a fabricated chip has no native way to load code or observe state.
 
-> **[INSERT: System block diagram]** — reuse the block diagram from the slides (PCB → Chip → Ibex/SRAM/bus/peripherals/scan/FSM/clkgen). Update the memory-map addresses to match §5.
+![System block diagram](diagrams/block_diagram.png)
+*Full SoC: Ibex core + instruction/data SRAM, two-tier AHB/APB bus, GPIO/UART/SPI peripherals, and the scan-chain / test-FSM / clock-generator control blocks.*
 
 **Data flow.** The CPU's data port issues ordinary loads/stores. An adapter converts the Ibex handshake to an AHB-Lite master; the interconnect decodes the address and routes to either data memory (fast AHB path) or, through the AHB→APB bridge, to a peripheral. The instruction port fetches directly from instruction memory for single-cycle fetch concurrent with data access.
 
@@ -60,7 +61,8 @@ Every block is implemented and verified. Tier and role:
 
 **Bus architecture:** two-tier is deliberate — fast memory sits on AHB for single-wait access; slow peripherals sit behind the bridge on APB so their timing never stalls the memory path. The interconnect selects a slave from `HADDR[17:16]` (one region per peripheral).
 
-> **[INSERT: AHB/APB bus diagram]** — the interconnect + bridge + decoder fan-out. Can adapt the slide's bus diagram to match the as-built four-region decode.
+![AHB/APB bus diagram](diagrams/bus_diagram.png)
+*AHB-Lite interconnect (memory + one-hot slave select), AHB→APB bridge, and APB decoder fanning out to GPIO/UART/SPI.*
 
 ---
 
@@ -68,7 +70,7 @@ Every block is implemented and verified. Tier and role:
 
 18 signal pads + 4 power = **22 pads**. SPI pins route to package pads so firmware can drive an external LCD/LED over SPI (the LCD driver is software — command bytes through the generic SPI master — not hardwired logic).
 
-![Pinout plan](img/pinout.svg)
+![Pinout plan](diagrams/pinout.svg)
 
 | Group | Pins | Dir |
 |-------|------|-----|
@@ -135,9 +137,11 @@ Stated honestly, since a reviewer grades on tradeoff awareness:
 
 **Headline result (v0.8):** a program shifted in over the scan chain, sequenced by the test FSM, executes on the Ibex core and drives all three peripherals in one run — `gpio=0xA5`, `uart_tx=0x41`, `spi_mosi=0xB7`. This is the full bring-up path the real chip uses after tapeout.
 
-> **[INSERT: v0.8 simulation transcript screenshot]** — the `tb_chip_full` output showing FSM LOAD→RUN and the three RESULTS lines all PASS.
->
-> **[INSERT: waveform (optional)]** — GTKWave capture of one integration run: `instr_addr` climbing, then `gpio_out`/`uart_tx`/`spi_mosi` changing. A store-then-load or the GPIO write is a clean, readable trace.
+![v0.8 full-SoC simulation transcript](diagrams/v08_transcript.png)
+*`tb_chip_full`: the FSM sequences LOAD → RUN, then the scan-loaded program drives all three peripherals — `gpio=0xA5`, `uart_tx=0x41`, `spi_mosi=0xB7`.*
+
+![Integration waveform](diagrams/waveform.png)
+*Full v0.8 run (`chip_full.vcd`). `scan_load` pulses (0–5 µs) load the 10-word program into memory one word at a time; `fsm_state` holds `01` (LOAD) during this, then flips to `10` (RUN) at ~5 µs when the CPU is released. The CPU then drives all three peripherals: `gpio_out` → `A5`, `uart_tx` serializes `0x41`, and `spi_sclk`/`spi_mosi` shift out `0xB7`.*
 
 ---
 
