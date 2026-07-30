@@ -28,7 +28,7 @@ module tb_chip_full;
     end
     localparam int BIT_CYCLES = CLK_FREQ/BAUD_RATE;
 
-    localparam int NWORDS = 10;
+    localparam int NWORDS = 16;
     localparam int BASE_WORD = 32;
     logic [31:0] prog [0:NWORDS-1];
     initial begin
@@ -41,7 +41,13 @@ module tb_chip_full;
         prog[6]=32'h00552023;  // sw   x5,0(x10)   GPIO
         prog[7]=32'h0065A023;  // sw   x6,0(x11)   UART
         prog[8]=32'h00762023;  // sw   x7,0(x12)   SPI
-        prog[9]=32'h0000006F;  // jal  x0,0
+        prog[9]=32'h00000013;  // L: nop  (loop target)
+        prog[10]=32'hFFDFF06F; // jal x0,-4 (jump back to L -> tight 2-instr loop)
+        prog[11]=32'h00000013; // nop (prefetch padding)
+        prog[12]=32'h00000013; // nop
+        prog[13]=32'h00000013; // nop
+        prog[14]=32'h00000013; // nop
+        prog[15]=32'h00000013; // nop
     end
 
     task wake_all;
@@ -109,6 +115,15 @@ module tb_chip_full;
         $display("FSM: %0d (expect 1=LOAD). Scanning %0d-word program...", fsm_state, NWORDS);
         for (i=0;i<NWORDS;i=i+1) scan_word(BASE_WORD[15:0]+i[15:0], prog[i]);
         $display("scan-load complete.");
+
+        // READBACK: what actually got loaded into imem at each program word?
+        for (i=0;i<NWORDS;i=i+1) begin
+            $display("  imem[word %0d, byte 0x%02h] = 0x%02h%02h%02h%02h", BASE_WORD+i, (BASE_WORD+i)*4,
+                dut.u_mem.u_imem.u_bank.lane[3].u_macro.mem[BASE_WORD+i],
+                dut.u_mem.u_imem.u_bank.lane[2].u_macro.mem[BASE_WORD+i],
+                dut.u_mem.u_imem.u_bank.lane[1].u_macro.mem[BASE_WORD+i],
+                dut.u_mem.u_imem.u_bank.lane[0].u_macro.mem[BASE_WORD+i]);
+        end
 
         @(negedge clk); load_done=1; @(posedge clk); @(negedge clk); load_done=0;
         $display("FSM: %0d (expect 2=RUN). CPU running the demo...", fsm_state);
