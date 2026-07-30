@@ -25,9 +25,6 @@ module mem_subsystem (
         .clk(clk), .rst_n_in(rst_n_in), .rst_n_out(rst_n)
     );
 
-    logic [31:0] scan_byte_addr;
-    assign scan_byte_addr = {14'b0, scan_addr, 2'b00};
-
     // ---- INSTRUCTION memory: narrow 8-bit path ----
     logic imem_ld_en;
     assign imem_ld_en = scan_owns_mem & ~scan_sel_dmem & scan_we;
@@ -40,27 +37,16 @@ module mem_subsystem (
         .ld_word_data(scan_wdata), .ld_busy()
     );
 
-    // ---- DATA memory: unchanged ----
-    logic        dmem_we;
-    logic [3:0]  dmem_be;
-    logic [31:0] dmem_addr;
-    logic [31:0] dmem_wdata;
-    logic        dmem_req;
+    // ---- DATA memory: narrow 8-bit path (reads, byte-enable writes) ----
+    logic dmem_ld_en;
+    assign dmem_ld_en = scan_owns_mem & scan_sel_dmem & scan_we;
 
-    always_comb begin
-        if (scan_owns_mem && scan_sel_dmem) begin
-            dmem_req=scan_we; dmem_we=scan_we; dmem_be=4'b1111;
-            dmem_addr=scan_byte_addr; dmem_wdata=scan_wdata;
-        end else begin
-            dmem_req=data_req_i; dmem_we=data_we_i; dmem_be=data_be_i;
-            dmem_addr=data_addr_i; dmem_wdata=data_wdata_i;
-        end
-    end
-
-    mem_wrapper u_dmem (
+    dmem_narrow_top u_dmem (
         .clk(clk), .rst_n(rst_n),
-        .req(dmem_req), .gnt(data_gnt_o), .we(dmem_we), .be(dmem_be),
-        .addr(dmem_addr), .wdata(dmem_wdata),
-        .rvalid(data_rvalid_o), .rdata(data_rdata_o)
+        .req(data_req_i), .gnt(data_gnt_o), .we(data_we_i), .be(data_be_i),
+        .addr(data_addr_i), .wdata(data_wdata_i),
+        .rvalid(data_rvalid_o), .rdata(data_rdata_o),
+        .ld_word_en(dmem_ld_en), .ld_word_addr(scan_addr),
+        .ld_word_data(scan_wdata), .ld_busy()
     );
 endmodule
