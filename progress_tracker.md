@@ -70,24 +70,32 @@ Integration proceeds incrementally: each version wires one additional block into
 | v0.7 | On-chip clock generator drives downstream logic | `tb_clk_gen_top` — generated clock advances a counter, gates cleanly | ✅ |
 | v0.8 | Complete SoC: scan-load program drives GPIO + UART + SPI | `tb_chip_full` — one program, all three peripherals verified in one run | ✅ |
 
-## Phase E — Synthesis → Netlist ⬜
-| Item | Status |
-|------|--------|
-| Yosys synthesis script (macros black-boxed) | ⬜ |
-| Timing/area report | ⬜ |
-| Setup-violation closure | ⬜ |
-| Gate-level simulation (RTL vs. netlist equivalence) | ⬜ |
-| `chip_top.nl.v` — deliverable netlist | ⬜ |
+## Phase E — Synthesis → Netlist ✅
+| Item | Status | Result |
+|------|--------|--------|
+| Yosys synthesis script (macros black-boxed) | ✅ | `syn_*.ys`, `syn_netlist.ys` |
+| Timing/area report | ✅ | `AREA_REPORT.md`, `TIMING_REPORT.md` |
+| Setup-violation closure | ✅ | worst slack +113 ns (MET), Fmax ~147 MHz |
+| Gate-level simulation (RTL vs. netlist equivalence) | ✅ | `tb/tb_chip_gate.sv` — GPIO/UART/SPI match RTL |
+| `chip_top.nl.v` — deliverable netlist | ✅ | 1,235 std cells + Ibex/SRAM black boxes |
+
+### Key result: fits 1 mm²
+The chip synthesizes to **0.911 mm² with pads / 0.761 mm² without pads**, under
+the 1 mm² target with 8.9% margin. This required a **narrow-memory redesign**:
+instruction and data memories are single 8-bit SRAM macros with byte gather/
+scatter units (a 32-bit memory needs 4 macros per bank and does not fit). The
+full SoC boots and drives GPIO+UART+SPI in both RTL and gate-level simulation.
+See `AREA_REPORT.md` and `TIMING_REPORT.md`.
 ---
 ## Target specifications
 | Parameter | Value |
 |-----------|-------|
 | CPU | Ibex RV32IMC |
-| Memory | 4 KB SRAM (2 KB instruction / 2 KB data) |
+| Memory | Narrow 8-bit: 512 B imem (1×512×8) + 64 B dmem (1×64×8), gather/scatter |
 | Peripherals | GPIO, UART, SPI |
 | Bus | Two-tier AHB-Lite + APB |
 | Process | GF180MCU (180nm) |
-| Core area budget | 2051 × 2051 µm |
+| Die area budget | 1000 × 1000 µm (1 mm²) — achieved 0.911 mm² |
 
 ## Repository layout
 
