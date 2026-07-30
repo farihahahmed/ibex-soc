@@ -1,0 +1,9 @@
+# syn_gpio.ys - first synthesis run: gpio block, to prove the flow.
+read_verilog -sv rtl/gpio.sv
+hierarchy -check -top gpio
+synth -top gpio -flatten
+dfflibmap -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+abc -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+clean
+stat -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+write_verilog -noattr syn_out/gpio.nl.v

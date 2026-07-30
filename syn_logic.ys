@@ -1,0 +1,23 @@
+read_verilog sram_blackbox.v
+read_verilog -sv rtl/rst_sync.sv
+read_verilog -sv rtl/sram_bank_2k.sv
+read_verilog -sv rtl/mem_wrapper.sv
+read_verilog -sv rtl/mem_subsystem.sv
+read_verilog -sv rtl/ibex_to_ahb.sv
+read_verilog -sv rtl/ahb_interconnect.sv
+read_verilog -sv rtl/ahb_mem.sv
+read_verilog -sv rtl/ahb_to_apb.sv
+read_verilog -sv rtl/apb_decoder.sv
+read_verilog -sv rtl/gpio.sv
+read_verilog -sv rtl/apb_gpio.sv
+read_verilog -sv rtl/uart.sv
+read_verilog -sv rtl/apb_uart.sv
+read_verilog -sv rtl/spi.sv
+read_verilog -sv rtl/apb_spi.sv
+read_verilog -sv rtl/scan_chain.sv
+read_verilog -sv rtl/test_fsm.sv
+synth
+dfflibmap -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+abc -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+clean
+stat -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib

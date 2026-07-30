@@ -53,14 +53,8 @@ module tb_chip_full;
     task wake_all;
         begin
             dut.u_mem.u_imem.u_mem.u_sram.cen_fell=1'b1; dut.u_mem.u_imem.u_mem.u_sram.cen_dly=1'b1;
-            dut.u_mem.u_dmem.u_bank.lane[0].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[0].u_macro.cen_dly=1'b1;
-            dut.u_mem.u_dmem.u_bank.lane[1].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[1].u_macro.cen_dly=1'b1;
-            dut.u_mem.u_dmem.u_bank.lane[2].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[2].u_macro.cen_dly=1'b1;
-            dut.u_mem.u_dmem.u_bank.lane[3].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[3].u_macro.cen_dly=1'b1;
-            dut.u_dmem_slave.u_dmem.u_bank.lane[0].u_macro.cen_fell=1'b1; dut.u_dmem_slave.u_dmem.u_bank.lane[0].u_macro.cen_dly=1'b1;
-            dut.u_dmem_slave.u_dmem.u_bank.lane[1].u_macro.cen_fell=1'b1; dut.u_dmem_slave.u_dmem.u_bank.lane[1].u_macro.cen_dly=1'b1;
-            dut.u_dmem_slave.u_dmem.u_bank.lane[2].u_macro.cen_fell=1'b1; dut.u_dmem_slave.u_dmem.u_bank.lane[2].u_macro.cen_dly=1'b1;
-            dut.u_dmem_slave.u_dmem.u_bank.lane[3].u_macro.cen_fell=1'b1; dut.u_dmem_slave.u_dmem.u_bank.lane[3].u_macro.cen_dly=1'b1;
+            dut.u_mem.u_dmem.u_mem.u_sram.cen_fell=1'b1; dut.u_mem.u_dmem.u_mem.u_sram.cen_dly=1'b1;
+            dut.u_dmem_slave.u_dmem.u_mem.u_sram.cen_fell=1'b1; dut.u_dmem_slave.u_dmem.u_mem.u_sram.cen_dly=1'b1;
         end
     endtask
 
