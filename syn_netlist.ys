@@ -1,0 +1,11 @@
+read_verilog sram_blackbox.v
+read_verilog sram_blackbox_64.v
+read_verilog -sv /tmp/soc_flat3.v
+blackbox ibex_top
+hierarchy -top chip_top_full
+synth -top chip_top_full -flatten
+dfflibmap -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+abc -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
+clean
+write_verilog -noattr chip_top.nl.v
+stat -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib
