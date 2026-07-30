@@ -11,7 +11,7 @@ Front-end flow: RTL → simulation → synthesized netlist.
 | B | Architecture & design | ✅ |
 | C | RTL block development | ✅ (19/19) |
 | D | Integration | ✅ (v0.1–v0.8, complete SoC) |
-| E | Synthesis → netlist | ⬜ |
+| E | Synthesis → netlist | ✅ (fits 1 mm², netlist + timing + gate-sim) |
 ---
 ## Phase A — Foundations & Toolchain ✅
 | Item | Status |
@@ -33,7 +33,9 @@ Front-end flow: RTL → simulation → synthesized netlist.
 ## Phase C — RTL Block Development ✅
 | Block | Description | Verification | Status |
 |-------|-------------|--------------|--------|
-| `sram_bank_2k` | 2 KB bank (4× 512×8 macros, byte-lane writes) | 10 checks, 0 errors | ✅ |
+| `sram_bank_2k` | 2 KB bank (4× 512×8 macros) — *superseded by narrow memory in Phase E* | 10 checks, 0 errors | ✅ |
+| `fetch_gather` / `imem_narrow` | Narrow 8-bit instruction memory (1× 512×8 + byte-gather fetch) | tb_fetch_gather, tb_imem_narrow_top, 0 errors | ✅ |
+| `dmem_narrow` / `ahb_mem` | Narrow 8-bit data memory (1× 64×8 + byte scatter/gather + AHB wait-states) | tb_dmem_narrow, tb_ahb_mem, 0 errors | ✅ |
 | `mem_wrapper` | Ibex req/gnt/rvalid → SRAM interface | reads/writes, 0 errors | ✅ |
 | `rst_sync` | Two-flop reset synchronizer (async assert, sync de-assert) | timing checks, 0 errors | ✅ |
 | `mem_subsystem` | rst_sync + imem + dmem, with scan-load write path | both ports + scan load, 0 errors | ✅ |
