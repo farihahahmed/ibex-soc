@@ -1,6 +1,6 @@
 # Ibex SoC on GF180MCU — Detailed Schematic Review
 
-**Team A45 — ColumbiaGals** · Columbia University
+**Team A45 — ColumbiaGals** · 
 Project: RISC-V System-on-Chip with the Ibex 32-bit core, open GF180MCU (180 nm), open-source RTL-to-GDSII flow.
 
 This review reflects the **as-built RTL**: every block below is written, lints clean, and passes a self-checking simulation. The full SoC has been integrated and runs a program end-to-end. Status here is what the code actually does, not a plan.
