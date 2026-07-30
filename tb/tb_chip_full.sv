@@ -52,10 +52,7 @@ module tb_chip_full;
 
     task wake_all;
         begin
-            dut.u_mem.u_imem.u_bank.lane[0].u_macro.cen_fell=1'b1; dut.u_mem.u_imem.u_bank.lane[0].u_macro.cen_dly=1'b1;
-            dut.u_mem.u_imem.u_bank.lane[1].u_macro.cen_fell=1'b1; dut.u_mem.u_imem.u_bank.lane[1].u_macro.cen_dly=1'b1;
-            dut.u_mem.u_imem.u_bank.lane[2].u_macro.cen_fell=1'b1; dut.u_mem.u_imem.u_bank.lane[2].u_macro.cen_dly=1'b1;
-            dut.u_mem.u_imem.u_bank.lane[3].u_macro.cen_fell=1'b1; dut.u_mem.u_imem.u_bank.lane[3].u_macro.cen_dly=1'b1;
+            dut.u_mem.u_imem.u_mem.u_sram.cen_fell=1'b1; dut.u_mem.u_imem.u_mem.u_sram.cen_dly=1'b1;
             dut.u_mem.u_dmem.u_bank.lane[0].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[0].u_macro.cen_dly=1'b1;
             dut.u_mem.u_dmem.u_bank.lane[1].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[1].u_macro.cen_dly=1'b1;
             dut.u_mem.u_dmem.u_bank.lane[2].u_macro.cen_fell=1'b1; dut.u_mem.u_dmem.u_bank.lane[2].u_macro.cen_dly=1'b1;
@@ -119,10 +116,10 @@ module tb_chip_full;
         // READBACK: what actually got loaded into imem at each program word?
         for (i=0;i<NWORDS;i=i+1) begin
             $display("  imem[word %0d, byte 0x%02h] = 0x%02h%02h%02h%02h", BASE_WORD+i, (BASE_WORD+i)*4,
-                dut.u_mem.u_imem.u_bank.lane[3].u_macro.mem[BASE_WORD+i],
-                dut.u_mem.u_imem.u_bank.lane[2].u_macro.mem[BASE_WORD+i],
-                dut.u_mem.u_imem.u_bank.lane[1].u_macro.mem[BASE_WORD+i],
-                dut.u_mem.u_imem.u_bank.lane[0].u_macro.mem[BASE_WORD+i]);
+                dut.u_mem.u_imem.u_mem.u_sram.mem[(BASE_WORD+i)*4+3],
+                dut.u_mem.u_imem.u_mem.u_sram.mem[(BASE_WORD+i)*4+2],
+                dut.u_mem.u_imem.u_mem.u_sram.mem[(BASE_WORD+i)*4+1],
+                dut.u_mem.u_imem.u_mem.u_sram.mem[(BASE_WORD+i)*4+0]);
         end
 
         @(negedge clk); load_done=1; @(posedge clk); @(negedge clk); load_done=0;
