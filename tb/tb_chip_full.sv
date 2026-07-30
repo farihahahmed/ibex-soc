@@ -20,6 +20,12 @@ module tb_chip_full;
     );
 
     initial clk=0; always #5 clk=~clk;
+
+    // waveform dump for GTKWave
+    initial begin
+        $dumpfile("chip_full.vcd");
+        $dumpvars(0, tb_chip_full);
+    end
     localparam int BIT_CYCLES = CLK_FREQ/BAUD_RATE;
 
     localparam int NWORDS = 10;
