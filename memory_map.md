@@ -6,7 +6,7 @@ Every device shares the CPU's data port and is selected by address. The bus deco
 |--------|-------|-----|------|----------------|
 | Instruction memory | `0x0000_0000` | `0x0000_01FF` | 512 B | 1× 512×8 SRAM (narrow) |
 | Data memory | `0x0000_0000` (AHB slave) | `0x0000_003F` | 64 B | 1× 64×8 SRAM (narrow) |
-| GPIO | `0x0001_0000` | `0x0001_000F` | 16 B | — |
+| GPIO | `0x0001_0000` | `0x0001_000F` | 16 B | 2 in / 5 out |
 | UART | `0x0002_0000` | `0x0002_000F` | 16 B | — |
 | SPI | `0x0003_0000` | `0x0003_00FF` | 256 B | — |
 

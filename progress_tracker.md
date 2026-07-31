@@ -39,7 +39,7 @@ Front-end flow: RTL → simulation → synthesized netlist.
 | `mem_wrapper` | Ibex req/gnt/rvalid → SRAM interface | reads/writes, 0 errors | ✅ |
 | `rst_sync` | Two-flop reset synchronizer (async assert, sync de-assert) | timing checks, 0 errors | ✅ |
 | `mem_subsystem` | rst_sync + imem + dmem, with scan-load write path | both ports + scan load, 0 errors | ✅ |
-| `gpio` | 8-pin GPIO, output reg + 2-flop input synchronizer | 4 checks, 0 errors | ✅ |
+| `gpio` | GPIO 2-in/5-out, output reg + 2-flop input synchronizer | tb_gpio, 0 errors | ✅ |
 | `ibex_to_ahb` | Ibex req/gnt/rvalid → AHB-Lite master adapter | via bus + integration tests | ✅ |
 | `ahb_interconnect` | AHB-Lite address decoder + response mux | routing + one-hot, 0 errors | ✅ |
 | `ahb_mem` | Data memory as AHB-Lite slave (zero-wait, self-contained) | address-discriminated reads, 0 errors | ✅ |
@@ -51,9 +51,9 @@ Front-end flow: RTL → simulation → synthesized netlist.
 | `apb_uart` | UART as APB slave | full chain, 0 errors | ✅ |
 | `spi` | SPI master (Mode 0), clock divider + shift FSM | loopback, 0 errors | ✅ |
 | `apb_spi` | SPI as APB slave | full chain, 0 errors | ✅ |
-| `scan_chain` | Program-loading scan chain (serial shift-in → memory write) | serial load + read-back, 0 errors | ✅ |
-| `test_fsm` | Load/run sequencing FSM (gates CPU reset, mem ownership) | full state sequence, 0 errors | ✅ |
-| `clk_gen` | Ring-oscillator clock generator | behavioral sim model (real version = physical) | ✅ |
+| `scan_chain` | Scan chain: serial load → memory + FSM/clkgen config registers (scan_i0o1) | tb_scan_chain, 0 errors | ✅ |
+| `test_fsm` | 3-mode clock-gating FSM (idle/run/countdown), scan-configured | tb_test_fsm, 0 errors | ✅ |
+| `clk_gen` | Synthesizable clock generator (scan-programmable divider + ext fallback) | tb_clk_gen, 0 errors | ✅ |
 
 The full two-tier bus (Ibex → AHB-Lite → bridge → APB → peripherals) is verified end-to-end, with GPIO, UART, and SPI on APB at their memory-map addresses.
 
@@ -77,17 +77,19 @@ Integration proceeds incrementally: each version wires one additional block into
 |------|--------|--------|
 | Yosys synthesis script (macros black-boxed) | ✅ | `syn_*.ys`, `syn_netlist.ys` |
 | Timing/area report | ✅ | `AREA_REPORT.md`, `TIMING_REPORT.md` |
-| Setup-violation closure | ✅ | worst slack +113 ns (MET), Fmax ~147 MHz |
-| Gate-level simulation (RTL vs. netlist equivalence) | ✅ | `tb/tb_chip_gate.sv` — GPIO/UART/SPI match RTL |
-| `chip_top.nl.v` — deliverable netlist | ✅ | 1,235 std cells + Ibex/SRAM black boxes |
+| Setup-violation closure | ✅ | worst slack +113 ns (MET), Fmax ~150 MHz |
+| Gate-level simulation (RTL vs. netlist equivalence) | ✅ | `tb/tb_chip_gate_v2.sv` — GPIO/UART/SPI match RTL |
+| `chip_top.nl.v` — deliverable netlist | ✅ | 1,334 std cells + Ibex/SRAM black boxes, 20 signal pins |
 
-### Key result: fits 1 mm²
-The chip synthesizes to **0.911 mm² with pads / 0.761 mm² without pads**, under
-the 1 mm² target with 8.9% margin. This required a **narrow-memory redesign**:
-instruction and data memories are single 8-bit SRAM macros with byte gather/
-scatter units (a 32-bit memory needs 4 macros per bank and does not fit). The
-full SoC boots and drives GPIO+UART+SPI in both RTL and gate-level simulation.
-See `AREA_REPORT.md` and `TIMING_REPORT.md`.
+### Key result: fits 1 mm², 22 pins
+The chip synthesizes to **~0.82 mm² with pads / 0.74 mm² core**, under the 1 mm²
+target with ~18% margin, at **22 pins (20 signal + 2 power)**. Two design levers:
+(1) **narrow memory** — single 8-bit SRAM macros with byte gather/scatter (a 32-bit
+memory needs 4 macros per bank and does not fit); (2) **Columbia-style scan-configured
+control** — the scan chain writes the FSM and clock-generator config registers, so
+control/state need no dedicated pins. The full SoC scan-loads a program, scan-configures
+the FSM to RUN, and drives GPIO+UART+SPI in both RTL and gate-level simulation.
+See `AREA_REPORT.md`, `TIMING_REPORT.md`, `PINOUT.md`.
 ---
 ## Target specifications
 | Parameter | Value |
