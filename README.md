@@ -19,7 +19,7 @@ A RISC-V System-on-Chip on the open **GF180MCU (180 nm)** process, built around 
 
 ## Layout
 
-`rtl/` design · `tb/` testbenches · `chip_top.nl.v` netlist · `syn_netlist.ys` + `sta_timing.tcl` scripts · `older_version_of_design/` superseded modules
+`rtl/` design · `tb/` testbenches · `synthesis/chip_top.nl.v` netlist · `synthesis/syn_netlist.ys` + `synthesis/sta_timing.tcl` scripts · `older_version_of_design/` superseded modules
 
 ## Docs
 

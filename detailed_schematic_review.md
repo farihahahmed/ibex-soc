@@ -131,7 +131,7 @@ FSM control and state are **not** pins — they are configured and observed thro
 
 ### Synthesis, timing, area
 
-- **Netlist:** `chip_top.nl.v` — 1,334 GF180 standard cells + Ibex/SRAM black boxes, 20 signal pins.
+- **Netlist:** `synthesis/chip_top.nl.v` — 1,334 GF180 standard cells + Ibex/SRAM black boxes, 20 signal pins.
 - **Timing (OpenSTA):** setup MET, worst slack +113 ns at 8 MHz, Fmax ~150 MHz.
 - **Area:** ~0.82 mm² with pads / 0.74 mm² core — fits 1 mm² with ~18% margin. See [`AREA_REPORT.md`](AREA_REPORT.md), [`TIMING_REPORT.md`](TIMING_REPORT.md).
 

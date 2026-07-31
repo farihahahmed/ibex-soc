@@ -10,4 +10,4 @@ cd
 which
 *.tmp
 # scratch synthesis outputs regenerated on demand
-soc_flat_for_synth.v
+synthesis/soc_flat_for_synth.v

@@ -54,6 +54,6 @@ because Ibex ships simulation-only modules that are not synthesizable.
 ## Verification
 
 The full SoC was simulated (Verilator, RTL) and gate-level simulated (iverilog on
-`chip_top.nl.v`) booting a real program: it scan-loads the program, scan-configures
+`synthesis/chip_top.nl.v`) booting a real program: it scan-loads the program, scan-configures
 the FSM to RUN, and drives **GPIO, UART = 0x41, SPI = 0xB7** — all correct in both
 RTL and gate-level, confirming the netlist matches the RTL.
