@@ -1,21 +1,13 @@
-
-sim_sram
-sim_wrap
-*.vcd
-*.fst
-*.out
-*.vvp
-*.log
-.DS_Store
-EOD
-.DS_Store
+# build artifacts
 obj_dir/
-tb/tb_chip_smoke.sv
-tb/tb_chip_smoke2.sv
-tb/tb_chip_smoke3.sv
-tb/tb_chip_smoke4.sv
-
-# compiled simulation binaries (iverilog output) - regenerated on every run
-sim_*
+syn_out/
 sim
-*.vvp
+sim_*
+*.vcd
+# temp / OS
+.DS_Store
+cd
+which
+*.tmp
+# scratch synthesis outputs regenerated on demand
+soc_flat_for_synth.v
