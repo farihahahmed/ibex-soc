@@ -129,6 +129,8 @@ FSM control and state are **not** pins — they are configured and observed thro
 
 **Headline result:** a program shifted in over the scan chain, with the FSM scan-configured to RUN, executes on the Ibex core and drives all three peripherals in one run — in both RTL and gate-level simulation. This is the full bring-up path the real chip uses after tapeout.
 
+**Demo firmware (all three verified on the current design):** `piezo_tune.c` plays a tone on a GPIO pin (Happy Birthday), `primes.c` streams primes over UART, and `game.c` drives a dodge game on an SPI LCD — matching the Columbia three-option demo. See `firmware/`.
+
 ### Synthesis, timing, area
 
 - **Netlist:** `synthesis/chip_top.nl.v` — 1,334 GF180 standard cells + Ibex/SRAM black boxes, 20 signal pins.

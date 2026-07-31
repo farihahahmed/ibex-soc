@@ -90,6 +90,17 @@ control** — the scan chain writes the FSM and clock-generator config registers
 control/state need no dedicated pins. The full SoC scan-loads a program, scan-configures
 the FSM to RUN, and drives GPIO+UART+SPI in both RTL and gate-level simulation.
 See `AREA_REPORT.md`, `TIMING_REPORT.md`, `PINOUT.md`.
+
+### Demo firmware (all verified on the current design)
+Three programs in `firmware/`, matching the Columbia demo options:
+
+| Program | Demo | Drives | Verified |
+|---------|------|--------|----------|
+| `piezo_tune.c` | "Happy Birthday" tone | GPIO out[0] (piezo) | gpio toggles 1422× |
+| `primes.c` | primes streamed to PC terminal | UART tx | uart toggles 220× |
+| `game.c` | dodge game on SPI LCD | SPI sclk/mosi | spi toggles 13104× |
+
+Each fits the 512 B instruction memory; run via `tb/tb_demo.sv`.
 ---
 ## Target specifications
 | Parameter | Value |
