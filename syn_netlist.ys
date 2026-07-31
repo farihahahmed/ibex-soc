@@ -1,6 +1,6 @@
 read_verilog sram_blackbox.v
 read_verilog sram_blackbox_64.v
-read_verilog -sv /tmp/soc_flat3.v
+read_verilog -sv /tmp/soc_flat2.v
 blackbox ibex_top
 hierarchy -top chip_top_full
 synth -top chip_top_full -flatten
