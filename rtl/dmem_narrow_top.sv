@@ -18,7 +18,7 @@ module dmem_narrow_top (
     logic [31:0] b_addr;
     logic [7:0]  b_wdata, b_rdata;
 
-    dmem_narrow #(.ADDR_BITS(6)) u_mem (
+    dmem_narrow #(.ADDR_BITS(9)) u_mem (
         .clk(clk), .rst_n(rst_n),
         .b_req(b_req), .b_sel(b_sel), .b_we(b_we),
         .b_addr(b_addr), .b_wdata(b_wdata),
@@ -37,7 +37,7 @@ module dmem_narrow_top (
     logic [2:0]  issue_cnt, cap_cnt;
     logic [7:0]  b0,b1,b2,b3;
     logic [31:0] lword;
-    logic [5:0]  lbase;
+    logic [8:0]  lbase;
     logic [31:0] addr_aligned;
     assign addr_aligned = {addr[31:2], 2'b00};
 
@@ -51,7 +51,7 @@ module dmem_narrow_top (
                 D_IDLE: begin
                     if (ld_word_en) begin
                         lword <= ld_word_data;
-                        lbase <= {ld_word_addr[3:0], 2'b00};
+                        lbase <= {ld_word_addr[6:0], 2'b00};
                         state <= L_B0;
                     end else if (req) begin
                         base_addr <= addr_aligned;
@@ -114,10 +114,10 @@ module dmem_narrow_top (
             W_B1: if (be_lat[1]) begin b_req=1;b_we=1;b_addr=base_addr+1;b_wdata=wdata_lat[15:8];  end
             W_B2: if (be_lat[2]) begin b_req=1;b_we=1;b_addr=base_addr+2;b_wdata=wdata_lat[23:16]; end
             W_B3: if (be_lat[3]) begin b_req=1;b_we=1;b_addr=base_addr+3;b_wdata=wdata_lat[31:24]; end
-            L_B0: begin b_req=1;b_we=1;b_addr={26'b0,lbase}+0;b_wdata=lword[7:0];   end
-            L_B1: begin b_req=1;b_we=1;b_addr={26'b0,lbase}+1;b_wdata=lword[15:8];  end
-            L_B2: begin b_req=1;b_we=1;b_addr={26'b0,lbase}+2;b_wdata=lword[23:16]; end
-            L_B3: begin b_req=1;b_we=1;b_addr={26'b0,lbase}+3;b_wdata=lword[31:24]; end
+            L_B0: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+0;b_wdata=lword[7:0];   end
+            L_B1: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+1;b_wdata=lword[15:8];  end
+            L_B2: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+2;b_wdata=lword[23:16]; end
+            L_B3: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+3;b_wdata=lword[31:24]; end
             default: ;
         endcase
     end

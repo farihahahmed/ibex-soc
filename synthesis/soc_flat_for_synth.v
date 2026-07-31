@@ -1719,7 +1719,7 @@ module dmem_narrow_top (
 	reg [31:0] b_addr;
 	reg [7:0] b_wdata;
 	wire [7:0] b_rdata;
-	dmem_narrow #(.ADDR_BITS(6)) u_mem(
+	dmem_narrow #(.ADDR_BITS(9)) u_mem(
 		.clk(clk),
 		.rst_n(rst_n),
 		.b_req(b_req),
@@ -1741,7 +1741,7 @@ module dmem_narrow_top (
 	reg [7:0] b2;
 	reg [7:0] b3;
 	reg [31:0] lword;
-	reg [5:0] lbase;
+	reg [8:0] lbase;
 	wire [31:0] addr_aligned;
 	assign addr_aligned = {addr[31:2], 2'b00};
 	always @(posedge clk or negedge rst_n)
@@ -1764,7 +1764,7 @@ module dmem_narrow_top (
 				4'd0:
 					if (ld_word_en) begin
 						lword <= ld_word_data;
-						lbase <= {ld_word_addr[3:0], 2'b00};
+						lbase <= {ld_word_addr[6:0], 2'b00};
 						state <= 4'd9;
 					end
 					else if (req) begin
@@ -1871,25 +1871,25 @@ module dmem_narrow_top (
 			4'd9: begin
 				b_req = 1;
 				b_we = 1;
-				b_addr = {26'b00000000000000000000000000, lbase} + 0;
+				b_addr = {23'b00000000000000000000000, lbase} + 0;
 				b_wdata = lword[7:0];
 			end
 			4'd10: begin
 				b_req = 1;
 				b_we = 1;
-				b_addr = {26'b00000000000000000000000000, lbase} + 1;
+				b_addr = {23'b00000000000000000000000, lbase} + 1;
 				b_wdata = lword[15:8];
 			end
 			4'd11: begin
 				b_req = 1;
 				b_we = 1;
-				b_addr = {26'b00000000000000000000000000, lbase} + 2;
+				b_addr = {23'b00000000000000000000000, lbase} + 2;
 				b_wdata = lword[23:16];
 			end
 			4'd12: begin
 				b_req = 1;
 				b_we = 1;
-				b_addr = {26'b00000000000000000000000000, lbase} + 3;
+				b_addr = {23'b00000000000000000000000, lbase} + 3;
 				b_wdata = lword[31:24];
 			end
 			default:
@@ -1914,7 +1914,7 @@ module dmem_narrow (
 	b_rdata
 );
 	reg _sv2v_0;
-	parameter signed [31:0] ADDR_BITS = 6;
+	parameter signed [31:0] ADDR_BITS = 9;
 	input wire clk;
 	input wire rst_n;
 	input wire b_req;
@@ -1959,7 +1959,7 @@ module dmem_narrow (
 	end
 	supply1 vdd;
 	supply0 vss;
-	gf180mcu_fd_ip_sram__sram64x8m8wm1 u_sram(
+	gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram(
 		.CLK(clk),
 		.CEN(cen),
 		.GWEN(gwen),

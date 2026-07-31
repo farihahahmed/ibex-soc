@@ -1,7 +1,7 @@
 # Area Report — RISC-V SoC on GF180MCU (180 nm)
 
 **Target:** ≤ 1.0 mm² (1000 µm × 1000 µm die)
-**Result:** **~0.82 mm² with pads / 0.74 mm² core — FITS**
+**Result:** **~0.85 mm² core (pads not counted) — FITS**
 
 Logic area is from a real Yosys `synth → dfflibmap → abc → stat` run against the
 GF180MCU standard-cell library (`gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib`).
@@ -13,14 +13,14 @@ Pad area is estimated (final value depends on pad cells chosen at hardening).
 | Block | Area (µm²) | Area (mm²) | Method |
 |---|---:|---:|---|
 | Ibex RV32IMC core | 377,636 | 0.378 | Yosys (blackboxed here) |
-| Custom SoC logic (chip_top_full) | 48,791 | 0.049 | Yosys (this run) |
+| Custom SoC logic (chip_top_full) | 49,478 | 0.049 | Yosys (this run) |
 | imem SRAM macro (512×8) | 209,000 | 0.209 | datasheet |
-| dmem SRAM macro (64×8) | 101,000 | 0.101 | datasheet |
-| **Core subtotal (no pads)** | **736,427** | **0.736** | |
-| I/O pads (22 × ~3,922) | ~86,300 | ~0.086 | estimate |
-| **TOTAL (with pads)** | **~822,700** | **~0.82** | **FITS 1 mm²** |
+| dmem SRAM macro (512×8) | 209,000 | 0.209 | datasheet |
+| **Core subtotal (no pads)** | **845,114** | **0.845** | |
 
-Margin to the 1 mm² limit: **~0.18 mm² (~18%)**.
+| **TOTAL (core, pads excluded)** | **845,114** | **0.845** | **FITS 1 mm²** |
+
+Margin to the 1 mm² limit: **~0.155 mm² (~15.5%)**. Pads are not counted in the area budget (per reviewer). Data memory was increased from 64 B to 512 B (still a single 8-bit macro) using the freed headroom.
 
 ## Custom logic contents
 
