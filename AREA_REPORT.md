@@ -38,7 +38,7 @@ which pushes the chip over 1 mm² once the Ibex core and pads are included. Inst
 this design uses **single 8-bit SRAM macros** with byte gather/scatter units:
 - **Instruction memory:** one 512×8 macro + a byte-gather fetch unit that streams
   4 byte-reads and assembles each 32-bit instruction.
-- **Data memory:** one 64×8 macro + a scatter/gather unit for 32-bit loads and
+- **Data memory:** one 512×8 macro + a scatter/gather unit for 32-bit loads and
   byte-enabled stores, wrapped in an AHB-Lite slave with wait-states.
 
 This trades a few extra cycles per memory access (irrelevant for the demo) for a

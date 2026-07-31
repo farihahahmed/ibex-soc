@@ -14,13 +14,13 @@ A single-core RISC-V SoC loaded and run on real silicon through ~20 pins.
 | Spec | Value |
 |------|-------|
 | CPU | Ibex RV32IMC (small config, 2-stage pipeline, 3-cycle multiplier) |
-| Memory | Narrow 8-bit: 512 B instruction (1× 512×8) + 64 B data (1× 64×8), byte gather/scatter |
+| Memory | Narrow 8-bit: 512 B instruction (1× 512×8) + 512 B data (1× 512×8), byte gather/scatter |
 | Bus | Two-tier: AHB-Lite (memory) + APB (peripherals) via a bridge |
 | Peripherals | GPIO (2 in / 5 out), UART (TX + RX), SPI master (Mode 0, output) |
 | Bring-up / debug | Scan chain (loads program + FSM/clkgen config, readback) + 3-mode clock-gating FSM |
 | Clock | On-chip scan-programmable clock generator + external-clock fallback |
 | Process | GlobalFoundries 180 nm (open PDK), open-source flow |
-| **Die area** | ~0.82 mm² with pads (0.74 mm² core) — fits 1 mm² |
+| **Die area** | ~0.845 mm² core (pads not counted) — fits 1 mm² |
 | **Pins** | 22 total (20 signal + 2 power) |
 | **Max frequency** | ~150 MHz (setup MET) |
 
@@ -46,7 +46,7 @@ Every block is implemented and verified.
 |-------|------|--------|
 | `ibex_top` | RV32IMC core (lowRISC IP, blackboxed in synth) | ✅ |
 | `imem_narrow` / `fetch_gather` | 512×8 SRAM + byte-gather 32-bit fetch | ✅ |
-| `dmem_narrow` / `ahb_mem` | 64×8 SRAM + byte scatter/gather + AHB wait-states | ✅ |
+| `dmem_narrow` / `ahb_mem` | 512×8 SRAM + byte scatter/gather + AHB wait-states | ✅ |
 | `mem_subsystem` | imem + dmem + reset sync + scan-load path | ✅ |
 | `ibex_to_ahb` | Ibex data port → AHB-Lite master | ✅ |
 | `ahb_interconnect` | address decode + response mux | ✅ |
@@ -84,7 +84,7 @@ FSM control and state are **not** pins — they are configured and observed thro
 
 ## 5. Design Assumptions & Known Simplifications
 
-- **Narrow memory (key area lever).** A 32-bit memory needs four 8-bit SRAM macros per bank and does not fit 1 mm². Instead, single 8-bit macros are fronted by byte gather/scatter units: instruction fetch streams 4 byte-reads and assembles a word; data stores split into byte-enabled byte-writes; the data memory is an AHB slave that inserts wait-states during the multi-cycle access. The address map is unchanged — the CPU sees a normal 32-bit memory — but capacity is small (512 B code, 64 B data), sufficient for the demo programs.
+- **Narrow memory (key area lever).** A 32-bit memory needs four 8-bit SRAM macros per bank and does not fit 1 mm². Instead, single 8-bit macros are fronted by byte gather/scatter units: instruction fetch streams 4 byte-reads and assembles a word; data stores split into byte-enabled byte-writes; the data memory is an AHB slave that inserts wait-states during the multi-cycle access. The address map is unchanged — the CPU sees a normal 32-bit memory — but capacity is small (512 B code, 512 B data), sufficient for the demo programs.
 - **Scan-configured control.** The scan chain writes the FSM mode/cycle-count and clock-generator config registers, so no dedicated control pins are needed. Debug is via the FSM's countdown mode (run N cycles then freeze) plus scan-out of memory contents.
 - **Clock generator — synthesizable divider.** A frequency divider with a scan-writable divide value, plus an external-clock fallback (`clk_int`), replacing the earlier behavioral ring-oscillator model. Keeps the chip operable if the internal generator misbehaves on silicon.
 - **Scan reaches memory, not CPU registers.** Readback covers memory contents (verify what the CPU computed/stored); live CPU-register scan is not implemented (memory-based debug is sufficient for the demo).
@@ -133,7 +133,7 @@ FSM control and state are **not** pins — they are configured and observed thro
 
 - **Netlist:** `synthesis/chip_top.nl.v` — 1,334 GF180 standard cells + Ibex/SRAM black boxes, 20 signal pins.
 - **Timing (OpenSTA):** setup MET, worst slack +113 ns at 8 MHz, Fmax ~150 MHz.
-- **Area:** ~0.82 mm² with pads / 0.74 mm² core — fits 1 mm² with ~18% margin. See [`AREA_REPORT.md`](AREA_REPORT.md), [`TIMING_REPORT.md`](TIMING_REPORT.md).
+- **Area:** ~0.845 mm² core (pads not counted) — fits 1 mm² with ~15.5% margin. See [`AREA_REPORT.md`](AREA_REPORT.md), [`TIMING_REPORT.md`](TIMING_REPORT.md).
 
 ---
 

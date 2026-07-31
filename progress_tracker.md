@@ -35,7 +35,7 @@ Front-end flow: RTL → simulation → synthesized netlist.
 |-------|-------------|--------------|--------|
 | `sram_bank_2k` | 2 KB bank (4× 512×8 macros) — *superseded by narrow memory in Phase E* | 10 checks, 0 errors | ✅ |
 | `fetch_gather` / `imem_narrow` | Narrow 8-bit instruction memory (1× 512×8 + byte-gather fetch) | tb_fetch_gather, tb_imem_narrow_top, 0 errors | ✅ |
-| `dmem_narrow` / `ahb_mem` | Narrow 8-bit data memory (1× 64×8 + byte scatter/gather + AHB wait-states) | tb_dmem_narrow, tb_ahb_mem, 0 errors | ✅ |
+| `dmem_narrow` / `ahb_mem` | Narrow 8-bit data memory (1× 512×8 + byte scatter/gather + AHB wait-states) | tb_dmem_narrow, tb_ahb_mem, 0 errors | ✅ |
 | `mem_wrapper` | Ibex req/gnt/rvalid → SRAM interface | reads/writes, 0 errors | ✅ |
 | `rst_sync` | Two-flop reset synchronizer (async assert, sync de-assert) | timing checks, 0 errors | ✅ |
 | `mem_subsystem` | rst_sync + imem + dmem, with scan-load write path | both ports + scan load, 0 errors | ✅ |
@@ -82,8 +82,8 @@ Integration proceeds incrementally: each version wires one additional block into
 | `chip_top.nl.v` — deliverable netlist | ✅ | 1,334 std cells + Ibex/SRAM black boxes, 20 signal pins |
 
 ### Key result: fits 1 mm², 22 pins
-The chip synthesizes to **~0.82 mm² with pads / 0.74 mm² core**, under the 1 mm²
-target with ~18% margin, at **22 pins (20 signal + 2 power)**. Two design levers:
+The chip synthesizes to **~0.845 mm² core** (pads not counted), under the 1 mm²
+target with ~15.5% margin, at **22 pins (20 signal + 2 power)**. Two design levers:
 (1) **narrow memory** — single 8-bit SRAM macros with byte gather/scatter (a 32-bit
 memory needs 4 macros per bank and does not fit); (2) **Columbia-style scan-configured
 control** — the scan chain writes the FSM and clock-generator config registers, so
@@ -95,11 +95,11 @@ See `AREA_REPORT.md`, `TIMING_REPORT.md`, `PINOUT.md`.
 | Parameter | Value |
 |-----------|-------|
 | CPU | Ibex RV32IMC |
-| Memory | Narrow 8-bit: 512 B imem (1×512×8) + 64 B dmem (1×64×8), gather/scatter |
+| Memory | Narrow 8-bit: 512 B imem (1×512×8) + 512 B dmem (1×512×8), gather/scatter |
 | Peripherals | GPIO, UART, SPI |
 | Bus | Two-tier AHB-Lite + APB |
 | Process | GF180MCU (180nm) |
-| Die area budget | 1000 × 1000 µm (1 mm²) — achieved 0.911 mm² |
+| Die area budget | 1000 × 1000 µm (1 mm²) — achieved 0.845 mm² core (pads excluded) |
 
 ## Repository layout
 

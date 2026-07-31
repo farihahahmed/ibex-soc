@@ -27,9 +27,9 @@ bank and does not fit. See `AREA_REPORT.md` for the full reasoning.
 
 Practical consequence: the **address map is unchanged** (the CPU sees the same
 addresses as a normal memory), but the **capacities are smaller** — 512 B of
-instruction memory and 64 B of data memory. Programs must fit in 512 B of code;
+instruction memory and 512 B of data memory. Programs must fit in 512 B of code;
 the demo programs use ~0 bytes of data memory (all scalars live in registers), so
-64 B of scratch is ample. A larger memory would just use a deeper single macro
+512 B of scratch is ample. A larger memory would just bank additional macros
 (e.g. 128×8 or 256×8) — still one macro, minimal area change.
 
 The data memory is implemented as the AHB slave `ahb_mem` (the CPU's data port

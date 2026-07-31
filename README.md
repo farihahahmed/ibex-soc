@@ -4,11 +4,11 @@ A RISC-V System-on-Chip on the open **GF180MCU (180 nm)** process, built around 
 
 | | |
 |---|---|
-| **Die area** | ~0.82 mm² with pads — fits 1 mm² |
+| **Die area** | ~0.845 mm² core (pads not counted) — fits 1 mm² |
 | **Pins** | 22 (20 signal + 2 power) |
 | **Max frequency** | ~150 MHz (setup MET) |
 | CPU | Ibex RV32IMC (small) |
-| Memory | Narrow 8-bit: 512 B instr + 64 B data, byte gather/scatter |
+| Memory | Narrow 8-bit: 512 B instr + 512 B data, byte gather/scatter |
 | Bus | Two-tier AHB-Lite + APB |
 | Peripherals | GPIO (2 in / 5 out), UART, SPI |
 | Control/debug | Scan chain + 3-mode clock-gating FSM + on-chip clock generator (scan-configured) |
