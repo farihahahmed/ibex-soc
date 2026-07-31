@@ -14,7 +14,8 @@
 // ============================================================================
 
 module apb_gpio #(
-    parameter int NUM_IO = 8
+    parameter int NUM_OUT = 5,
+    parameter int NUM_IN  = 2
 )(
     input  logic        PCLK,          // APB clock (same system clock).
     input  logic        PRESETn,       // APB reset, active-low.
@@ -29,8 +30,8 @@ module apb_gpio #(
     output logic        PREADY,        // I'm done. Always 1 (GPIO is fast).
 
     // ---- the pins ----
-    output logic [NUM_IO-1:0] gpio_out,
-    input  logic [NUM_IO-1:0] gpio_in
+    output logic [NUM_OUT-1:0] gpio_out,
+    input  logic [NUM_IN-1:0]  gpio_in
 );
 
     assign PREADY = 1'b1;              // zero-wait: I'm always ready.
@@ -48,7 +49,7 @@ module apb_gpio #(
     assign gpio_sel = access_phase;               // select gpio during the access phase.
     assign gpio_we  = access_phase & PWRITE;      // write only if it's a write access.
 
-    gpio #(.NUM_IO(NUM_IO)) u_gpio (
+    gpio #(.NUM_OUT(NUM_OUT), .NUM_IN(NUM_IN)) u_gpio (
         .clk   (PCLK),
         .rst_n (PRESETn),
         .sel   (gpio_sel),

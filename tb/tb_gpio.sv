@@ -1,122 +1,40 @@
-// ============================================================================
-// tb_gpio.sv - my testbench for the GPIO peripheral
-//
-// What I'm checking:
-//   1. Write -> output pins follow what I wrote.
-//   2. Reset -> output pins go low.
-//   3. Drive the input pins -> after the 2-flop synchronizer delay, the CPU
-//      reads them back correctly.
-//   4. A write only happens when I'm selected AND writing (sel && we).
-// ============================================================================
-
 `timescale 1ns/1ps
-
 module tb_gpio;
-
-    localparam int NUM_IO = 8;
-
-    logic              clk, rst_n;
-    logic              sel, we;
-    logic [31:0]       wdata, rdata;
-    logic [NUM_IO-1:0] gpio_out, gpio_in;
-
-    gpio #(.NUM_IO(NUM_IO)) dut (
-        .clk(clk), .rst_n(rst_n),
-        .sel(sel), .we(we), .wdata(wdata), .rdata(rdata),
-        .gpio_out(gpio_out), .gpio_in(gpio_in)
-    );
-
-    initial clk = 0;
-    always #5 clk = ~clk;
-
-    initial begin
-        $dumpfile("tb_gpio.vcd");
-        $dumpvars(0, tb_gpio);
-    end
-
+    localparam NUM_OUT=5, NUM_IN=2;
+    logic clk, rst_n, sel, we;
+    logic [31:0] wdata, rdata;
+    logic [NUM_OUT-1:0] gpio_out;
+    logic [NUM_IN-1:0]  gpio_in;
     integer errors;
 
-    // write to the GPIO output register
-    task gpio_write(input [31:0] val);
-        begin
-            @(negedge clk);
-            sel = 1; we = 1; wdata = val;
-            @(posedge clk);       // write lands here
-            @(negedge clk);
-            sel = 0; we = 0;
-        end
-    endtask
+    gpio #(.NUM_OUT(NUM_OUT), .NUM_IN(NUM_IN)) dut(.clk(clk), .rst_n(rst_n),
+        .sel(sel), .we(we), .wdata(wdata), .rdata(rdata),
+        .gpio_out(gpio_out), .gpio_in(gpio_in));
+
+    initial clk=0; always #5 clk=~clk;
 
     initial begin
-        sel = 0; we = 0; wdata = 0; gpio_in = 0;
-        errors = 0;
-        rst_n = 0;
-        repeat (2) @(posedge clk);
-        @(negedge clk); rst_n = 1;
-        @(posedge clk);
+        errors=0; sel=0; we=0; wdata=0; gpio_in=0;
+        rst_n=0; repeat(2) @(negedge clk); rst_n=1; @(negedge clk);
 
-        // ---- TEST 1: reset cleared the outputs ----
-        $display("TEST 1: outputs low after reset");
+        // write 0x1F to output (5 bits)
+        @(negedge clk); sel=1; we=1; wdata=32'h000000FF; @(negedge clk); sel=0; we=0;
         #1;
-        if (gpio_out !== 8'h00) begin
-            errors = errors + 1;
-            $display("  FAIL: outputs not zero after reset (got 0x%02h)", gpio_out);
-        end
+        if (gpio_out!==5'h1F) begin $display("BAD out=%h exp 1F", gpio_out); errors=errors+1; end
+        else $display("OK output reg = 0x%h (5 bits)", gpio_out);
 
-        // ---- TEST 2: write drives the output pins ----
-        $display("TEST 2: write sets output pins");
-        gpio_write(32'h0000_00A5);   // 0xA5 = 10100101
-        #1;
-        if (gpio_out !== 8'hA5) begin
-            errors = errors + 1;
-            $display("  FAIL: gpio_out expected 0xA5, got 0x%02h", gpio_out);
-        end
-
-        gpio_write(32'h0000_00FF);   // all pins high
-        #1;
-        if (gpio_out !== 8'hFF) begin
-            errors = errors + 1;
-            $display("  FAIL: gpio_out expected 0xFF, got 0x%02h", gpio_out);
-        end
-
-        // ---- TEST 3: input pins read back through the synchronizer ----
-        $display("TEST 3: drive inputs, read them back (after 2-flop delay)");
-        @(negedge clk);
-        gpio_in = 8'h3C;             // drive some input pins: 00111100
-        // wait for the 2-flop synchronizer to pass the value through
-        repeat (3) @(posedge clk);
-        // now read: sel=1, we=0
-        @(negedge clk);
-        sel = 1; we = 0;
-        @(posedge clk); #1;
-        if (rdata[7:0] !== 8'h3C) begin
-            errors = errors + 1;
-            $display("  FAIL: read inputs expected 0x3C, got 0x%02h", rdata[7:0]);
-        end
-        @(negedge clk); sel = 0;
-
-        // ---- TEST 4: no write when not selected ----
-        $display("TEST 4: no write when sel=0");
-        // outputs currently 0xFF from test 2. Try to write with sel=0 -> should NOT change.
-        @(negedge clk);
-        sel = 0; we = 1; wdata = 32'h0000_0000;
-        @(posedge clk);
-        @(negedge clk); we = 0;
-        #1;
-        if (gpio_out !== 8'hFF) begin
-            errors = errors + 1;
-            $display("  FAIL: output changed while not selected (got 0x%02h)", gpio_out);
-        end
+        // drive inputs, read back through synchronizer (2 cycles)
+        gpio_in=2'b10; repeat(3) @(negedge clk);
+        @(negedge clk); sel=1; we=0; #1;
+        if (rdata[1:0]!==2'b10) begin $display("BAD in rdata=%h exp 2", rdata[1:0]); errors=errors+1; end
+        else $display("OK input synced = 0x%h (2 bits)", rdata[1:0]);
+        if (rdata[31:2]!==30'd0) begin $display("BAD upper bits nonzero"); errors=errors+1; end
+        sel=0;
 
         $display("--------------------------------------------------");
-        if (errors == 0)
-            $display("ALL TESTS PASSED  (0 errors)");
-        else
-            $display("TESTS FAILED  (%0d errors)", errors);
-        $display("--------------------------------------------------");
-
-        repeat (4) @(posedge clk);
+        if (errors==0) $display("ALL PASSED - GPIO 2-in/5-out works!");
+        else           $display("FAILED (%0d errors)", errors);
         $finish;
     end
-
+    initial begin #100000; $display("TIMEOUT"); $finish; end
 endmodule

@@ -14,7 +14,8 @@
 // ============================================================================
 
 module ahb_gpio #(
-    parameter int NUM_IO = 8
+    parameter int NUM_OUT = 5,
+    parameter int NUM_IN  = 2
 )(
     input  logic        HCLK,
     input  logic        HRESETn,
@@ -30,8 +31,8 @@ module ahb_gpio #(
     output logic        HRESP,         // 0 = OKAY. I never error.
 
     // ---- the actual pins ----
-    output logic [NUM_IO-1:0] gpio_out,
-    input  logic [NUM_IO-1:0] gpio_in
+    output logic [NUM_OUT-1:0] gpio_out,
+    input  logic [NUM_IN-1:0]  gpio_in
 );
 
     // I'm always ready and never error.
@@ -70,7 +71,7 @@ module ahb_gpio #(
     assign gpio_we  = write_phase;                 // write into gpio during the data phase.
     assign gpio_sel = write_phase | read_phase;    // selected for either.
 
-    gpio #(.NUM_IO(NUM_IO)) u_gpio (
+    gpio #(.NUM_OUT(NUM_OUT), .NUM_IN(NUM_IN)) u_gpio (
         .clk   (HCLK),
         .rst_n (HRESETn),
         .sel   (gpio_sel),
