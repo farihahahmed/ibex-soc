@@ -11,3 +11,5 @@ which
 *.tmp
 # scratch synthesis outputs regenerated on demand
 synthesis/soc_flat_for_synth.v
+sim_dm
+sim_gate2
