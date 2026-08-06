@@ -37,7 +37,16 @@ module test_fsm (
         endcase
     end
 
-    assign cpu_clk       = clk & run_gate;
+    // glitch-free clock gate: sample the enable on the FALLING edge of clk so it
+    // is stable while clk is high (no chopped pulses). Neg-edge flop maps to a
+    // standard cell -- no latch inference.
+    logic run_gate_q;
+    always_ff @(negedge clk or negedge rst_n) begin
+        if (!rst_n) run_gate_q <= 1'b0;
+        else        run_gate_q <= run_gate;
+    end
+
+    assign cpu_clk       = clk & run_gate_q;
     assign scan_owns_mem = (mode == IDLE);
     assign mode_o        = mode;
 endmodule

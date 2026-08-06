@@ -1,0 +1,23 @@
+{
+  "DESIGN_NAME": "ibex_top",
+  "VERILOG_FILES": [
+    "dir::ibex_top.flat.v",
+    "dir::prim_clock_gating.v"
+  ],
+  "CLOCK_PORT": "clk_i",
+  "CLOCK_PERIOD": 100,
+  "PDK": "gf180mcuD",
+  "STD_CELL_LIBRARY": "gf180mcu_fd_sc_mcu7t5v0",
+  "FP_CORE_UTIL": 55,
+  "RUN_HEURISTIC_DIODE_INSERTION": false,
+  "GRT_ALLOW_CONGESTION": true,
+  "DRT_ANTENNA_REPAIR_ITERS": 0,
+  "ERROR_ON_MAGIC_DRC": false,
+  "PDN_CORE_RING": true,
+  "PDN_CORE_RING_VWIDTH": 3.1,
+  "PDN_CORE_RING_HWIDTH": 3.1,
+  "PDN_CORE_RING_VSPACING": 1.7,
+  "PDN_CORE_RING_HSPACING": 1.7,
+  "PDN_CORE_RING_VOFFSET": 2.0,
+  "PDN_CORE_RING_HOFFSET": 2.0
+}

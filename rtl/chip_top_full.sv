@@ -45,7 +45,7 @@ module chip_top_full import ibex_pkg::*; #(
         .scan_in(scan_in), .scan_shift(scan_shift), .scan_load(scan_load),
         .scan_i0o1(scan_i0o1), .scan_out(scan_out),
         .mem_we(scan_mem_we), .mem_addr(scan_mem_addr),
-        .mem_wdata(scan_mem_wdata), .mem_rdata(scan_mem_rdata),
+        .mem_wdata(scan_mem_wdata), .mem_rdata(32'b0),
         .fsm_cfg_load(fsm_cfg_load), .fsm_mode(fsm_mode), .fsm_count(fsm_count),
         .clk_cfg_load(clkgen_cfg_load), .clk_int(clkgen_int), .clk_div(clkgen_div)
     );
@@ -67,16 +67,12 @@ module chip_top_full import ibex_pkg::*; #(
     assign instr_rdata_intg = 7'b0;
     assign data_rdata_intg  = 7'b0;
 
-    ibex_top #(
-        .PMPEnable(1'b0), .MHPMCounterNum(0), .RV32E(1'b0),
-        .RV32M(ibex_pkg::RV32MFast), .RV32B(ibex_pkg::RV32BNone),
-        .ICache(1'b0), .DbgTriggerEn(1'b0), .SecureIbex(1'b0)
-    ) u_ibex (
+    ibex_top u_ibex (
         .clk_i(cpu_clk), .rst_ni(rst_n),
         .test_en_i(1'b0), .scan_rst_ni(1'b1),
-        .ram_cfg_icache_tag_i ('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+        .ram_cfg_icache_tag_i (24'b0),
         .ram_cfg_icache_tag_o (),
-        .ram_cfg_icache_data_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+        .ram_cfg_icache_data_i(24'b0),
         .ram_cfg_icache_data_o(),
         .hart_id_i(32'b0), .boot_addr_i(32'h0000_0000),
         .instr_req_o(instr_req), .instr_gnt_i(instr_gnt), .instr_rvalid_i(instr_rvalid),

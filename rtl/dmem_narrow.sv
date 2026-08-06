@@ -27,10 +27,9 @@ module dmem_narrow #(
         end
     end
 
-    supply1 vdd; supply0 vss;
     gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram (
         .CLK(clk), .CEN(cen), .GWEN(gwen), .WEN(wen),
-        .A(a), .D(d), .Q(q), .VDD(vdd), .VSS(vss)
+        .A(a), .D(d), .Q(q)
     );
 
     logic rd_pending;
