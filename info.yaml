@@ -1,0 +1,19 @@
+# ----- ------ ----- ----- ------ ----- ----- ------ -----
+# Chipathon 2026: Project configuration
+# LICENSE: Apache License Version 2.0
+# http://www.apache.org/licenses/
+# ----- ------ ----- ----- ------ ----- ----- ------ -----
+
+# data will be pulled from main branch of the repo.
+# please be sure that the main branch contains the data you want to submit.
+# This file will be updated with more information later
+
+# ======================================================
+# Project metadata (used for documentation / review)
+# ======================================================
+project:
+  title: "Ibex SoC on GF180MCU"
+  team: "A45 - ColumbiaGals"
+  discord: "farihah__ahmed"
+  description: "RISC-V RV32IMC SoC: Ibex core, narrow 8-bit SRAM, AHB-Lite/APB bus, GPIO/UART/SPI, scan-configured control"
+  lvs_config: "lvs_config.json"
