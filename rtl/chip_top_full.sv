@@ -102,8 +102,6 @@ module chip_top_full import ibex_pkg::*; #(
         .clk(sys_clk), .rst_n_in(rst_n),
         .instr_req_i(instr_req), .instr_gnt_o(instr_gnt), .instr_addr_i(instr_addr),
         .instr_rvalid_o(instr_rvalid), .instr_rdata_o(instr_rdata),
-        .data_req_i(1'b0), .data_gnt_o(), .data_we_i(1'b0), .data_be_i(4'b0),
-        .data_addr_i(32'b0), .data_wdata_i(32'b0), .data_rvalid_o(), .data_rdata_o(),
         .scan_owns_mem(scan_owns_mem),
         .scan_we(scan_mem_we), .scan_addr(scan_mem_addr), .scan_wdata(scan_mem_wdata),
         .scan_sel_dmem(1'b0)
