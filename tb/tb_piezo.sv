@@ -20,7 +20,7 @@ module tb_piezo;
 
     initial clk=0; always #5 clk=~clk;
 
-    localparam int NWORDS=31, BASE_WORD=32;
+    localparam int NWORDS=31, BASE_WORD=0;
     logic [31:0] prog [0:NWORDS-1];
     initial begin
 `include "g_tune_prog.svh"

@@ -19,7 +19,7 @@ module tb_demo;
     );
     initial clk=0; always #5 clk=~clk;
 
-    localparam int BASE_WORD=32;
+    localparam int BASE_WORD=0;
     logic [31:0] prog [0:`NWORDS-1];
     initial begin
 `include `PROGFILE

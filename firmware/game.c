@@ -3,7 +3,7 @@
 static void lcd(unsigned int c){ SPI = c; }
 #define W 16
 #define H 8
-void _start(void){
+__attribute__((section(".text.start"))) void _start(void){
     int player=W/2, obs_col=5, obs_row=0, score=0;
     unsigned int seed=12345;
     while(1){
