@@ -965,7 +965,7 @@ module dmem_narrow (
 	b_rdata
 );
 	reg _sv2v_0;
-	parameter signed [31:0] ADDR_BITS = 9;
+	parameter signed [31:0] ADDR_BITS = 6;
 	input wire clk;
 	input wire rst_n;
 	input wire b_req;
@@ -1008,7 +1008,7 @@ module dmem_narrow (
 			d = 8'h00;
 		end
 	end
-	gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram(
+	gf180mcu_fd_ip_sram__sram64x8m8wm1 u_sram(
 		.CLK(clk),
 		.CEN(cen),
 		.GWEN(gwen),
@@ -1065,7 +1065,7 @@ module dmem_narrow_top (
 	reg [31:0] b_addr;
 	reg [7:0] b_wdata;
 	wire [7:0] b_rdata;
-	dmem_narrow #(.ADDR_BITS(9)) u_mem(
+	dmem_narrow #(.ADDR_BITS(6)) u_mem(
 		.clk(clk),
 		.rst_n(rst_n),
 		.b_req(b_req),
@@ -1089,7 +1089,7 @@ module dmem_narrow_top (
 	reg [31:0] lword;
 	reg [8:0] lbase;
 	wire [31:0] addr_aligned;
-	assign addr_aligned = {addr[31:2], 2'b00};
+	assign addr_aligned = {26'b00000000000000000000000000, addr[5:2], 2'b00};
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n) begin
 			state <= 4'd0;
@@ -1110,7 +1110,7 @@ module dmem_narrow_top (
 				4'd0:
 					if (ld_word_en) begin
 						lword <= ld_word_data;
-						lbase <= {ld_word_addr[6:0], 2'b00};
+						lbase <= {5'b00000, ld_word_addr[3:0], 2'b00};
 						state <= 4'd9;
 					end
 					else if (req) begin
@@ -1468,7 +1468,7 @@ module imem_narrow (
 	output wire m_rvalid;
 	output wire [7:0] m_rdata;
 	input wire ld_en;
-	input wire [8:0] ld_addr;
+	input wire [7:0] ld_addr;
 	input wire [7:0] ld_data;
 	assign m_gnt = 1'b1;
 	reg cen;
@@ -1476,9 +1476,9 @@ module imem_narrow (
 	reg [7:0] wen;
 	reg [7:0] d;
 	wire [7:0] q;
-	reg [8:0] a;
-	wire [8:0] rd_addr;
-	assign rd_addr = m_addr[8:0];
+	reg [7:0] a;
+	wire [7:0] rd_addr;
+	assign rd_addr = m_addr[7:0];
 	always @(*) begin
 		if (_sv2v_0)
 			;
@@ -1500,11 +1500,11 @@ module imem_narrow (
 			cen = 1'b1;
 			gwen = 1'b1;
 			wen = 8'hff;
-			a = 9'b000000000;
+			a = 8'b00000000;
 			d = 8'h00;
 		end
 	end
-	gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram(
+	gf180mcu_fd_ip_sram__sram256x8m8wm1 u_sram(
 		.CLK(clk),
 		.CEN(cen),
 		.GWEN(gwen),
@@ -1555,23 +1555,23 @@ module imem_narrow_top (
 	wire [31:0] g_m_addr;
 	wire [7:0] g_m_rdata;
 	reg s_ld_en;
-	reg [8:0] s_ld_addr;
+	reg [7:0] s_ld_addr;
 	reg [7:0] s_ld_data;
 	reg [2:0] sstate;
 	reg [31:0] word_lat;
-	reg [8:0] base_lat;
+	reg [7:0] base_lat;
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n) begin
 			sstate <= 3'd0;
 			word_lat <= 32'b00000000000000000000000000000000;
-			base_lat <= 9'b000000000;
+			base_lat <= 8'b00000000;
 		end
 		else
 			case (sstate)
 				3'd0:
 					if (ld_word_en) begin
 						word_lat <= ld_word_data;
-						base_lat <= {ld_word_addr[6:0], 2'b00};
+						base_lat <= {2'b00, ld_word_addr[5:0], 2'b00};
 						sstate <= 3'd1;
 					end
 				3'd1: sstate <= 3'd2;
@@ -1584,27 +1584,27 @@ module imem_narrow_top (
 		if (_sv2v_0)
 			;
 		s_ld_en = 1'b0;
-		s_ld_addr = 9'b000000000;
+		s_ld_addr = 8'b00000000;
 		s_ld_data = 8'b00000000;
 		case (sstate)
 			3'd1: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 9'd0;
+				s_ld_addr = base_lat + 8'd0;
 				s_ld_data = word_lat[7:0];
 			end
 			3'd2: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 9'd1;
+				s_ld_addr = base_lat + 8'd1;
 				s_ld_data = word_lat[15:8];
 			end
 			3'd3: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 9'd2;
+				s_ld_addr = base_lat + 8'd2;
 				s_ld_data = word_lat[23:16];
 			end
 			3'd4: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 9'd3;
+				s_ld_addr = base_lat + 8'd3;
 				s_ld_data = word_lat[31:24];
 			end
 			default:

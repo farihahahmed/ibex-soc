@@ -8,7 +8,6 @@
   "CLOCK_PERIOD": 100,
   "PDK": "gf180mcuD",
   "STD_CELL_LIBRARY": "gf180mcu_fd_sc_mcu7t5v0",
-  "FP_CORE_UTIL": 55,
   "RUN_HEURISTIC_DIODE_INSERTION": false,
   "GRT_ALLOW_CONGESTION": true,
   "DRT_ANTENNA_REPAIR_ITERS": 0,
@@ -19,5 +18,20 @@
   "PDN_CORE_RING_VSPACING": 1.7,
   "PDN_CORE_RING_HSPACING": 1.7,
   "PDN_CORE_RING_VOFFSET": 2.0,
-  "PDN_CORE_RING_HOFFSET": 2.0
+  "PDN_CORE_RING_HOFFSET": 2.0,
+  "FP_DEF_MARGIN": 6,
+  "GRT_MACRO_EXTENSION": 0,
+  "FP_SIZING": "absolute",
+  "DIE_AREA": [
+    0,
+    0,
+    940,
+    620
+  ],
+  "CORE_AREA": [
+    10,
+    10,
+    930,
+    610
+  ]
 }

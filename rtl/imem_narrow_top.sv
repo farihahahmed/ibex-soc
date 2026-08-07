@@ -15,22 +15,22 @@ module imem_narrow_top (
     logic [31:0] g_m_addr;
     logic [7:0]  g_m_rdata;
     logic        s_ld_en;
-    logic [8:0]  s_ld_addr;
+    logic [7:0]  s_ld_addr;
     logic [7:0]  s_ld_data;
 
     typedef enum logic [2:0] { S_IDLE, S_B0, S_B1, S_B2, S_B3 } sstate_t;
     sstate_t sstate;
     logic [31:0] word_lat;
-    logic [8:0]  base_lat;
+    logic [7:0]  base_lat;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            sstate <= S_IDLE; word_lat <= 32'b0; base_lat <= 9'b0;
+            sstate <= S_IDLE; word_lat <= 32'b0; base_lat <= 8'b0;
         end else begin
             case (sstate)
                 S_IDLE: if (ld_word_en) begin
                             word_lat <= ld_word_data;
-                            base_lat <= {ld_word_addr[6:0], 2'b00};
+                            base_lat <= {2'b0, ld_word_addr[5:0], 2'b00};
                             sstate   <= S_B0;
                         end
                 S_B0: sstate <= S_B1;
@@ -44,13 +44,13 @@ module imem_narrow_top (
 
     always_comb begin
         s_ld_en   = 1'b0;
-        s_ld_addr = 9'b0;
+        s_ld_addr = 8'b0;
         s_ld_data = 8'b0;
         case (sstate)
-            S_B0: begin s_ld_en=1; s_ld_addr=base_lat+9'd0; s_ld_data=word_lat[7:0];   end
-            S_B1: begin s_ld_en=1; s_ld_addr=base_lat+9'd1; s_ld_data=word_lat[15:8];  end
-            S_B2: begin s_ld_en=1; s_ld_addr=base_lat+9'd2; s_ld_data=word_lat[23:16]; end
-            S_B3: begin s_ld_en=1; s_ld_addr=base_lat+9'd3; s_ld_data=word_lat[31:24]; end
+            S_B0: begin s_ld_en=1; s_ld_addr=base_lat+8'd0; s_ld_data=word_lat[7:0];   end
+            S_B1: begin s_ld_en=1; s_ld_addr=base_lat+8'd1; s_ld_data=word_lat[15:8];  end
+            S_B2: begin s_ld_en=1; s_ld_addr=base_lat+8'd2; s_ld_data=word_lat[23:16]; end
+            S_B3: begin s_ld_en=1; s_ld_addr=base_lat+8'd3; s_ld_data=word_lat[31:24]; end
             default: ;
         endcase
     end
