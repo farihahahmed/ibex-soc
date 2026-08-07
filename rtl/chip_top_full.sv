@@ -2,7 +2,7 @@
 // chip_top_full.sv - Columbia-style: scan-configured clock-gating FSM +
 // on-chip clock generator. 22-pin target (20 signal + 2 power).
 // ============================================================================
-module chip_top_full import ibex_pkg::*; #(
+module chip_top_full #(
     parameter int NUM_OUT     = 5,
     parameter int NUM_IN      = 2,
     parameter int CLK_FREQ    = 8,
@@ -63,35 +63,50 @@ module chip_top_full import ibex_pkg::*; #(
     logic        data_req, data_gnt, data_rvalid, data_we;
     logic [3:0]  data_be;
     logic [31:0] data_addr, data_wdata, data_rdata;
-    logic [6:0]  instr_rdata_intg, data_rdata_intg;
-    assign instr_rdata_intg = 7'b0;
-    assign data_rdata_intg  = 7'b0;
+    // ---- PicoRV32 core + shim (replaces Ibex) ----
+    // Pico needs clocked reset edges. cpu_clk is gated off until the FSM enters
+    // RUN, so rst_n alone releases Pico before it ever sees a clock. Synchronize
+    // a reset into the cpu_clk domain so Pico is held in reset until cpu_clk runs.
+    logic pico_resetn;
+    logic [1:0] pico_rst_sync;
+    always_ff @(posedge cpu_clk or negedge rst_n) begin
+        if (!rst_n) pico_rst_sync <= 2'b00;
+        else        pico_rst_sync <= {pico_rst_sync[0], 1'b1};
+    end
+    assign pico_resetn = pico_rst_sync[1];
 
-    ibex_top u_ibex (
-        .clk_i(cpu_clk), .rst_ni(rst_n),
-        .test_en_i(1'b0), .scan_rst_ni(1'b1),
-        .ram_cfg_icache_tag_i (24'b0),
-        .ram_cfg_icache_tag_o (),
-        .ram_cfg_icache_data_i(24'b0),
-        .ram_cfg_icache_data_o(),
-        .hart_id_i(32'b0), .boot_addr_i(32'h0000_0000),
-        .instr_req_o(instr_req), .instr_gnt_i(instr_gnt), .instr_rvalid_i(instr_rvalid),
-        .instr_addr_o(instr_addr), .instr_rdata_i(instr_rdata),
-        .instr_rdata_intg_i(instr_rdata_intg), .instr_err_i(1'b0),
-        .data_req_o(data_req), .data_gnt_i(data_gnt), .data_rvalid_i(data_rvalid),
-        .data_we_o(data_we), .data_be_o(data_be), .data_addr_o(data_addr),
-        .data_wdata_o(data_wdata), .data_wdata_intg_o(),
-        .data_rdata_i(data_rdata), .data_rdata_intg_i(data_rdata_intg), .data_err_i(1'b0),
-        .irq_software_i(1'b0), .irq_timer_i(1'b0), .irq_external_i(1'b0),
-        .irq_fast_i(15'b0), .irq_nm_i(1'b0),
-        .scramble_key_valid_i(1'b0), .scramble_key_i('0), .scramble_nonce_i('0), .scramble_req_o(),
-        .debug_req_i(1'b0), .crash_dump_o(), .double_fault_seen_o(),
-        .fetch_enable_i(ibex_pkg::IbexMuBiOn), .mcounteren_writable_i(ibex_pkg::IbexMuBiOn),
-        .alert_minor_o(), .alert_major_internal_o(), .alert_major_bus_o(), .core_sleep_o(),
-        .lockstep_cmp_en_o(),
-        .data_req_shadow_o(), .data_we_shadow_o(), .data_be_shadow_o(), .data_addr_shadow_o(),
-        .data_wdata_shadow_o(), .data_wdata_intg_shadow_o(),
-        .instr_req_shadow_o(), .instr_addr_shadow_o()
+    logic        p_mem_valid, p_mem_instr, p_mem_ready;
+    logic [31:0] p_mem_addr, p_mem_wdata, p_mem_rdata;
+    logic [3:0]  p_mem_wstrb;
+    logic        p_trap;
+
+    picorv32 #(
+        .ENABLE_MUL(1), .ENABLE_DIV(1), .COMPRESSED_ISA(1),
+        .ENABLE_IRQ(0), .PROGADDR_RESET(32'h0), .STACKADDR(32'h40),
+        .BARREL_SHIFTER(0), .ENABLE_FAST_MUL(0),
+        .ENABLE_COUNTERS(0), .ENABLE_COUNTERS64(0)
+    ) u_cpu (
+        .clk(cpu_clk), .resetn(pico_resetn), .trap(p_trap),
+        .mem_valid(p_mem_valid), .mem_instr(p_mem_instr), .mem_ready(p_mem_ready),
+        .mem_addr(p_mem_addr), .mem_wdata(p_mem_wdata), .mem_wstrb(p_mem_wstrb),
+        .mem_rdata(p_mem_rdata),
+        .mem_la_read(), .mem_la_write(), .mem_la_addr(),
+        .mem_la_wdata(), .mem_la_wstrb(),
+        .pcpi_valid(), .pcpi_insn(), .pcpi_rs1(), .pcpi_rs2(),
+        .pcpi_wr(1'b0), .pcpi_rd(32'b0), .pcpi_wait(1'b0), .pcpi_ready(1'b0),
+        .irq(32'b0), .eoi(), .trace_valid(), .trace_data()
+    );
+
+    pico_shim u_shim (
+        .clk(cpu_clk), .rst_n(rst_n),
+        .mem_valid(p_mem_valid), .mem_instr(p_mem_instr), .mem_ready(p_mem_ready),
+        .mem_addr(p_mem_addr), .mem_wdata(p_mem_wdata), .mem_wstrb(p_mem_wstrb),
+        .mem_rdata(p_mem_rdata),
+        .instr_req(instr_req), .instr_gnt(instr_gnt), .instr_addr(instr_addr),
+        .instr_rvalid(instr_rvalid), .instr_rdata(instr_rdata),
+        .data_req(data_req), .data_gnt(data_gnt), .data_we(data_we), .data_be(data_be),
+        .data_addr(data_addr), .data_wdata(data_wdata),
+        .data_rvalid(data_rvalid), .data_rdata(data_rdata)
     );
 
     mem_subsystem u_mem (

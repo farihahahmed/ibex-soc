@@ -1,8 +1,6 @@
 read_verilog synthesis/sram_blackbox.v
 read_verilog synthesis/sram_blackbox_64.v
 read_verilog -sv openlane/chip_top_full/soc_flat.v
-read_verilog -sv openlane/chip_top_full/ibex_top_bb.v
-blackbox ibex_top
 hierarchy -top chip_top_full
 synth -top chip_top_full -flatten
 dfflibmap -liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00.lib

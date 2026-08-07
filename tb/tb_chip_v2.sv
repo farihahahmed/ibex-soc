@@ -21,7 +21,7 @@ module tb_chip_v2;
     initial clk=0; always #5 clk=~clk;
     localparam int BIT_CYCLES = CLK_FREQ/BAUD_RATE;
 
-    localparam int NWORDS=16, BASE_WORD=32;
+    localparam int NWORDS=16, BASE_WORD=0;
     logic [31:0] prog [0:NWORDS-1];
     initial begin
         prog[0]=32'h00010537; prog[1]=32'h000205B7; prog[2]=32'h00030637;
