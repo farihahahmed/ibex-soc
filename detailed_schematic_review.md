@@ -1,158 +1,148 @@
-# Ibex SoC on GF180MCU — Detailed Schematic Review
-
-**Team A45 — ColumbiaGals** ·
-Project: RISC-V System-on-Chip with the Ibex 32-bit core, open GF180MCU (180 nm), open-source RTL-to-netlist flow.
-
-This review reflects the **as-built design**: every block is written, passes a self-checking simulation, and the full SoC boots end-to-end in both RTL and gate-level simulation. The design is synthesized, timing-closed, and fits the die and pin budget.
+# Schematic / Design Review — PicoRV32 SoC on GF180MCU
 
 ---
 
-## 1. Design Objectives & Specifications
+## 1. Project Information
 
-A single-core RISC-V SoC loaded and run on real silicon through ~20 pins.
+| | |
+|---|---|
+| Team | A45 — ColumbiaGals |
+| Program | Chipathon 2026 (IEEE SSCS PICO) |
+| Process | GlobalFoundries GF180MCU (180 nm), open PDK |
+| Flow | Fully open source: LibreLane (Yosys / OpenROAD / Magic / netgen / KLayout) |
+| Design | `chip_top_full` — single-core RISC-V SoC |
+| Repo | github.com/farihahahmed/ibex-soc |
+| Status | **Tapeout-ready: DRC clean, LVS clean, antenna clean, timing closed on all corners** |
+
+---
+
+## 2. Design Objectives
+
+A single-core RISC-V SoC that can be loaded and run on real silicon through ~20 pins, in 1 mm².
 
 | Spec | Value |
 |------|-------|
-| CPU | Ibex RV32IMC (small config, 2-stage pipeline, 3-cycle multiplier) |
-| Memory | Narrow 8-bit: 512 B instruction (1× 512×8) + 512 B data (1× 512×8), byte gather/scatter |
-| Bus | Two-tier: AHB-Lite (memory) + APB (peripherals) via a bridge |
-| Peripherals | GPIO (2 in / 5 out), UART (TX + RX), SPI master (Mode 0, output) |
-| Bring-up / debug | Scan chain (loads program + FSM/clkgen config, readback) + 3-mode clock-gating FSM |
-| Clock | On-chip scan-programmable clock generator + external-clock fallback |
-| Process | GlobalFoundries 180 nm (open PDK), open-source flow |
-| **Die area** | ~0.845 mm² core (pads not counted) — fits 1 mm² |
+| CPU | PicoRV32 RV32IMC |
+| Memory | Narrow 8-bit SRAM: 256 B instruction (256×8) + 64 B data (64×8), byte gather/scatter |
+| Bus | Two-tier: AHB-Lite (memory) + APB (peripherals) via bridge |
+| Peripherals | GPIO (2 in / 5 out), UART (TX + RX), SPI master (Mode 0, output-only) |
+| Bring-up / debug | Scan chain (program load + FSM/clkgen config + readback) + 3-mode clock-gating FSM |
+| Clock | 10 MHz; on-chip scan-programmable divider + external-clock fallback |
+| **Die area** | **1000 × 1000 µm = 1.0 mm² (hard constraint — met)** |
 | **Pins** | 22 total (20 signal + 2 power) |
-| **Max frequency** | ~150 MHz (setup MET) |
+| Utilization | 72.6 %, 46,344 placed instances |
 
-**Objective (met, verified §6):** a program shifted in over the scan chain loads into memory; the scan chain then configures the FSM to RUN; the CPU fetches and executes, driving GPIO, UART, and SPI.
-
----
-
-## 2. System Overview
-
-Three parts: **(1)** the Ibex core + narrow instruction/data SRAM; **(2)** the communication peripherals (GPIO, UART, SPI) on a memory-mapped two-tier bus; **(3)** the control/debug blocks (scan chain, clock-gating FSM, clock generator), all configured through the scan chain — a fabricated chip has no native way to load code, set its clock, or observe state.
-
-**Data flow.** The CPU's data port issues ordinary loads/stores. An adapter converts the Ibex handshake to an AHB-Lite master; the interconnect decodes the address and routes to data memory (AHB) or, through the AHB→APB bridge, to a peripheral. The instruction port fetches from the narrow instruction memory via a byte-gather unit.
-
-**Clock/reset flow.** An on-chip clock generator produces the system clock (scan-programmable divider, or external fallback). The FSM gates that clock into the CPU: suppressed during scan-load, passed during run, or pulsed for a fixed count during debug.
+**Objective (met, verified §6):** a program shifted in over the scan chain loads into memory; the scan chain configures the FSM to RUN; the CPU boots from 0x0, fetches, executes, and drives GPIO, UART, and SPI.
 
 ---
 
-## 3. Architecture — block inventory
+## 3. System Overview
 
-Every block is implemented and verified.
+Three subsystems:
+
+1. **Compute** — PicoRV32 core + narrow instruction/data SRAM macros.
+2. **I/O** — GPIO, UART, SPI on a memory-mapped two-tier bus.
+3. **Control/debug** — scan chain, clock-gating FSM, clock generator. A fabricated chip has no native way to load code, set its clock, or observe state; all three ride the scan chain.
+
+**Data flow.** The CPU's native memory interface is adapted by `pico_shim` to the SoC bus. An AHB-Lite master issues loads/stores; the interconnect decodes `HADDR[17:16]` and routes to data memory (AHB) or, through the AHB→APB bridge, to a peripheral. Instruction fetches go through `fetch_gather`, which streams 4 byte-reads from the 8-bit imem and assembles a 32-bit word.
+
+**Clock/reset flow.** `clk_gen` produces the system clock (scan-programmable divider, or external `clk` when `clk_int`=0). `test_fsm` gates the clock into the CPU: suppressed during scan-load, passed during run, pulsed N cycles in countdown/debug mode. Because `cpu_clk` is gated off at boot and PicoRV32 requires a clocked reset, a dedicated reset synchronizer in the `cpu_clk` domain (`rst_sync`) releases reset only once the CPU clock is running.
+
+**Boot parameters.** `PROGADDR_RESET = 0x0` (firmware `_start` pinned to 0x0 via `.text.start` in `link.ld`), `STACKADDR = 0x40`.
+
+---
+
+## 4. Schematic Summary — block inventory
 
 | Block | Role | Status |
 |-------|------|--------|
-| `ibex_top` | RV32IMC core (lowRISC IP, blackboxed in synth) | ✅ |
-| `imem_narrow` / `fetch_gather` | 512×8 SRAM + byte-gather 32-bit fetch | ✅ |
-| `dmem_narrow` / `ahb_mem` | 512×8 SRAM + byte scatter/gather + AHB wait-states | ✅ |
-| `mem_subsystem` | imem + dmem + reset sync + scan-load path | ✅ |
-| `ibex_to_ahb` | Ibex data port → AHB-Lite master | ✅ |
+| `picorv32` | RV32IMC core | ✅ |
+| `pico_shim` | PicoRV32 native i/f → SoC bus adapter | ✅ |
+| `imem_narrow` / `fetch_gather` | 256×8 SRAM + byte-gather 32-bit fetch | ✅ |
+| `dmem_narrow` / `ahb_mem` | 64×8 SRAM + byte scatter/gather + AHB wait-states | ✅ |
+| `mem_subsystem` | imem + dmem + scan-load path | ✅ |
 | `ahb_interconnect` | address decode + response mux | ✅ |
 | `ahb_to_apb` | AHB→APB bridge (SETUP/ACCESS, wait states) | ✅ |
 | `apb_decoder` | fan-out to GPIO / UART / SPI | ✅ |
-| `gpio` / `apb_gpio` | GPIO 2 in / 5 out, 2-flop input synchronizer | ✅ |
-| `uart` / `apb_uart` | UART TX + RX, baud gen | ✅ |
-| `spi` / `apb_spi` | SPI master Mode 0 (output) | ✅ |
-| `scan_chain` | serial loader → memory + FSM/clkgen config registers | ✅ |
-| `test_fsm` | 3-mode clock-gating FSM (idle/run/countdown), scan-configured | ✅ |
-| `clk_gen` | synthesizable clock generator (scan-programmable divider + ext fallback) | ✅ |
+| `gpio` / `apb_gpio` | 2 in / 5 out, 2-flop input synchronizer | ✅ |
+| `uart` / `apb_uart` | UART TX + RX, baud gen (STATUS 0x2_0000 bit0 busy, DATA 0x2_0004) | ✅ |
+| `spi` / `apb_spi` | SPI master Mode 0, output-only | ✅ |
+| `scan_chain` | serial loader → memory + FSM/clkgen config + readback | ✅ |
+| `test_fsm` | 3-mode clock-gating FSM (idle/run/countdown) | ✅ |
+| `clk_gen` | scan-programmable divider + external fallback | ✅ |
+| `rst_sync` | cpu_clk-domain reset synchronizer | ✅ |
 | `chip_top_full` | complete SoC, all blocks wired | ✅ |
 
-**Bus architecture:** two-tier — fast memory on AHB, slow peripherals behind the bridge on APB so their timing never stalls the memory path. Slave select from `HADDR[17:16]`.
+**Memory map (`HADDR[17:16]`):**
 
----
+| Region | Target |
+|--------|--------|
+| `00` | instruction / data memory |
+| `01` (0x0001_xxxx) | GPIO |
+| `10` (0x0002_xxxx) | UART |
+| `11` (0x0003_xxxx) | SPI |
 
-## 4. Pinout — 22 pads (20 signal + 2 power)
-
-12 input, 8 output, 2 power. No bidirectional pins.
-
-| Group | Pins | Type |
-|-------|------|------|
-| Clock | `clk`, `clk_int` | input |
-| Reset | `rst_n` | input |
-| Scan | `scan_in`, `scan_shift`, `scan_load`, `scan_out`, `scan_i0o1` | in/in/in/out/in |
-| GPIO | `gpio_in[1:0]`, `gpio_out[4:0]` | in / out |
-| UART | `uart_tx`, `uart_rx` | out / in |
-| SPI | `spi_sclk`, `spi_mosi`, `spi_cs_n` | output |
-| Power | `VDD`, `VSS` | power |
-
-FSM control and state are **not** pins — they are configured and observed through the scan chain (`clk_int` selects the clock source; `scan_i0o1` selects scan direction). This scan-configured scheme removed the `start`/`load_done`/`fsm_state` pins. SPI is output-only (drives an external LCD), so `spi_miso` is omitted. See [`PINOUT.md`](PINOUT.md).
+**Pinout (22 pads = 20 signal + 2 power; no bidirectional):** clk, clk_int, rst_n; scan_in/shift/load/out/i0o1; gpio_in[1:0], gpio_out[4:0]; uart_tx/rx; spi_sclk/mosi/cs_n; VDD/VSS. FSM control/state are scan-accessed, not pins. `spi_miso` omitted (output-only LCD interface). See `PINOUT.md`.
 
 ---
 
 ## 5. Design Assumptions & Known Simplifications
 
-- **Narrow memory (key area lever).** A 32-bit memory needs four 8-bit SRAM macros per bank and does not fit 1 mm². Instead, single 8-bit macros are fronted by byte gather/scatter units: instruction fetch streams 4 byte-reads and assembles a word; data stores split into byte-enabled byte-writes; the data memory is an AHB slave that inserts wait-states during the multi-cycle access. The address map is unchanged — the CPU sees a normal 32-bit memory — but capacity is small (512 B code, 512 B data), sufficient for the demo programs.
-- **Scan-configured control.** The scan chain writes the FSM mode/cycle-count and clock-generator config registers, so no dedicated control pins are needed. Debug is via the FSM's countdown mode (run N cycles then freeze) plus scan-out of memory contents.
-- **Clock generator — synthesizable divider.** A frequency divider with a scan-writable divide value, plus an external-clock fallback (`clk_int`), replacing the earlier behavioral ring-oscillator model. Keeps the chip operable if the internal generator misbehaves on silicon.
-- **Scan reaches memory, not CPU registers.** Readback covers memory contents (verify what the CPU computed/stored); live CPU-register scan is not implemented (memory-based debug is sufficient for the demo).
+- **Narrow 8-bit memory (key area lever).** Full-width 32-bit banks need 4 macros each and do not fit 1 mm². Single 8-bit macros fronted by gather/scatter trade a few cycles per access for area. Capacity is small (256 B code, 64 B data) but sufficient for the demo firmware.
+- **Scan-configured control.** FSM mode/count and clkgen divide value are scan-written; no dedicated control pins.
+- **Scan reaches memory, not CPU registers.** Readback verifies memory contents; live register scan not implemented.
 - **Instruction memory is read-only to the core** — only the scan chain writes it, during load.
-- **SRAM macro power-up in sim.** The GF180 behavioral SRAM model needs a clean CEN wake-up before returning data; testbenches assert this at reset. Simulation detail only — the RTL memory control is correct for silicon.
-
-**Memory map (as-built):**
-
-| Region (`HADDR[17:16]`) | Target |
-|--------------------------|--------|
-| `00` | instruction / data memory |
-| `01` (0x0001_xxxx) | GPIO (`apb_gpio`, 2 in / 5 out) |
-| `10` (0x0002_xxxx) | UART (`apb_uart`) |
-| `11` (0x0003_xxxx) | SPI (`apb_spi`) |
+- **Clock generator is a synthesizable divider** with external fallback (`clk_int`) — keeps the chip operable if the internal path misbehaves on silicon.
+- **SRAM behavioral model wake-up** (clean CEN at reset) is a simulation-only detail; RTL control is correct for silicon.
 
 ---
 
 ## 6. Verification Status
 
-**Every block passes a self-checking testbench (0 errors)**, and the full SoC is verified at both RTL and gate level.
+### Functional
+- Every block passes a self-checking testbench (0 errors) — see `tb/`.
+- Full-chip RTL (`tb_chip_v2`): scan-load → FSM RUN → boot → drives GPIO, UART, SPI in one run. ✅
+- All three demo firmwares verified on the PicoRV32 design: `primes.c` streams correct primes over UART, `piezo_tune.c` plays tones on GPIO, `game.c` drives an SPI LCD game. ✅
 
-### Block-level
+### Physical signoff (healed GDS: `gds/chip_top_full_healed.gds`)
 
-| Block | Test | Result |
-|-------|------|--------|
-| Narrow imem (fetch-gather) | 4-byte read → word assembly | ✅ |
-| Narrow dmem (scatter/gather + AHB) | loads, byte-enabled stores, wait-states | ✅ |
-| GPIO 2/5 | output reg + input synchronizer | ✅ |
-| AHB interconnect / ahb_mem | routing, address-discriminated reads | ✅ |
-| AHB→APB bridge / decoder | full chain, wait states, multi-peripheral | ✅ |
-| UART / SPI | TX + loopback / Mode 0 output | ✅ |
-| Scan chain | serial load → memory + FSM/clkgen config + readback | ✅ |
-| Test FSM | idle suppresses clock, run passes, countdown runs exactly N then freezes | ✅ |
-| Clock generator | divide-by-N, external passthrough | ✅ |
+| Check | Result |
+|-------|--------|
+| DRC (Magic full) | **0 violations** |
+| LVS (netgen) | **Match** — 13,966 devices / 13,021 nets |
+| Antenna | **PASS** — 0 violations |
+| Timing (9 corners) | **Clean.** Setup worst +78.08 ns @ ss; hold worst +0.283 ns @ ff |
+| Die | 1000 × 1000 µm, 72.6 % util, 46,344 instances |
 
-### Full-chip (against the real Ibex core)
-
-| Level | What it proves | Result |
-|-------|----------------|--------|
-| RTL (`tb_chip_v2`) | scan-load program, scan-configure FSM→RUN, boot, drive all peripherals | ✅ gpio/uart=0x41/spi=0xB7 |
-| Gate (`tb_chip_gate_v2`) | synthesized netlist reproduces the same outputs | ✅ RTL≡netlist |
-
-**Headline result:** a program shifted in over the scan chain, with the FSM scan-configured to RUN, executes on the Ibex core and drives all three peripherals in one run — in both RTL and gate-level simulation. This is the full bring-up path the real chip uses after tapeout.
-
-**Demo firmware (all three verified on the current design):** `piezo_tune.c` plays a tone on a GPIO pin (Happy Birthday), `primes.c` streams primes over UART, and `game.c` drives a dodge game on an SPI LCD — matching the Columbia three-option demo. See `firmware/`.
-
-### Synthesis, timing, area
-
-- **Netlist:** `synthesis/chip_top.nl.v` — 1,334 GF180 standard cells + Ibex/SRAM black boxes, 20 signal pins.
-- **Timing (OpenSTA):** setup MET, worst slack +113 ns at 8 MHz, Fmax ~150 MHz.
-- **Area:** ~0.845 mm² core (pads not counted) — fits 1 mm² with ~15.5% margin. See [`AREA_REPORT.md`](AREA_REPORT.md), [`TIMING_REPORT.md`](TIMING_REPORT.md).
+### Known signoff detail — Metal3 heal
+The GF180 SRAM + PDN interaction leaves 4 sub-µm Metal3 slivers (known upstream issue: OpenLane #1549 / OpenROAD PR #2814). Post-processing script `gds/heal_metal3.tcl` paints them to legal width; DRC and LVS are re-verified on the healed GDS. Workflow: librelane → heal → re-verify.
 
 ---
 
-## Key tradeoffs
+## 7. Design Checklist
 
-- **Narrow 8-bit memory + gather/scatter:** the central area lever — trades a few cycles per access (irrelevant for the demo) to fit 1 mm².
-- **Scan-configured FSM + clock generator:** control and debug ride the scan chain, freeing pins and giving cycle-accurate countdown debug — closely matching the Columbia EE6350 reference design.
-- **Two-tier bus:** isolates slow peripherals from the fast memory path.
-- **2-stage pipeline / 3-cycle multiplier:** smaller area, easier timing; throughput isn't the goal.
-
-## Project status
-
-- **Front-end:** complete — all RTL, unit tests, full RTL + gate-level integration.
-- **Synthesis:** complete — netlist, timing closure, area, gate-level equivalence.
-- **Back-end (floorplan / PnR / pad ring / tapeout):** remaining, handled at hardening.
-- **Primary risks:** (1) final pad sizing affects exact die area (core is firm); (2) hold closure and clock-tree at APR; (3) the clock generator on silicon — mitigated by the external-clock fallback.
+| Category | Status | Notes |
+|----------|--------|-------|
+| Functionality | ✅ | Full bring-up path (scan-load → run → all peripherals) proven in RTL sim; 3 firmwares verified |
+| Analog | N/A | Fully digital design |
+| Digital | ✅ | Timing closed all 9 corners; CDC handled (gated cpu_clk reset sync, GPIO input sync) |
+| Mixed Signal | N/A | — |
+| Reliability | ✅ | Antenna clean (targeted diode insertion, threshold 200); hold margin +0.283 ns @ ff |
+| Documentation | ✅ | README, PINOUT, memory_map, AREA_REPORT, TIMING_REPORT, this review |
 
 ---
 
-*Status: front-end and synthesis complete and verified (RTL + gate-level); back-end is the remaining work.*
+## 8. Open Issues
+
+1. **Gate-level full-chip TB** (`tb_chip_gate_v2`) has not been re-run on the final PicoRV32 netlist (it passed on an earlier design revision). RTL + physical signoff are complete; gate-level re-run is optional polish.
+2. **Metal3 heal is a manual post-step** — every librelane rerun regenerates the slivers and must be followed by the heal + re-verify. Automating it as a custom LibreLane step is feasible but deferred.
+3. **Clock generator on silicon** — untested by definition; mitigated by the external-clock fallback pin.
+
+---
+
+## Appendix
+
+- Signoff artifacts: `gds/` (healed GDS, DRC result, LVS report, metrics, heal script)
+- Reports: `AREA_REPORT.md`, `TIMING_REPORT.md`, `memory_map.md`, `PINOUT.md`
+- PnR config: `openlane/chip_top_full/config.json` (DIE 0,0,1000,1000; sram256 @ [40,620], sram64 @ [520,620])
+- Firmware + linker: `firmware/`

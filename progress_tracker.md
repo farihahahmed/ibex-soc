@@ -1,134 +1,141 @@
-# Ibex SoC on GF180MCU — Progress Tracker
+# PicoRV32 SoC on GF180MCU — Progress Tracker
 
-Front-end flow: RTL → simulation → synthesized netlist.
+Full flow: RTL → simulation → synthesis → place-and-route → **signoff-clean GDS**.
 
 **Legend:** ✅ done & verified  🚧 in progress  ⬜ not started
+
 ---
+
 ## Status at a glance
+
 | Phase | Description | Status |
 |-------|-------------|--------|
 | A | Foundations & toolchain | ✅ |
 | B | Architecture & design | ✅ |
-| C | RTL block development | ✅ (19/19) |
-| D | Integration | ✅ (v0.1–v0.8, complete SoC) |
-| E | Synthesis → netlist | ✅ (fits 1 mm², netlist + timing + gate-sim) |
+| C | RTL block development | ✅ |
+| D | Integration (complete SoC) | ✅ |
+| E | Front-end synthesis (Ibex era — superseded) | ✅ |
+| F | CPU swap: Ibex → PicoRV32 | ✅ |
+| G | Place-and-route (LibreLane) | ✅ |
+| H | Signoff: DRC / LVS / antenna / timing | ✅ |
+
+**Final result:** 1000×1000 µm (1.0 mm²), DRC 0, LVS match (13,966 devices /
+13,021 nets), antenna 0, timing clean all 9 corners. Healed GDS:
+`gds/chip_top_full_healed.gds`.
+
 ---
+
 ## Phase A — Foundations & Toolchain ✅
+
 | Item | Status |
 |------|--------|
 | SRAM macro characterization (ports, polarity, read latency) | ✅ |
-| Toolchain verified (RISC-V GCC, Verilator, GTKWave) | ✅ |
-| Ibex Simple System running `hello_test` in simulation | ✅ |
+| Toolchain verified (RISC-V GCC, Icarus/Verilator, GTKWave, LibreLane) | ✅ |
+| Core running a hello program in simulation | ✅ |
 | Instruction trace verified against objdump | ✅ |
-| riscv-tests ISA suite | ⬜ (deferred, optional) |
 
 ## Phase B — Architecture & Design ✅
+
 | Item | Status |
 |------|--------|
 | System block diagram | ✅ |
-| Memory map definition (`memory_map.md`) | ✅ |
-| Design hierarchy (synthesized vs. macro) | ✅ |
+| Memory map (`memory_map.md`) | ✅ |
 | Bus architecture (two-tier AHB-Lite + APB) | ✅ |
+| Pin budget: 22 pins (20 signal + 2 power), scan-configured control | ✅ |
 
 ## Phase C — RTL Block Development ✅
-| Block | Description | Verification | Status |
-|-------|-------------|--------------|--------|
-| `sram_bank_2k` | 2 KB bank (4× 512×8 macros) — *superseded by narrow memory in Phase E* | 10 checks, 0 errors | ✅ |
-| `fetch_gather` / `imem_narrow` | Narrow 8-bit instruction memory (1× 512×8 + byte-gather fetch) | tb_fetch_gather, tb_imem_narrow_top, 0 errors | ✅ |
-| `dmem_narrow` / `ahb_mem` | Narrow 8-bit data memory (1× 512×8 + byte scatter/gather + AHB wait-states) | tb_dmem_narrow, tb_ahb_mem, 0 errors | ✅ |
-| `mem_wrapper` | Ibex req/gnt/rvalid → SRAM interface | reads/writes, 0 errors | ✅ |
-| `rst_sync` | Two-flop reset synchronizer (async assert, sync de-assert) | timing checks, 0 errors | ✅ |
-| `mem_subsystem` | rst_sync + imem + dmem, with scan-load write path | both ports + scan load, 0 errors | ✅ |
-| `gpio` | GPIO 2-in/5-out, output reg + 2-flop input synchronizer | tb_gpio, 0 errors | ✅ |
-| `ibex_to_ahb` | Ibex req/gnt/rvalid → AHB-Lite master adapter | via bus + integration tests | ✅ |
-| `ahb_interconnect` | AHB-Lite address decoder + response mux | routing + one-hot, 0 errors | ✅ |
-| `ahb_mem` | Data memory as AHB-Lite slave (zero-wait, self-contained) | address-discriminated reads, 0 errors | ✅ |
-| `ahb_gpio` | GPIO as AHB-Lite slave (single-tier variant) | via bus tests | ✅ |
-| `ahb_to_apb` | AHB → APB bridge | full chain, wait-state verified | ✅ |
-| `apb_decoder` | APB address decode / fan-out to GPIO/UART/SPI | multi-peripheral routing, 0 errors | ✅ |
-| `apb_gpio` | GPIO as APB slave (two-tier variant) | via bus + integration tests | ✅ |
-| `uart` | UART TX + RX, baud generator, separate status/data regs | loopback + bus, 0 errors | ✅ |
-| `apb_uart` | UART as APB slave | full chain, 0 errors | ✅ |
-| `spi` | SPI master (Mode 0), clock divider + shift FSM | loopback, 0 errors | ✅ |
-| `apb_spi` | SPI as APB slave | full chain, 0 errors | ✅ |
-| `scan_chain` | Scan chain: serial load → memory + FSM/clkgen config registers (scan_i0o1) | tb_scan_chain, 0 errors | ✅ |
-| `test_fsm` | 3-mode clock-gating FSM (idle/run/countdown), scan-configured | tb_test_fsm, 0 errors | ✅ |
-| `clk_gen` | Synthesizable clock generator (scan-programmable divider + ext fallback) | tb_clk_gen, 0 errors | ✅ |
 
-The full two-tier bus (Ibex → AHB-Lite → bridge → APB → peripherals) is verified end-to-end, with GPIO, UART, and SPI on APB at their memory-map addresses.
+All blocks verified with self-checking testbenches (0 errors). Final set:
+
+| Block | Role |
+|-------|------|
+| `fetch_gather` / `imem_narrow` | narrow 8-bit instruction memory + byte-gather fetch |
+| `dmem_narrow` / `ahb_mem` | narrow 8-bit data memory + scatter/gather + AHB wait-states |
+| `mem_subsystem` | imem + dmem + scan-load path |
+| `rst_sync` | reset synchronizer (cpu_clk domain — gated clock needs clocked reset) |
+| `ibex_to_ahb` | CPU → AHB-Lite master adapter |
+| `ahb_interconnect` / `ahb_to_apb` / `apb_decoder` | two-tier bus |
+| `gpio`/`apb_gpio` (2 in / 5 out), `uart`/`apb_uart`, `spi`/`apb_spi` | peripherals |
+| `scan_chain` | serial load → memory + FSM/clkgen config + readback |
+| `test_fsm` | 3-mode clock-gating FSM (idle/run/countdown) |
+| `clk_gen` | scan-programmable divider + external fallback |
+| `pico_shim` | PicoRV32 native interface → SoC bus (Phase F) |
+| `chip_top_full` | complete SoC |
+
+Superseded blocks (`older_version_of_design/`): `sram_bank_2k`, `mem_wrapper`,
+`ahb_gpio`, behavioral clk_gen, and the v0.x integration testbenches.
 
 ## Phase D — Integration ✅
 
-Integration proceeds incrementally: each version wires one additional block into the top level and is verified against the **real Ibex core** (not a testbench master) via a self-checking smoke test. Integration smoke tests build with Verilator (Ibex requires it) and run a hand-assembled RV32I program. The GF180 SRAM behavioral model requires a clean power-up (CEN wake-up) before returning data, so the harnesses assert the macros' operational state at reset; this is a simulation bring-up step only — the RTL memory control (`cen = ~cs`) is correct for silicon.
+Incremental top-level bring-up (v0.1–v0.8), each version verified against the
+real core: memory → AHB data path → GPIO → UART → SPI → scan-load →
+clock generator → complete SoC. Endpoint: one scan-loaded program drives
+GPIO + UART + SPI in a single run.
 
-| Milestone | Description | Verification | Status |
-|-----------|-------------|--------------|--------|
-| v0.1 | Ibex + memory subsystem; CPU executes a program from custom SRAM | `tb_chip_smoke5` — PC advances 0x80→0x8C and loops | ✅ |
-| v0.2 | Data path routed through the AHB bus to memory | `tb_chip_v02` — store 0x2A2 to 0x0800, load back matches; adapter write-ack fixed | ✅ |
-| v0.3 | GPIO on the bus (AHB → bridge → APB → GPIO) | `tb_chip_v03` — CPU writes 0xA5, gpio_out reaches 0xA5 | ✅ |
-| v0.4 | UART on the bus | `tb_chip_v04` — CPU writes 0x41, tx frame decodes to 0x41 | ✅ |
-| v0.5 | SPI on the bus; full peripheral set integrated | `tb_chip_v05` — CPU writes 0xB7, MOSI shifts out 0xB7 | ✅ |
-| v0.6 | Scan chain + test FSM: chip loads program serially, then runs it | `tb_chip_load` — scan-load, FSM LOAD→RUN, CPU fetches loaded code | ✅ |
-| v0.7 | On-chip clock generator drives downstream logic | `tb_clk_gen_top` — generated clock advances a counter, gates cleanly | ✅ |
-| v0.8 | Complete SoC: scan-load program drives GPIO + UART + SPI | `tb_chip_full` — one program, all three peripherals verified in one run | ✅ |
+## Phase E — Front-end synthesis (Ibex era) ✅ superseded
 
-## Phase E — Synthesis → Netlist ✅
-| Item | Status | Result |
-|------|--------|--------|
-| Yosys synthesis script (macros black-boxed) | ✅ | `syn_*.ys`, `syn_netlist.ys` |
-| Timing/area report | ✅ | `AREA_REPORT.md`, `TIMING_REPORT.md` |
-| Setup-violation closure | ✅ | worst slack +113 ns (MET), Fmax ~150 MHz |
-| Gate-level simulation (RTL vs. netlist equivalence) | ✅ | `tb/tb_chip_gate_v2.sv` — GPIO/UART/SPI match RTL |
-| `chip_top.nl.v` — deliverable netlist | ✅ | 1,334 std cells + Ibex/SRAM black boxes, 20 signal pins |
+Yosys netlist closed timing and fit area on paper (0.845 mm² core estimate),
+but hardening exposed the fatal geometry problem: Ibex's only successful
+macro was 853×871 µm — 0.743 mm² for the CPU alone, untileable with the
+432 µm-wide SRAMs inside a 1000 µm die. Scripts archived in `synthesis/`.
 
-### Key result: fits 1 mm², 22 pins
-The chip synthesizes to **~0.845 mm² core** (pads not counted), under the 1 mm²
-target with ~15.5% margin, at **22 pins (20 signal + 2 power)**. Two design levers:
-(1) **narrow memory** — single 8-bit SRAM macros with byte gather/scatter (a 32-bit
-memory needs 4 macros per bank and does not fit); (2) **Columbia-style scan-configured
-control** — the scan chain writes the FSM and clock-generator config registers, so
-control/state need no dedicated pins. The full SoC scan-loads a program, scan-configures
-the FSM to RUN, and drives GPIO+UART+SPI in both RTL and gate-level simulation.
-See `AREA_REPORT.md`, `TIMING_REPORT.md`, `PINOUT.md`.
+## Phase F — CPU swap: Ibex → PicoRV32 ✅
 
-### Demo firmware (all verified on the current design)
-Three programs in `firmware/`, matching the Columbia demo options:
+| Item | Status |
+|------|--------|
+| PicoRV32 RV32IMC integrated as inline RTL via `pico_shim` (no macro) | ✅ |
+| Boot: PROGADDR_RESET=0x0, STACKADDR=0x40; `_start` pinned via `.text.start` | ✅ |
+| cpu_clk-domain reset synchronizer (gated clock at boot) | ✅ |
+| Memory rightsized: 256 B imem (256×8) + 64 B dmem (64×8) | ✅ |
+| Full-chip RTL sim (`tb_chip_v2`): scan-load → RUN → GPIO+UART+SPI | ✅ |
+| All 3 firmwares verified on PicoRV32 (primes / piezo_tune / game) | ✅ |
 
-| Program | Demo | Drives | Verified |
-|---------|------|--------|----------|
-| `piezo_tune.c` | "Happy Birthday" tone | GPIO out[0] (piezo) | gpio toggles 1422× |
-| `primes.c` | primes streamed to PC terminal | UART tx | uart toggles 220× |
-| `game.c` | dodge game on SPI LCD | SPI sclk/mosi | spi toggles 13104× |
+## Phase G — Place-and-route (LibreLane) ✅
 
-Each fits the 512 B instruction memory; run via `tb/tb_demo.sv`.
+| Item | Result |
+|------|--------|
+| Die | 1000×1000 µm fixed; sram256 @ (40,620), sram64 @ (520,620) |
+| Placement closure | hold-buffer cap (HOLD_MAX_BUFFER_PCT=20, margin 0.1) + cell padding 1 — unbounded hold fixing (3055 buffers) had overflowed DPL |
+| Antenna closure | targeted heuristic diode insertion (threshold 200, diodes on input ports) |
+| Utilization | 72.6 %, 46,344 instances |
+
+## Phase H — Signoff ✅
+
+| Check | Result |
+|-------|--------|
+| DRC (Magic full) | **0** |
+| LVS (netgen) | **match** — 13,966 devices / 13,021 nets |
+| Antenna | **0 violations** |
+| Setup | +78.08 ns worst @ ss_125C_4v50 (all 9 corners MET) |
+| Hold | +0.283 ns worst @ ff_n40C_5v50 (all 9 corners MET) |
+
+**Metal3 heal:** GF180 SRAM + PDN leaves 4 sub-µm Metal3 slivers (OpenLane
+#1549 / OpenROAD PR #2814). `gds/heal_metal3.tcl` paints them legal;
+DRC + LVS re-verified on the healed GDS. Workflow: librelane → heal → re-verify.
+
 ---
-## Target specifications
+
+## Final specifications
+
 | Parameter | Value |
 |-----------|-------|
-| CPU | Ibex RV32IMC |
-| Memory | Narrow 8-bit: 512 B imem (1×512×8) + 512 B dmem (1×512×8), gather/scatter |
-| Peripherals | GPIO, UART, SPI |
+| CPU | PicoRV32 RV32IMC (MUL/DIV on, IRQ off), std-cell RTL |
+| Memory | 256 B imem + 64 B dmem, narrow 8-bit + gather/scatter |
+| Peripherals | GPIO (2/5), UART, SPI |
 | Bus | Two-tier AHB-Lite + APB |
-| Process | GF180MCU (180nm) |
-| Die area budget | 1000 × 1000 µm (1 mm²) — achieved 0.845 mm² core (pads excluded) |
+| Clock | 10 MHz external → ÷2 sys_clk → gated cpu_clk |
+| Pins | 22 (20 signal + 2 power) |
+| Die | 1000×1000 µm = 1.0 mm² (hard constraint, met) |
 
-## Repository layout
+## Demo firmware (all verified)
 
-ibex_soc/
+| Program | Demo | Drives |
+|---------|------|--------|
+| `primes.c` | primes to terminal (MUL/MOD) | UART |
+| `piezo_tune.c` | "Happy Birthday" tone | GPIO |
+| `game.c` | dodge game on LCD | SPI |
 
-├── rtl/ # synthesizable design (.sv)
+## Remaining (optional)
 
-├── tb/ # self-checking testbenches
-
-├── memory_map.md
-
-└── README.md
-
-## Running a testbench
-```bash
-iverilog -g2012 -o sim -s tb_sram_bank \
-  tb/tb_sram_bank.sv rtl/sram_bank_2k.sv \
-  /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_ip_sram/verilog/gf180mcu_fd_ip_sram__sram512x8m8wm1.v
-vvp sim
-```
-Integration smoke tests build with Verilator against the full Ibex source list; see the `tb_chip_v0*` and `tb_chip_full` testbenches.
+- Gate-level full-chip TB (`tb_chip_gate_v2`) re-run on the PicoRV32 netlist
+- Automate the Metal3 heal as a custom LibreLane flow step

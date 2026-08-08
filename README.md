@@ -10,7 +10,7 @@ place-and-route → signoff-clean GDS**, entirely with open-source tools
 > die, so the CPU was swapped for PicoRV32, which synthesizes inline with the
 > logic. The name is historical.
 
-## Final signoff (healed GDS: `final_gds/chip_top_full_healed.gds`)
+## Final signoff (healed GDS: `gds/chip_top_full_healed.gds`)
 
 | Check | Result |
 |---|---|
@@ -48,7 +48,7 @@ logic: 0.335 mm² synthesized.
 The PDN's Metal3 connection to the GF180 SRAM macros leaves 4 sub-micron
 slivers (Metal3 width < 0.56 µm) — a documented tool issue
 (OpenLane #1549 / OpenROAD PR #2814; the upstream fix reduces but does not
-eliminate it for these macros). Fix: `final_gds/heal_metal3.tcl` widens the 4
+eliminate it for these macros). Fix: `gds/heal_metal3.tcl` widens the 4
 shapes to legal width in Magic post-P&R. The healed GDS then passes **full DRC
 (0 errors)** and **LVS (match)** — both re-verified on the healed file.
 
@@ -56,11 +56,11 @@ Workflow: `librelane config.json` → run heal script → re-verify DRC + LVS.
 
 ## Layout
 
-`rtl/` design (23 modules) · `rtl_pico/picorv32.v` CPU ·
+`rtl/` design incl. `picorv32.v` CPU ·
 `tb/` self-checking testbenches + firmware .svh · `firmware/` 3 demo programs ·
 `openlane/chip_top_full/` flow config (config.json, SDC, PDN, SRAM macros) ·
-`final_gds/` healed GDS + heal script + signoff reports ·
-`synthesis/` netlist scripts · `older_version_of_design/` superseded modules
+`gds/` healed GDS + heal script + signoff reports ·
+`synthesis/` SRAM blackbox stubs (flow inputs) · `older_version_of_design/` superseded modules
 
 ## Verification
 
@@ -71,7 +71,6 @@ program, boots PicoRV32, and drives GPIO + UART (0x41) + SPI (0xB7)
 - **primes** — UART prints `2 3 5 7 11 13 17 19 23 29 31 37 41 43 47` (MUL/MOD exercised)
 - **piezo_tune** — GPIO square-wave tone (1018 toggles)
 - **game** — SPI/LCD drive (15,376 SCLK toggles)
-iverilog -g2012 -o sim -s tb_test_fsm tb/tb_test_fsm.sv rtl/test_fsm.sv && vvp sim
 ## Docs
 
 [`AREA_REPORT`](AREA_REPORT.md) · [`TIMING_REPORT`](TIMING_REPORT.md) ·

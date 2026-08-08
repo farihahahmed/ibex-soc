@@ -1,0 +1,417 @@
+timestamp 1786167406
+version 8.3
+tech gf180mcuD
+style ngspice()
+scale 1000 1 0.5
+resistclasses 1000000 3250000 6300 7000 6300 7000 7300 1000000 60000 185000 60000 185000 6300 7000 6300 7000 6800 7300 350000 310000 1000000 90 90 90 90 40
+use 018SRAM_strap1_64x8m81 018SRAM_strap1_64x8m81_3 -1 0 62 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_30 -1 0 662 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_29 -1 0 1262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_27 -1 0 1862 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_28 -1 0 2462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_26 -1 0 3062 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_25 -1 0 3662 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_24 -1 0 4262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_23 -1 0 4862 0 1 177
+use 018SRAM_strap1_64x8m81 018SRAM_strap1_64x8m81_2 -1 0 5462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_31 -1 0 6062 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_16 -1 0 6662 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_18 -1 0 7262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_17 -1 0 7862 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_19 -1 0 8462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_20 -1 0 9062 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_22 -1 0 10262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_21 -1 0 9662 0 1 177
+use 018SRAM_strap1_64x8m81 018SRAM_strap1_64x8m81_1 -1 0 10862 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_15 -1 0 11462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_14 -1 0 12062 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_12 -1 0 12662 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_13 -1 0 13262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_11 -1 0 13862 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_10 -1 0 14462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_9 -1 0 15062 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_8 -1 0 15662 0 1 177
+use 018SRAM_strap1_64x8m81 018SRAM_strap1_64x8m81_0 -1 0 16262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_0 -1 0 16862 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_1 -1 0 17462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_3 -1 0 18062 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_2 -1 0 18662 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_4 -1 0 19262 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_6 -1 0 20462 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_5 -1 0 19862 0 1 177
+use 018SRAM_cell1_dummy_64x8m81 018SRAM_cell1_dummy_64x8m81_7 -1 0 21062 0 1 177
+use 018SRAM_strap1_64x8m81 018SRAM_strap1_64x8m81_5 1 0 21062 0 1 177
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_6 -1 0 22262 0 -1 1977
+use 018SRAM_cell1_64x8m81 018SRAM_cell1_64x8m81_0 -1 0 22262 0 1 177
+use M1_POLY2$$44754988_64x8m81 M1_POLY2$$44754988_64x8m81_0 1 0 22477 0 -1 417
+use M2_M1431058998329_64x8m81 M2_M1431058998329_64x8m81_0 1 0 22475 0 1 379
+use M3_M2431058998321_64x8m81 M3_M2431058998321_64x8m81_0 1 0 22475 0 1 181
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_0 -1 0 22262 0 1 1977
+use M2_M1$$43375660_64x8m81 M2_M1$$43375660_64x8m81_1 1 0 22475 0 -1 1975
+use M1_POLY2$$44754988_64x8m81 M1_POLY2$$44754988_64x8m81_3 1 0 22477 0 -1 1977
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_7 -1 0 22262 0 -1 3777
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_1 -1 0 22262 0 1 3777
+use M2_M1$$43375660_64x8m81 M2_M1$$43375660_64x8m81_0 1 0 22475 0 -1 3779
+use M1_POLY2$$44754988_64x8m81 M1_POLY2$$44754988_64x8m81_4 1 0 22477 0 -1 3777
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_5 -1 0 22262 0 -1 5577
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_2 -1 0 22262 0 1 5577
+use M2_M1$$43375660_64x8m81 M2_M1$$43375660_64x8m81_2 1 0 22475 0 -1 5575
+use M1_POLY2$$44754988_64x8m81 M1_POLY2$$44754988_64x8m81_2 1 0 22477 0 -1 5577
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_3 -1 0 22262 0 1 7377
+use 018SRAM_cell1_cutPC_64x8m81 018SRAM_cell1_cutPC_64x8m81_4 -1 0 22262 0 -1 7377
+use M2_M1$$43375660_64x8m81 M2_M1$$43375660_64x8m81_3 1 0 22475 0 -1 7379
+use M1_POLY2$$44754988_64x8m81 M1_POLY2$$44754988_64x8m81_1 1 0 22477 0 -1 7377
+use new_dummyrow_unit_01_64x8m81 new_dummyrow_unit_01_64x8m81_0 1 0 0 0 -1 9354
+use 018SRAM_strap1_64x8m81 018SRAM_strap1_64x8m81_4 -1 0 62 0 -1 9177
+use new_dummyrow_unit_64x8m81 new_dummyrow_unit_64x8m81_0 1 0 10800 0 -1 9354
+use 018SRAM_cell1_64x8m81 018SRAM_cell1_64x8m81_1 -1 0 22262 0 -1 9177
+use M1_POLY24310589983242_64x8m81 M1_POLY24310589983242_64x8m81_0 1 0 22476 0 1 9036
+use M2_M14310589983233_64x8m81 M2_M14310589983233_64x8m81_0 1 0 22476 0 1 8975
+use M3_M2431058998321_64x8m81 M3_M2431058998321_64x8m81_1 1 0 22476 0 1 9178
+node "VDD" 0 0 22196 1070 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "VSS" 0 0 22196 1995 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "m3_n636_77#" 0 0 -636 77 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "m3_n636_9077#" 0 0 -636 9077 m3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "m2_22412_76#" 0 0 22412 76 m2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_229#" 0 0 22205 229 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_1771#" 0 0 22205 1771 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_2029#" 0 0 22205 2029 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_3571#" 0 0 22205 3571 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_3829#" 0 0 22205 3829 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_5371#" 0 0 22205 5371 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_5629#" 0 0 22205 5629 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_7171#" 0 0 22205 7171 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_7429#" 0 0 22205 7429 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+node "a_22205_8971#" 0 0 22205 8971 p 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+substrate "VSUBS" 0 0 -1073741817 -1073741817 space 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "M3_M2431058998321_64x8m81_1/VSUBS" "M3_M2431058998321_64x8m81_1/m2_n38_n90#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "M3_M2431058998321_64x8m81_1/m2_n38_n90#" "M2_M14310589983233_64x8m81_0/VSUBS"
+merge "M2_M14310589983233_64x8m81_0/VSUBS" "M2_M14310589983233_64x8m81_0/m1_n38_n142#"
+merge "M2_M14310589983233_64x8m81_0/m1_n38_n142#" "M1_POLY24310589983242_64x8m81_0/a_n42_n89#"
+merge "M1_POLY24310589983242_64x8m81_0/a_n42_n89#" "018SRAM_cell1_64x8m81_1/m3_n36_330#"
+merge "018SRAM_cell1_64x8m81_1/m3_n36_330#" "a_22205_8971#"
+merge "a_22205_8971#" "018SRAM_cell1_64x8m81_1/a_n36_52#"
+merge "018SRAM_cell1_64x8m81_1/a_n36_52#" "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_1/a_n36_52#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_1/a_n36_52#" "M1_POLY24310589983242_64x8m81_0/VSUBS"
+merge "M1_POLY24310589983242_64x8m81_0/VSUBS" "018SRAM_cell1_64x8m81_1/a_246_342#"
+merge "018SRAM_cell1_64x8m81_1/a_246_342#" "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_1/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_1/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_0/m3_n68_n68#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_0/m3_n68_n68#" "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_0/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_0/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/a_246_342#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/a_246_342#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_1/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_1/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_0/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_0/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_0/m3_n68_n68#"
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_0/m3_n68_n68#" "M1_POLY2$$44754988_64x8m81_1/VSUBS"
+merge "M1_POLY2$$44754988_64x8m81_1/VSUBS" "m3_n636_9077#"
+merge "m3_n636_9077#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/a_246_342#"
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/a_246_342#" "M1_POLY2$$44754988_64x8m81_1/a_n96_n151#"
+merge "M1_POLY2$$44754988_64x8m81_1/a_n96_n151#" "018SRAM_cell1_cutPC_64x8m81_4/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_4/a_n36_52#" "a_22205_7171#"
+merge "a_22205_7171#" "018SRAM_cell1_cutPC_64x8m81_3/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_3/a_n36_52#" "a_22205_7429#"
+merge "a_22205_7429#" "M2_M1$$43375660_64x8m81_3/VSUBS"
+merge "M2_M1$$43375660_64x8m81_3/VSUBS" "M2_M1$$43375660_64x8m81_3/m1_n62_n175#"
+merge "M2_M1$$43375660_64x8m81_3/m1_n62_n175#" "018SRAM_cell1_64x8m81_1/VSUBS"
+merge "018SRAM_cell1_64x8m81_1/VSUBS" "018SRAM_cell1_cutPC_64x8m81_3/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_3/VSUBS" "new_dummyrow_unit_64x8m81_0/VSUBS"
+merge "new_dummyrow_unit_64x8m81_0/VSUBS" "018SRAM_strap1_64x8m81_4/a_238_n56#"
+merge "018SRAM_strap1_64x8m81_4/a_238_n56#" "new_dummyrow_unit_01_64x8m81_0/VSUBS"
+merge "new_dummyrow_unit_01_64x8m81_0/VSUBS" "018SRAM_cell1_cutPC_64x8m81_4/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_4/VSUBS" "M1_POLY2$$44754988_64x8m81_2/VSUBS"
+merge "M1_POLY2$$44754988_64x8m81_2/VSUBS" "M1_POLY2$$44754988_64x8m81_2/a_n96_n151#"
+merge "M1_POLY2$$44754988_64x8m81_2/a_n96_n151#" "018SRAM_cell1_cutPC_64x8m81_5/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_5/a_n36_52#" "a_22205_5371#"
+merge "a_22205_5371#" "018SRAM_cell1_cutPC_64x8m81_2/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_2/a_n36_52#" "a_22205_5629#"
+merge "a_22205_5629#" "M2_M1$$43375660_64x8m81_2/VSUBS"
+merge "M2_M1$$43375660_64x8m81_2/VSUBS" "M2_M1$$43375660_64x8m81_2/m1_n62_n175#"
+merge "M2_M1$$43375660_64x8m81_2/m1_n62_n175#" "018SRAM_cell1_cutPC_64x8m81_2/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_2/VSUBS" "018SRAM_cell1_cutPC_64x8m81_5/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_5/VSUBS" "M1_POLY2$$44754988_64x8m81_4/VSUBS"
+merge "M1_POLY2$$44754988_64x8m81_4/VSUBS" "M1_POLY2$$44754988_64x8m81_4/a_n96_n151#"
+merge "M1_POLY2$$44754988_64x8m81_4/a_n96_n151#" "018SRAM_cell1_cutPC_64x8m81_7/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_7/a_n36_52#" "a_22205_3571#"
+merge "a_22205_3571#" "018SRAM_cell1_cutPC_64x8m81_1/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_1/a_n36_52#" "a_22205_3829#"
+merge "a_22205_3829#" "M2_M1$$43375660_64x8m81_0/VSUBS"
+merge "M2_M1$$43375660_64x8m81_0/VSUBS" "M2_M1$$43375660_64x8m81_0/m1_n62_n175#"
+merge "M2_M1$$43375660_64x8m81_0/m1_n62_n175#" "018SRAM_cell1_cutPC_64x8m81_1/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_1/VSUBS" "M1_POLY2$$44754988_64x8m81_3/VSUBS"
+merge "M1_POLY2$$44754988_64x8m81_3/VSUBS" "M1_POLY2$$44754988_64x8m81_3/a_n96_n151#"
+merge "M1_POLY2$$44754988_64x8m81_3/a_n96_n151#" "018SRAM_cell1_cutPC_64x8m81_6/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_6/a_n36_52#" "a_22205_1771#"
+merge "a_22205_1771#" "018SRAM_cell1_cutPC_64x8m81_0/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_0/a_n36_52#" "a_22205_2029#"
+merge "a_22205_2029#" "M2_M1$$43375660_64x8m81_1/VSUBS"
+merge "M2_M1$$43375660_64x8m81_1/VSUBS" "M2_M1$$43375660_64x8m81_1/m1_n62_n175#"
+merge "M2_M1$$43375660_64x8m81_1/m1_n62_n175#" "018SRAM_cell1_cutPC_64x8m81_7/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_7/VSUBS" "018SRAM_cell1_cutPC_64x8m81_0/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_0/VSUBS" "M3_M2431058998321_64x8m81_0/VSUBS"
+merge "M3_M2431058998321_64x8m81_0/VSUBS" "M3_M2431058998321_64x8m81_0/m2_n38_n90#"
+merge "M3_M2431058998321_64x8m81_0/m2_n38_n90#" "M2_M1431058998329_64x8m81_0/m1_n38_n90#"
+merge "M2_M1431058998329_64x8m81_0/m1_n38_n90#" "m2_22412_76#"
+merge "m2_22412_76#" "M1_POLY2$$44754988_64x8m81_0/a_n96_n151#"
+merge "M1_POLY2$$44754988_64x8m81_0/a_n96_n151#" "018SRAM_cell1_64x8m81_0/m3_n36_330#"
+merge "018SRAM_cell1_64x8m81_0/m3_n36_330#" "a_22205_229#"
+merge "a_22205_229#" "018SRAM_cell1_64x8m81_0/a_n36_52#"
+merge "018SRAM_cell1_64x8m81_0/a_n36_52#" "018SRAM_strap1_64x8m81_5/a_n36_52#"
+merge "018SRAM_strap1_64x8m81_5/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_7/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_7/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_7/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_7/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_5/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_5/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_6/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_6/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_5/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_5/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_6/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_6/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_4/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_4/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_4/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_4/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_2/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_2/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_2/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_2/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_3/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_3/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_3/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_3/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_1/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_1/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_1/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_1/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_0/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_0/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_0/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_0/a_n36_52#" "018SRAM_strap1_64x8m81_0/a_n36_52#"
+merge "018SRAM_strap1_64x8m81_0/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_8/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_8/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_8/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_8/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_9/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_9/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_9/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_9/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_10/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_10/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_10/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_10/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_11/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_11/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_11/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_11/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_13/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_13/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_13/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_13/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_12/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_12/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_12/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_12/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_14/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_14/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_14/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_14/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_15/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_15/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_15/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_15/a_n36_52#" "018SRAM_strap1_64x8m81_1/a_n36_52#"
+merge "018SRAM_strap1_64x8m81_1/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_21/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_21/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_22/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_22/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_22/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_22/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_21/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_21/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_20/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_20/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_20/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_20/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_19/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_19/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_19/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_19/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_17/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_17/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_17/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_17/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_18/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_18/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_18/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_18/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_16/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_16/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_16/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_16/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_31/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_31/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_31/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_31/a_n36_52#" "018SRAM_strap1_64x8m81_2/a_n36_52#"
+merge "018SRAM_strap1_64x8m81_2/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_23/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_23/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_23/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_23/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_24/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_24/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_24/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_24/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_25/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_25/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_25/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_25/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_26/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_26/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_26/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_26/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_28/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_28/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_28/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_28/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_27/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_27/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_27/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_27/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_29/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_29/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_29/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_29/a_n36_52#" "018SRAM_cell1_dummy_64x8m81_30/m3_n36_330#"
+merge "018SRAM_cell1_dummy_64x8m81_30/m3_n36_330#" "018SRAM_cell1_dummy_64x8m81_30/a_n36_52#"
+merge "018SRAM_cell1_dummy_64x8m81_30/a_n36_52#" "018SRAM_strap1_64x8m81_3/a_n36_52#"
+merge "018SRAM_strap1_64x8m81_3/a_n36_52#" "M2_M1431058998329_64x8m81_0/VSUBS"
+merge "M2_M1431058998329_64x8m81_0/VSUBS" "M1_POLY2$$44754988_64x8m81_0/VSUBS"
+merge "M1_POLY2$$44754988_64x8m81_0/VSUBS" "018SRAM_cell1_64x8m81_0/VSUBS"
+merge "018SRAM_cell1_64x8m81_0/VSUBS" "018SRAM_cell1_64x8m81_0/a_246_342#"
+merge "018SRAM_cell1_64x8m81_0/a_246_342#" "018SRAM_cell1_cutPC_64x8m81_6/VSUBS"
+merge "018SRAM_cell1_cutPC_64x8m81_6/VSUBS" "018SRAM_strap1_64x8m81_5/a_238_n56#"
+merge "018SRAM_strap1_64x8m81_5/a_238_n56#" "018SRAM_cell1_dummy_64x8m81_7/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_7/VSUBS" "018SRAM_cell1_dummy_64x8m81_7/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_7/a_246_342#" "018SRAM_cell1_dummy_64x8m81_5/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_5/VSUBS" "018SRAM_cell1_dummy_64x8m81_5/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_5/a_246_342#" "018SRAM_cell1_dummy_64x8m81_6/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_6/a_246_342#" "018SRAM_cell1_dummy_64x8m81_6/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_6/VSUBS" "018SRAM_cell1_dummy_64x8m81_4/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_4/VSUBS" "018SRAM_cell1_dummy_64x8m81_4/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_4/a_246_342#" "018SRAM_cell1_dummy_64x8m81_2/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_2/VSUBS" "018SRAM_cell1_dummy_64x8m81_2/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_2/a_246_342#" "018SRAM_cell1_dummy_64x8m81_3/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_3/VSUBS" "018SRAM_cell1_dummy_64x8m81_3/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_3/a_246_342#" "018SRAM_cell1_dummy_64x8m81_1/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_1/VSUBS" "018SRAM_cell1_dummy_64x8m81_1/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_1/a_246_342#" "018SRAM_cell1_dummy_64x8m81_0/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_0/VSUBS" "018SRAM_cell1_dummy_64x8m81_0/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_0/a_246_342#" "018SRAM_strap1_64x8m81_0/m3_n68_n68#"
+merge "018SRAM_strap1_64x8m81_0/m3_n68_n68#" "018SRAM_strap1_64x8m81_0/a_238_n56#"
+merge "018SRAM_strap1_64x8m81_0/a_238_n56#" "018SRAM_cell1_dummy_64x8m81_8/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_8/VSUBS" "018SRAM_cell1_dummy_64x8m81_8/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_8/a_246_342#" "018SRAM_cell1_dummy_64x8m81_9/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_9/VSUBS" "018SRAM_cell1_dummy_64x8m81_9/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_9/a_246_342#" "018SRAM_cell1_dummy_64x8m81_10/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_10/VSUBS" "018SRAM_cell1_dummy_64x8m81_10/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_10/a_246_342#" "018SRAM_cell1_dummy_64x8m81_11/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_11/VSUBS" "018SRAM_cell1_dummy_64x8m81_11/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_11/a_246_342#" "018SRAM_cell1_dummy_64x8m81_13/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_13/VSUBS" "018SRAM_cell1_dummy_64x8m81_13/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_13/a_246_342#" "018SRAM_cell1_dummy_64x8m81_12/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_12/VSUBS" "018SRAM_cell1_dummy_64x8m81_12/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_12/a_246_342#" "018SRAM_cell1_dummy_64x8m81_14/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_14/VSUBS" "018SRAM_cell1_dummy_64x8m81_14/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_14/a_246_342#" "018SRAM_cell1_dummy_64x8m81_15/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_15/VSUBS" "018SRAM_cell1_dummy_64x8m81_15/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_15/a_246_342#" "018SRAM_strap1_64x8m81_1/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "018SRAM_strap1_64x8m81_1/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "018SRAM_strap1_64x8m81_1/a_238_n56#"
+merge "018SRAM_strap1_64x8m81_1/a_238_n56#" "018SRAM_cell1_dummy_64x8m81_22/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_22/VSUBS" "018SRAM_cell1_dummy_64x8m81_22/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_22/a_246_342#" "018SRAM_cell1_dummy_64x8m81_21/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_21/VSUBS" "018SRAM_cell1_dummy_64x8m81_21/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_21/a_246_342#" "018SRAM_cell1_dummy_64x8m81_20/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_20/VSUBS" "018SRAM_cell1_dummy_64x8m81_20/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_20/a_246_342#" "018SRAM_cell1_dummy_64x8m81_19/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_19/VSUBS" "018SRAM_cell1_dummy_64x8m81_19/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_19/a_246_342#" "018SRAM_cell1_dummy_64x8m81_17/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_17/VSUBS" "018SRAM_cell1_dummy_64x8m81_17/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_17/a_246_342#" "018SRAM_cell1_dummy_64x8m81_18/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_18/VSUBS" "018SRAM_cell1_dummy_64x8m81_18/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_18/a_246_342#" "018SRAM_cell1_dummy_64x8m81_16/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_16/VSUBS" "018SRAM_cell1_dummy_64x8m81_16/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_16/a_246_342#" "018SRAM_cell1_dummy_64x8m81_31/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_31/VSUBS" "018SRAM_cell1_dummy_64x8m81_31/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_31/a_246_342#" "018SRAM_strap1_64x8m81_2/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "018SRAM_strap1_64x8m81_2/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "018SRAM_strap1_64x8m81_2/m3_n68_n68#"
+merge "018SRAM_strap1_64x8m81_2/m3_n68_n68#" "018SRAM_cell1_dummy_64x8m81_23/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_23/VSUBS" "018SRAM_cell1_dummy_64x8m81_24/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_24/VSUBS" "018SRAM_cell1_dummy_64x8m81_25/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_25/VSUBS" "018SRAM_cell1_dummy_64x8m81_26/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_26/VSUBS" "018SRAM_cell1_dummy_64x8m81_28/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_28/VSUBS" "018SRAM_cell1_dummy_64x8m81_27/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_27/VSUBS" "018SRAM_cell1_dummy_64x8m81_29/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_29/VSUBS" "018SRAM_cell1_dummy_64x8m81_30/VSUBS"
+merge "018SRAM_cell1_dummy_64x8m81_30/VSUBS" "018SRAM_strap1_64x8m81_3/a_238_n56#"
+merge "018SRAM_strap1_64x8m81_3/a_238_n56#" "VSUBS"
+merge "VSUBS" "018SRAM_strap1_64x8m81_2/a_238_n56#"
+merge "018SRAM_strap1_64x8m81_2/a_238_n56#" "018SRAM_cell1_dummy_64x8m81_23/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_23/a_246_342#" "018SRAM_cell1_dummy_64x8m81_24/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_24/a_246_342#" "018SRAM_cell1_dummy_64x8m81_25/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_25/a_246_342#" "018SRAM_cell1_dummy_64x8m81_26/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_26/a_246_342#" "018SRAM_cell1_dummy_64x8m81_28/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_28/a_246_342#" "018SRAM_cell1_dummy_64x8m81_27/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_27/a_246_342#" "018SRAM_cell1_dummy_64x8m81_29/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_29/a_246_342#" "018SRAM_cell1_dummy_64x8m81_30/a_246_342#"
+merge "018SRAM_cell1_dummy_64x8m81_30/a_246_342#" "018SRAM_strap1_64x8m81_3/M2_M14310589983228_64x8m81_0/m1_n38_n38#"
+merge "018SRAM_strap1_64x8m81_3/M2_M14310589983228_64x8m81_0/m1_n38_n38#" "m3_n636_77#"
+merge "018SRAM_cell1_64x8m81_1/a_246_712#" "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_5/w_n68_622#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_5/w_n68_622#" "018SRAM_cell1_64x8m81_1/w_n68_622#"
+merge "018SRAM_cell1_64x8m81_1/w_n68_622#" "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_1/w_n68_622#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_strap1_64x8m81_1/w_n68_622#" "018SRAM_cell1_cutPC_64x8m81_3/a_246_712#"
+merge "018SRAM_cell1_cutPC_64x8m81_3/a_246_712#" "018SRAM_cell1_cutPC_64x8m81_3/w_n68_622#"
+merge "018SRAM_cell1_64x8m81_0/a_246_712#" "018SRAM_cell1_64x8m81_0/w_n68_622#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "018SRAM_cell1_64x8m81_0/w_n68_622#" "018SRAM_cell1_cutPC_64x8m81_6/a_246_712#"
+merge "018SRAM_cell1_cutPC_64x8m81_6/a_246_712#" "018SRAM_cell1_cutPC_64x8m81_6/w_n68_622#"
+merge "018SRAM_cell1_cutPC_64x8m81_6/w_n68_622#" "018SRAM_strap1_64x8m81_5/w_n68_622#"
+merge "018SRAM_strap1_64x8m81_5/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_7/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_7/a_246_712#" "018SRAM_cell1_dummy_64x8m81_7/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_7/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_5/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_5/a_246_712#" "018SRAM_cell1_dummy_64x8m81_6/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_6/a_246_712#" "018SRAM_cell1_dummy_64x8m81_5/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_5/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_6/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_6/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_4/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_4/a_246_712#" "018SRAM_cell1_dummy_64x8m81_4/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_4/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_2/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_2/a_246_712#" "018SRAM_cell1_dummy_64x8m81_2/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_2/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_3/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_3/a_246_712#" "018SRAM_cell1_dummy_64x8m81_3/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_3/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_1/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_1/a_246_712#" "018SRAM_cell1_dummy_64x8m81_1/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_1/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_0/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_0/a_246_712#" "018SRAM_cell1_dummy_64x8m81_0/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_0/w_n68_622#" "018SRAM_strap1_64x8m81_0/w_n68_622#"
+merge "018SRAM_strap1_64x8m81_0/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_8/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_8/a_246_712#" "018SRAM_cell1_dummy_64x8m81_8/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_8/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_9/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_9/a_246_712#" "018SRAM_cell1_dummy_64x8m81_9/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_9/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_10/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_10/a_246_712#" "018SRAM_cell1_dummy_64x8m81_10/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_10/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_11/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_11/a_246_712#" "018SRAM_cell1_dummy_64x8m81_11/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_11/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_13/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_13/a_246_712#" "018SRAM_cell1_dummy_64x8m81_13/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_13/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_12/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_12/a_246_712#" "018SRAM_cell1_dummy_64x8m81_12/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_12/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_14/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_14/a_246_712#" "018SRAM_cell1_dummy_64x8m81_14/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_14/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_15/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_15/a_246_712#" "018SRAM_cell1_dummy_64x8m81_15/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_15/w_n68_622#" "018SRAM_strap1_64x8m81_1/w_n68_622#"
+merge "018SRAM_strap1_64x8m81_1/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_21/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_21/a_246_712#" "018SRAM_cell1_dummy_64x8m81_22/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_22/a_246_712#" "018SRAM_cell1_dummy_64x8m81_22/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_22/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_21/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_21/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_20/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_20/a_246_712#" "018SRAM_cell1_dummy_64x8m81_20/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_20/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_19/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_19/a_246_712#" "018SRAM_cell1_dummy_64x8m81_19/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_19/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_17/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_17/a_246_712#" "018SRAM_cell1_dummy_64x8m81_17/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_17/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_18/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_18/a_246_712#" "018SRAM_cell1_dummy_64x8m81_18/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_18/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_16/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_16/a_246_712#" "018SRAM_cell1_dummy_64x8m81_16/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_16/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_31/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_31/a_246_712#" "018SRAM_cell1_dummy_64x8m81_31/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_31/w_n68_622#" "018SRAM_strap1_64x8m81_2/w_n68_622#"
+merge "018SRAM_strap1_64x8m81_2/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_23/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_23/a_246_712#" "018SRAM_cell1_dummy_64x8m81_23/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_23/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_24/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_24/a_246_712#" "018SRAM_cell1_dummy_64x8m81_24/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_24/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_25/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_25/a_246_712#" "018SRAM_cell1_dummy_64x8m81_25/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_25/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_26/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_26/a_246_712#" "018SRAM_cell1_dummy_64x8m81_26/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_26/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_28/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_28/a_246_712#" "018SRAM_cell1_dummy_64x8m81_28/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_28/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_27/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_27/a_246_712#" "018SRAM_cell1_dummy_64x8m81_27/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_27/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_29/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_29/a_246_712#" "018SRAM_cell1_dummy_64x8m81_29/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_29/w_n68_622#" "018SRAM_cell1_dummy_64x8m81_30/a_246_712#"
+merge "018SRAM_cell1_dummy_64x8m81_30/a_246_712#" "018SRAM_cell1_dummy_64x8m81_30/w_n68_622#"
+merge "018SRAM_cell1_dummy_64x8m81_30/w_n68_622#" "018SRAM_strap1_64x8m81_3/w_n68_622#"
+merge "018SRAM_cell1_64x8m81_1/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_4/a_444_n42#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "018SRAM_cell1_cutPC_64x8m81_4/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_3/a_444_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_3/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_2/a_444_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_2/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_5/a_444_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_5/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_1/a_444_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_1/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_7/a_444_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_7/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_0/a_444_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_0/a_444_n42#" "018SRAM_cell1_64x8m81_0/a_444_n42#"
+merge "018SRAM_cell1_64x8m81_0/a_444_n42#" "018SRAM_cell1_cutPC_64x8m81_6/a_444_n42#"
+merge "018SRAM_strap1_64x8m81_4/w_n68_622#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/w_n68_622#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/w_n68_622#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_246_712#"
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_246_712#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/w_n68_622#"
+merge "018SRAM_cell1_cutPC_64x8m81_4/a_246_712#" "018SRAM_cell1_cutPC_64x8m81_2/a_246_712#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/w_n68_622#" "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_246_712#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_246_712#" "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/w_n68_622#"
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/w_n68_622#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_1/w_n68_622#"
+merge "018SRAM_cell1_64x8m81_1/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_4/a_36_n42#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "018SRAM_cell1_cutPC_64x8m81_4/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_3/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_3/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_2/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_2/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_5/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_5/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_1/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_1/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_7/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_7/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_0/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_0/a_36_n42#" "018SRAM_cell1_64x8m81_0/a_36_n42#"
+merge "018SRAM_cell1_64x8m81_0/a_36_n42#" "018SRAM_cell1_cutPC_64x8m81_6/a_36_n42#"
+merge "018SRAM_cell1_cutPC_64x8m81_5/a_246_712#" "018SRAM_cell1_cutPC_64x8m81_1/a_246_712#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "018SRAM_cell1_cutPC_64x8m81_7/w_n68_622#" "018SRAM_cell1_cutPC_64x8m81_0/w_n68_622#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/m3_n36_330#" "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_n36_52#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_n36_52#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_strap1_64x8m81_1/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_7/a_246_712#" "018SRAM_cell1_cutPC_64x8m81_0/a_246_712#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "018SRAM_strap1_64x8m81_4/a_n36_52#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/m3_n36_330#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_13/m3_n36_330#" "new_dummyrow_unit_01_64x8m81_0/018SRAM_cell1_dummy_64x8m81_14/a_n36_52#"
+merge "018SRAM_cell1_cutPC_64x8m81_5/w_n68_622#" "018SRAM_cell1_cutPC_64x8m81_1/w_n68_622#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+merge "018SRAM_cell1_cutPC_64x8m81_4/w_n68_622#" "018SRAM_cell1_cutPC_64x8m81_2/w_n68_622#" 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
