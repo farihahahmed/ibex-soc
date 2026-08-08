@@ -1,0 +1,193 @@
+library (chip_top_full) {
+  comment                        : "";
+  delay_model                    : table_lookup;
+  simulation                     : false;
+  capacitive_load_unit (1,pF);
+  leakage_power_unit             : 1pW;
+  current_unit                   : "1mA";
+  pulling_resistance_unit        : "1ohm";
+  time_unit                      : "1ns";
+  voltage_unit                   : "1v";
+  library_features(report_delay_calculation);
+
+  input_threshold_pct_rise : 50;
+  input_threshold_pct_fall : 50;
+  output_threshold_pct_rise : 50;
+  output_threshold_pct_fall : 50;
+  slew_lower_threshold_pct_rise : 30;
+  slew_lower_threshold_pct_fall : 30;
+  slew_upper_threshold_pct_rise : 70;
+  slew_upper_threshold_pct_fall : 70;
+  slew_derate_from_library : 1.0;
+
+
+  nom_process                    : 1.0;
+  nom_temperature                : 125.0;
+  nom_voltage                    : 4.50;
+
+  type ("gpio_in") {
+    base_type : array;
+    data_type : bit;
+    bit_width : 2;
+    bit_from : 1;
+    bit_to : 0;
+  }
+  type ("gpio_out") {
+    base_type : array;
+    data_type : bit;
+    bit_width : 5;
+    bit_from : 4;
+    bit_to : 0;
+  }
+
+  cell ("chip_top_full") {
+    area : 903567.188 
+    is_macro_cell : true;
+    pin("clk") {
+      direction : input;
+      clock : true;
+      capacitance : 0.1111;
+      timing() {
+        timing_sense : positive_unate;
+        timing_type : min_clock_tree_path;
+	cell_rise(scalar) {
+          values("1.29642");
+	}
+	cell_fall(scalar) {
+          values("-48.72422");
+	}
+      }
+      timing() {
+        timing_sense : positive_unate;
+        timing_type : max_clock_tree_path;
+	cell_rise(scalar) {
+          values("1.30139");
+	}
+	cell_fall(scalar) {
+          values("1.27963");
+	}
+      }
+    }
+    pin("clk_int") {
+      direction : input;
+      capacitance : 0.0061;
+    }
+    pin("rst_n") {
+      direction : input;
+      capacitance : 0.0209;
+      timing() {
+        related_pin : "clk";
+        timing_type : hold_rising;
+	rise_constraint(scalar) {
+          values("-2.56162");
+	}
+      }
+      timing() {
+        related_pin : "clk";
+        timing_type : setup_rising;
+	rise_constraint(scalar) {
+          values("3.07310");
+	}
+      }
+    }
+    pin("scan_i0o1") {
+      direction : input;
+      capacitance : 0.0068;
+    }
+    pin("scan_in") {
+      direction : input;
+      capacitance : 0.0069;
+    }
+    pin("scan_load") {
+      direction : input;
+      capacitance : 0.0093;
+      timing() {
+        related_pin : "clk";
+        timing_type : hold_rising;
+	rise_constraint(scalar) {
+          values("-5.73836");
+	}
+	fall_constraint(scalar) {
+          values("-5.04734");
+	}
+      }
+      timing() {
+        related_pin : "clk";
+        timing_type : setup_rising;
+	rise_constraint(scalar) {
+          values("12.38415");
+	}
+	fall_constraint(scalar) {
+          values("13.90446");
+	}
+      }
+    }
+    pin("scan_out") {
+      direction : output;
+      capacitance : 0.0037;
+    }
+    pin("scan_shift") {
+      direction : input;
+      capacitance : 0.0098;
+    }
+    pin("spi_cs_n") {
+      direction : output;
+      capacitance : 0.0033;
+    }
+    pin("spi_mosi") {
+      direction : output;
+      capacitance : 0.0031;
+    }
+    pin("spi_sclk") {
+      direction : output;
+      capacitance : 0.0037;
+    }
+    pin("uart_rx") {
+      direction : input;
+      capacitance : 0.0051;
+    }
+    pin("uart_tx") {
+      direction : output;
+      capacitance : 0.0031;
+    }
+    bus("gpio_in") {
+      bus_type : gpio_in;
+      direction : input;
+      capacitance : 0.0000;
+    pin("gpio_in[1]") {
+      direction : input;
+      capacitance : 0.0049;
+    }
+    pin("gpio_in[0]") {
+      direction : input;
+      capacitance : 0.0049;
+    }
+    }
+    bus("gpio_out") {
+      bus_type : gpio_out;
+      direction : output;
+      capacitance : 0.0000;
+    pin("gpio_out[4]") {
+      direction : output;
+      capacitance : 0.0038;
+    }
+    pin("gpio_out[3]") {
+      direction : output;
+      capacitance : 0.0037;
+    }
+    pin("gpio_out[2]") {
+      direction : output;
+      capacitance : 0.0034;
+    }
+    pin("gpio_out[1]") {
+      direction : output;
+      capacitance : 0.0032;
+    }
+    pin("gpio_out[0]") {
+      direction : output;
+      capacitance : 0.0055;
+    }
+    }
+  }
+
+}
