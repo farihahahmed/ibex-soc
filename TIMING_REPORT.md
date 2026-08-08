@@ -1,32 +1,40 @@
-# Timing Report — chip_top.nl.v (GF180MCU 180nm)
+# Timing Report — chip_top_full, placed & routed (GF180MCU 180 nm)
 
-Static timing analysis via OpenSTA on the synthesized gate-level netlist.
-Ibex core and both SRAM macros are black-boxed (pre-characterized IP);
-timing is reported on the synthesized SoC logic (including the scan-configured
-clock-gating FSM and on-chip clock generator).
+STA on the **final placed-and-routed design** (LibreLane/OpenSTA), all 9
+PVT corners (process min/nom/max × ff_n40C_5v50 / tt_025C_5v00 / ss_125C_4v50).
 
-## Result: SETUP MET — no violations
+## Result: ALL CORNERS CLEAN
 
-| Metric | Value |
-|---|---|
-| Target clock | 8 MHz (125 ns period) |
-| Worst setup slack | **+113.32 ns (MET)** |
-| Critical path delay | ~6.7 ns |
-| Max frequency (Fmax) | ~150 MHz |
-| Clock-gating checks | MET (FSM gate endpoint, +119.8 ns slack) |
-| Setup violations | none |
+| Check | Worst slack | Worst corner | Verdict |
+|---|---:|---|---|
+| Setup | **+78.08 ns** | max_ss_125C_4v50 | MET (all 9) |
+| Hold | **+0.283 ns** | min_ff_n40C_5v50 | MET (all 9) |
+
+Target clock: 10 MHz (100 ns) on external `clk`; generated clocks `sys_clk`
+(÷2) and `cpu_clk` (gated) declared in `openlane/chip_top_full/chip_top.sdc`
+with `set_propagated_clock`.
+
+## Per-corner setup slack (ns)
+
+| Corner | min | nom | max |
+|---|---:|---:|---:|
+| ff_n40C_5v50 | 93.10 | 92.73 | 92.29 |
+| tt_025C_5v00 | 89.16 | 88.57 | 87.89 |
+| ss_125C_4v50 | 80.32 | 79.28 | 78.08 |
+
+## Per-corner hold slack (ns)
+
+| Corner | min | nom | max |
+|---|---:|---:|---:|
+| ff_n40C_5v50 | 0.283 | 0.315 | 0.327 |
+| tt_025C_5v00 | 0.535 | 0.537 | 0.540 |
+| ss_125C_4v50 | 1.020 | 1.023 | 1.026 |
 
 ## Notes
 
-The clock-gating FSM introduces clock-gating check endpoints (the FSM's clock-enable
-path into the gated `cpu_clk`); OpenSTA reports these separately and they meet with
-large margin. The design targets 8 MHz but closes timing up to ~150 MHz — the 180nm
-standard cells are far faster than the target clock, so the multi-cycle narrow-memory
-accesses have no timing impact.
-
-## Method
-
-- Tool: OpenSTA 3.1.0
-- Library: gf180mcu_fd_sc_mcu7t5v0__tt_025C_5v00 (typical corner)
-- Netlist: chip_top.nl.v (Ibex + SRAM macros black-boxed)
-- Clock constraint: create_clock -period 125.0 [get_ports clk]
+- Hold margins are intentionally lean: hold-fix buffering was capped
+  (HOLD_MAX_BUFFER_PCT=20, margin 0.1 ns) because unbounded buffer insertion
+  (3055 buffers, 165k µm²) overflowed detailed placement at this density.
+  All corners remain positive.
+- Max-slew/max-cap checker warnings appear per-corner but resolve to
+  "No violations found" — reporting noise, not failures.
