@@ -32,7 +32,7 @@ place-and-route → signoff-clean GDS**, entirely with open-source tools
 | Clock | 10 MHz target (100 ns), external clk → ÷2 → gated cpu_clk |
 | Pins | 22 (20 signal + 2 power) |
 
-## Why it fits (the two key moves)
+## Two key design decisions
 
 **1. Narrow memory:** a 32-bit memory needs 4 SRAM macros per bank. Single
 8-bit macros + byte gather/scatter units make them look 32-bit to the CPU.
