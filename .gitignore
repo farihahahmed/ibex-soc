@@ -14,3 +14,7 @@ synthesis/soc_flat_for_synth.v
 sim_dm
 sim_gate2
 openlane/*/runs/
+*.ext
+*.sim
+*.nodes
+*.res.ext
