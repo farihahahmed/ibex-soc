@@ -95,7 +95,7 @@ module tb_chip_v2;
         if (uart_byte!==8'h41) errors=errors+1;
         if (spi_byte!==8'hB7) errors=errors+1;
         $display("--------------------------------------------------");
-        if (errors==0) $display("PASS: Columbia-style SoC boots via scan-configured FSM!");
+        if (errors==0) $display("PASS: SoC boots via scan-configured FSM!");
         else $display("CHECK: %0d mismatch(es)", errors);
         $finish;
     end
