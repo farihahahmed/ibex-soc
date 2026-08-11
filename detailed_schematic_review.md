@@ -111,7 +111,7 @@ Three subsystems:
 | DRC (Magic full) | **0 violations** |
 | LVS (netgen) | **Match** — 13,966 devices / 13,021 nets |
 | Antenna | **PASS** — 0 violations |
-| Timing (9 corners) | **Clean.** Setup worst +78.08 ns @ ss; hold worst +0.283 ns @ ff |
+| Timing (9 corners) | **Clean.** Setup worst +75.07 ns @ ss; hold worst +0.328 ns @ ff |
 | Die | 1000 × 1000 µm, 72.6 % util, 46,344 instances |
 
 ### Known signoff detail — Metal3 heal
@@ -127,7 +127,7 @@ The GF180 SRAM + PDN interaction leaves 4 sub-µm Metal3 slivers (known upstream
 | Analog | N/A | Fully digital design |
 | Digital | ✅ | Timing closed all 9 corners; CDC handled (gated cpu_clk reset sync, GPIO input sync) |
 | Mixed Signal | N/A | — |
-| Reliability | ✅ | Antenna clean (targeted diode insertion, threshold 200); hold margin +0.283 ns @ ff |
+| Reliability | ✅ | Antenna clean (targeted diode insertion, threshold 200); hold margin +0.328 ns @ ff |
 | Documentation | ✅ | README, PINOUT, memory_map, AREA_REPORT, TIMING_REPORT, this review |
 
 ---

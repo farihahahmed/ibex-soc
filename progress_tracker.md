@@ -106,8 +106,8 @@ macro was 853×871 µm — 0.743 mm² for the CPU alone, untileable with the
 | DRC (Magic full) | **0** |
 | LVS (netgen) | **match** — 13,966 devices / 13,021 nets |
 | Antenna | **0 violations** |
-| Setup | +78.08 ns worst @ ss_125C_4v50 (all 9 corners MET) |
-| Hold | +0.283 ns worst @ ff_n40C_5v50 (all 9 corners MET) |
+| Setup | +75.07 ns worst @ ss_125C_4v50 (all 9 corners MET) |
+| Hold | +0.328 ns worst @ ff_n40C_5v50 (all 9 corners MET) |
 
 **Metal3 heal:** GF180 SRAM + PDN leaves 4 sub-µm Metal3 slivers (OpenLane
 #1549 / OpenROAD PR #2814). `gds/heal_metal3.tcl` paints them legal;

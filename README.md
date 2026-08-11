@@ -18,7 +18,7 @@ place-and-route → signoff-clean GDS**, entirely with open-source tools
 | **LVS** | **Circuits match uniquely** (13,966 devices / 13,021 nets) |
 | **Antenna** | **Passed** (0 violations) |
 | **Setup timing** | Clean, all 9 corners (worst +78.1 ns @ ss_125C_4v50) |
-| **Hold timing** | Clean, all 9 corners (worst +0.283 ns @ ff_n40C_5v50) |
+| **Hold timing** | Clean, all 9 corners (worst +0.328 ns @ ff_n40C_5v50) |
 | **Die** | **1000 µm × 1000 µm = 1.0 mm² (hard constraint, met)** |
 | Utilization | 72.6% placed (46,344 instances) |
 
