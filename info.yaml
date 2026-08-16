@@ -17,3 +17,49 @@ project:
   discord: "farihah__ahmed"
   description: "RISC-V RV32IMC SoC: PicoRV32 core, narrow 8-bit SRAM, AHB-Lite/APB bus, GPIO/UART/SPI, scan-configured control"
   lvs_config: "lvs_config.json"
+
+pins:
+  - name: clk
+    io_type: input_schmitt
+  - name: clk_int
+    io_type: input_cmos
+  - name: rst_n
+    io_type: input_schmitt
+  - name: scan_in
+    io_type: input_cmos
+  - name: scan_shift
+    io_type: input_cmos
+  - name: scan_load
+    io_type: input_cmos
+  - name: scan_i0o1
+    io_type: input_cmos
+  - name: scan_out
+    io_type: output_cmos
+  - name: gpio_out0
+    io_type: output_cmos
+  - name: gpio_out1
+    io_type: output_cmos
+  - name: gpio_out2
+    io_type: output_cmos
+  - name: gpio_out3
+    io_type: output_cmos
+  - name: gpio_out4
+    io_type: output_cmos
+  - name: gpio_in0
+    io_type: input_cmos
+  - name: gpio_in1
+    io_type: input_cmos
+  - name: uart_tx
+    io_type: output_cmos
+  - name: uart_rx
+    io_type: input_cmos
+  - name: spi_sclk
+    io_type: output_cmos
+  - name: spi_mosi
+    io_type: output_cmos
+  - name: spi_cs_n
+    io_type: output_cmos
+  - name: vdd
+    io_type: power
+  - name: vss
+    io_type: ground
