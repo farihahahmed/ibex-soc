@@ -34,31 +34,31 @@ pins:
   - name: scan_i0o1
     io_type: input_cmos
   - name: scan_out
-    io_type: output_cmos
+    io_type: bidirectional
   - name: gpio_out0
-    io_type: output_cmos
+    io_type: bidirectional
   - name: gpio_out1
-    io_type: output_cmos
+    io_type: bidirectional
   - name: gpio_out2
-    io_type: output_cmos
+    io_type: bidirectional
   - name: gpio_out3
-    io_type: output_cmos
+    io_type: bidirectional
   - name: gpio_out4
-    io_type: output_cmos
+    io_type: bidirectional
   - name: gpio_in0
     io_type: input_cmos
   - name: gpio_in1
     io_type: input_cmos
   - name: uart_tx
-    io_type: output_cmos
+    io_type: bidirectional
   - name: uart_rx
     io_type: input_cmos
   - name: spi_sclk
-    io_type: output_cmos
+    io_type: bidirectional
   - name: spi_mosi
-    io_type: output_cmos
+    io_type: bidirectional
   - name: spi_cs_n
-    io_type: output_cmos
+    io_type: bidirectional
   - name: vdd
     io_type: power
   - name: vss
