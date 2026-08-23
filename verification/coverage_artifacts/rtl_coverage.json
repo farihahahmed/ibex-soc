@@ -1,0 +1,163 @@
+{
+  "glue_line_hit": 113,
+  "glue_line_pts": 161,
+  "glue_line_pct": 70.2,
+  "gate_pct": 70.0,
+  "pass": true,
+  "files": [
+    {
+      "file": "ahb_interconnect.sv",
+      "hit": 7,
+      "pts": 8,
+      "pct": 87.5,
+      "glue": true
+    },
+    {
+      "file": "ahb_mem.sv",
+      "hit": 2,
+      "pts": 5,
+      "pct": 40.0,
+      "glue": true
+    },
+    {
+      "file": "ahb_to_apb.sv",
+      "hit": 14,
+      "pts": 14,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "apb_decoder.sv",
+      "hit": 9,
+      "pts": 10,
+      "pct": 90.0,
+      "glue": true
+    },
+    {
+      "file": "chip_top_full.sv",
+      "hit": 1,
+      "pts": 1,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "clk_gen.sv",
+      "hit": 4,
+      "pts": 5,
+      "pct": 80.0,
+      "glue": true
+    },
+    {
+      "file": "dmem_narrow.sv",
+      "hit": 3,
+      "pts": 5,
+      "pct": 60.0,
+      "glue": true
+    },
+    {
+      "file": "dmem_narrow_top.sv",
+      "hit": 4,
+      "pts": 36,
+      "pct": 11.1,
+      "glue": true
+    },
+    {
+      "file": "fetch_gather.sv",
+      "hit": 9,
+      "pts": 14,
+      "pct": 64.3,
+      "glue": true
+    },
+    {
+      "file": "gf180mcu_fd_ip_sram__sram256x8m8wm1.v",
+      "hit": 1,
+      "pts": 1,
+      "pct": 100.0,
+      "glue": false
+    },
+    {
+      "file": "gf180mcu_fd_ip_sram__sram64x8m8wm1.v",
+      "hit": 1,
+      "pts": 1,
+      "pct": 100.0,
+      "glue": false
+    },
+    {
+      "file": "gpio.sv",
+      "hit": 3,
+      "pts": 3,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "ibex_to_ahb.sv",
+      "hit": 4,
+      "pts": 4,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "imem_narrow.sv",
+      "hit": 5,
+      "pts": 5,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "imem_narrow_top.sv",
+      "hit": 12,
+      "pts": 13,
+      "pct": 92.3,
+      "glue": true
+    },
+    {
+      "file": "pico_shim.sv",
+      "hit": 3,
+      "pts": 3,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "picorv32.v",
+      "hit": 57,
+      "pts": 179,
+      "pct": 31.8,
+      "glue": false
+    },
+    {
+      "file": "rst_sync.sv",
+      "hit": 1,
+      "pts": 1,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "scan_chain.sv",
+      "hit": 2,
+      "pts": 3,
+      "pct": 66.7,
+      "glue": true
+    },
+    {
+      "file": "spi.sv",
+      "hit": 7,
+      "pts": 7,
+      "pct": 100.0,
+      "glue": true
+    },
+    {
+      "file": "test_fsm.sv",
+      "hit": 7,
+      "pts": 8,
+      "pct": 87.5,
+      "glue": true
+    },
+    {
+      "file": "uart.sv",
+      "hit": 16,
+      "pts": 16,
+      "pct": 100.0,
+      "glue": true
+    }
+  ]
+}

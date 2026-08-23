@@ -1,0 +1,11 @@
+[project]
+name = "ibex-soc-verification"
+version = "0.1.0"
+description = "Verification environment for ibex-soc"
+requires-python = ">=3.11"
+dependencies = [
+    "cocotb>=1.8.0",
+    "cocotb-bus",
+    "pyuvm>=2.9.0",
+    "pytest",
+]

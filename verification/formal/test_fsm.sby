@@ -1,0 +1,15 @@
+[options]
+mode prove
+depth 25
+
+[engines]
+smtbmc
+
+[script]
+read_verilog -sv rtl/test_fsm.sv
+read_verilog -sv verification/formal/test_fsm_props.sv
+prep -top test_fsm
+
+[files]
+rtl/test_fsm.sv
+verification/formal/test_fsm_props.sv

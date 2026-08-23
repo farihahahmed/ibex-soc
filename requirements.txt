@@ -1,0 +1,4 @@
+cocotb>=1.8.0
+cocotb-bus
+pyuvm>=2.9.0
+pytest

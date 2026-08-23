@@ -1,0 +1,69 @@
+CAPI=2:
+name: "::pico_soc:1.0.0"
+description: PicoRV32 SoC (scan, GPIO, UART, SPI, narrow mem)
+
+filesets:
+  rtl:
+    files:
+      - rtl/chip_top_full.sv
+      - rtl/ahb_interconnect.sv
+      - rtl/ahb_mem.sv
+      - rtl/ahb_to_apb.sv
+      - rtl/apb_decoder.sv
+      - rtl/apb_gpio.sv
+      - rtl/apb_spi.sv
+      - rtl/apb_uart.sv
+      - rtl/clk_gen.sv
+      - rtl/dmem_narrow.sv
+      - rtl/dmem_narrow_top.sv
+      - rtl/fetch_gather.sv
+      - rtl/gpio.sv
+      - rtl/ibex_to_ahb.sv
+      - rtl/imem_narrow.sv
+      - rtl/imem_narrow_top.sv
+      - rtl/mem_subsystem.sv
+      - rtl/picorv32.v
+      - rtl/pico_shim.sv
+      - rtl/rst_sync.sv
+      - rtl/scan_chain.sv
+      - rtl/spi.sv
+      - rtl/test_fsm.sv
+      - rtl/uart.sv
+    file_type: systemVerilogSource
+
+  tb_models:
+    files:
+      - verification/cocotb/models/gf180mcu_fd_ip_sram__sram256x8m8wm1.v
+      - verification/cocotb/models/gf180mcu_fd_ip_sram__sram64x8m8wm1.v
+    file_type: verilogSource
+
+scripts:
+  honesty_freeze:
+    cmd:
+      - bash
+      - scripts/run_honesty_freeze.sh
+
+targets:
+  default:
+    filesets: [rtl]
+
+  sim:
+    description: Icarus setup of chip_top_full
+    filesets: [rtl, tb_models]
+    toplevel: chip_top_full
+    default_tool: icarus
+    tools:
+      icarus:
+        iverilog_options: [-g2012]
+
+  honesty:
+    description: Run full honesty freeze (chip + block MDV)
+    filesets: [rtl, tb_models]
+    toplevel: chip_top_full
+    default_tool: icarus
+    tools:
+      icarus:
+        iverilog_options: [-g2012]
+    hooks:
+      pre_build:
+        - honesty_freeze

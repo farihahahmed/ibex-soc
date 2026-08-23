@@ -1,0 +1,111 @@
+SIM ?= icarus
+TOPLEVEL_LANG = verilog
+WAVES ?= 0
+
+TOPLEVEL = chip_top_full
+COCOTB_TEST_MODULES ?= test_chip_basic
+
+VERILOG_SOURCES = $(shell find ../../rtl -name "*.v" -o -name "*.sv" | sort)
+VERILOG_SOURCES += models/gf180mcu_fd_ip_sram__sram256x8m8wm1.v
+VERILOG_SOURCES += models/gf180mcu_fd_ip_sram__sram64x8m8wm1.v
+
+COMPILE_ARGS += -Pchip_top_full.NUM_OUT=5
+COMPILE_ARGS += -Pchip_top_full.NUM_IN=2
+COMPILE_ARGS += -Pchip_top_full.CLK_FREQ=8
+COMPILE_ARGS += -Pchip_top_full.BAUD_RATE=1
+COMPILE_ARGS += -Pchip_top_full.SPI_CLK_DIV=2
+
+export PYTHONPATH := $(CURDIR):$(PYTHONPATH)
+
+include $(shell cocotb-config --makefiles)/Makefile.sim
+
+.PHONY: smoke random primes game pyuvm-regress
+
+smoke:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_smoke
+
+random:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_random
+
+primes:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_primes
+
+game:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_game
+
+pyuvm-regress:
+	@echo "=== pyuvm smoke ==="
+	$(MAKE) clean
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_smoke
+	@echo "=== pyuvm random ==="
+	$(MAKE) clean
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_random
+	@echo "=== pyuvm primes ==="
+	$(MAKE) clean
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_primes
+	@echo "=== pyuvm piezo ==="
+	$(MAKE) clean
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_piezo
+	@echo "=== pyuvm game ==="
+	$(MAKE) clean
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_game
+	@echo "=== pyuvm regression finished ==="
+
+ifeq ($(COVERAGE),1)
+COMPILE_ARGS += -DCOVERAGE
+endif
+
+piezo:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_piezo
+
+.PHONY: coverage-rtl fusesoc-sim coverage-merge
+
+coverage-rtl:
+	mkdir -p coverage_rtl
+	verilator --cc --coverage --top-module chip_top_full \
+	  -Wno-fatal -Wno-TIMESCALEMOD -Wno-DECLFILENAME -Wno-WIDTHTRUNC -Wno-WIDTHEXPAND \
+	  -I../../rtl ../../rtl/*.sv ../../rtl/*.v models/*.v \
+	  --Mdir coverage_rtl/obj_dir
+
+coverage-merge:
+	python3 merge_coverage.py
+
+fusesoc-sim:
+	cd ../.. && fusesoc run --target sim --setup --build ::pico_soc:1.0.0
+
+.PHONY: coverage-run
+coverage-run:
+	verilator --cc --coverage --exe --build \
+	  -Wno-fatal -Wno-TIMESCALEMOD -Wno-DECLFILENAME -Wno-WIDTHTRUNC -Wno-WIDTHEXPAND \
+	  -Wno-CASEINCOMPLETE -Wno-UNOPTFLAT \
+	  -CFLAGS "-std=c++17" \
+	  --top-module chip_top_full \
+	  -f coverage_rtl/sources.f \
+	  coverage_rtl/sim_main.cpp \
+	  --Mdir coverage_rtl/obj_dir \
+	  -o cov_sim
+	cd coverage_rtl/obj_dir && ./cov_sim && verilator_coverage --rank coverage.dat
+
+.PHONY: random-uart random-spi
+random-uart:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_random_uart
+random-spi:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_random_spi
+
+.PHONY: random-uart-seeds random-spi-seeds
+random-uart-seeds:
+	./run_random_uart_seeds.sh
+random-spi-seeds:
+	./run_random_spi_seeds.sh
+
+.PHONY: uart-rx
+uart-rx:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_uart_rx
+
+.PHONY: uart-rx-e2e
+uart-rx-e2e:
+	$(MAKE) COCOTB_TEST_MODULES=test_pyuvm_uart_rx_e2e
+
+.PHONY: fusesoc-pyuvm
+fusesoc-pyuvm:
+	cd ../.. && fusesoc run --target pyuvm --setup --build ::pico_soc:1.0.0

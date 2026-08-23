@@ -1,0 +1,1 @@
+- CI: `.github/workflows/verify.yml` (block → pyuvm → exit-gate)

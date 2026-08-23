@@ -76,3 +76,26 @@ program, boots PicoRV32, and drives GPIO + UART (0x41) + SPI (0xB7)
 [`AREA_REPORT`](AREA_REPORT.md) · [`TIMING_REPORT`](TIMING_REPORT.md) ·
 [`PINOUT`](PINOUT.md) · [`memory_map`](memory_map.md) ·
 [`progress_tracker`](progress_tracker.md)
+
+## Verification
+See `verification/docs/PICO_SOC_VERIFICATION_PLAN.md` and `verification/docs/FREEZE_STATUS.md`.
+
+### Run gates
+```bash
+cd verification/cocotb
+./run_block_regress.sh    # block MDV UART/SPI/GPIO
+make pyuvm-regress        # chip pyuvm suite
+Block MDV: verification/docs/BLOCK_MDV.md
+```
+
+
+## How to verify (gates)
+
+From `verification/cocotb`:
+
+1. Block MDV: `./run_block_regress.sh`
+2. Full gate: `./run_all_verify.sh`  (must print ALL VERIFY PASS, exit 0)
+3. Useful singles: `make smoke`, `make random`, `make dmem`, `make scan-lockout`
+
+Activate venv if needed, then:
+`export PYTHONPATH="$(pwd):${PYTHONPATH}"`

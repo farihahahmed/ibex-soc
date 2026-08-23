@@ -18,3 +18,12 @@ openlane/*/runs/
 *.sim
 *.nodes
 *.res.ext
+.venv/
+build/
+**/sim_build/
+**/results.xml
+**/*.vcd
+**/*.fst
+**/obj_dir/
+__pycache__/
+*.pyc
