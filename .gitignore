@@ -1,29 +1,30 @@
-# build artifacts
-obj_dir/
-syn_out/
-sim
-sim_*
-*.vcd
-# temp / OS
-.DS_Store
-cd
-which
+# Python / venv
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Sim / build
+build/
+**/sim_build/
+**/obj_dir/
+**/results.xml
+**/*.vcd
+**/*.fst
 *.tmp
-# scratch synthesis outputs regenerated on demand
-synthesis/soc_flat_for_synth.v
-sim_dm
-sim_gate2
+.DS_Store
+
+# Tool scratch
 openlane/*/runs/
 *.ext
 *.sim
 *.nodes
 *.res.ext
-.venv/
-build/
-**/sim_build/
-**/results.xml
-**/*.vcd
-**/*.fst
-**/obj_dir/
-__pycache__/
-*.pyc
+synthesis/soc_flat_for_synth.v
+
+# Generated coverage (regenerate locally)
+verification/cocotb/coverage_rtl/annotate/
+verification/cocotb/coverage_rtl/annotate_src/
+verification/cocotb/coverage_merge.json
+verification/coverage_artifacts/
+.github/workflows/

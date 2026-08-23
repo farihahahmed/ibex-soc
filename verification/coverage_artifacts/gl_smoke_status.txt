@@ -1,3 +1,0 @@
-STATUS: PASS
-NETLIST: RUN_2026-08-08_06-31-45/final/nl/chip_top_full.nl.v
-DATE: 2026-08-23
