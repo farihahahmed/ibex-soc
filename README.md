@@ -1,101 +1,58 @@
-# PicoRV32 SoC on GF180MCU — 1 mm², signoff-clean
+# PicoRV32 SoC on GF180MCU — 1 mm²
 
-A RISC-V System-on-Chip on the open **GF180MCU (180 nm)** process, built around
-the **PicoRV32** core (RV32IMC). Full flow: **RTL → simulation → synthesis →
-place-and-route → signoff-clean GDS**, entirely with open-source tools
-(Icarus, Yosys, LibreLane/OpenROAD, Magic, Netgen).
+RISC-V **RV32IMC** SoC (PicoRV32) on open **GF180MCU**, open-source flow
+(Icarus · Yosys · LibreLane/OpenROAD · Magic · Netgen).
 
-> Repo name note: the project began with the Ibex core ("ibex-soc"); Ibex's
-> hardened macro (0.743 mm²) could not tile with the SRAMs inside the 1 mm²
-> die, so the CPU was swapped for PicoRV32, which synthesizes inline with the
-> logic. The name is historical.
+> Repo name `ibex-soc` is historical: Ibex's hardened macro did not tile with
+> the SRAMs inside 1 mm², so the CPU was swapped to synthesizable PicoRV32.
 
-## Final signoff (healed GDS: `gds/chip_top_full_healed.gds`)
+## Signoff (current GDS: `gds/chip_top_full.gds`)
 
 | Check | Result |
-|---|---|
-| **DRC** | **0 errors** (Magic full check) |
-| **LVS** | **Circuits match uniquely** (13,966 devices / 13,021 nets) |
-| **Antenna** | **Passed** (0 violations) |
-| **Setup timing** | Clean, all 9 corners (worst +78.1 ns @ ss_125C_4v50) |
-| **Hold timing** | Clean, all 9 corners (worst +0.328 ns @ ff_n40C_5v50) |
-| **Die** | **1000 µm × 1000 µm = 1.0 mm² (hard constraint, met)** |
-| Utilization | 72.6% placed (46,344 instances) |
+|-------|--------|
+| DRC | 0 errors (Magic; see `gds/DRC_RESULT.txt`) |
+| LVS | Match (`gds/lvs_report.rpt`) |
+| Antenna | Passed |
+| Die | 1000 × 1000 µm |
+
+Metal3 SRAM/PDN heal: `gds/heal_metal3.tcl`.
+
+## Design snapshot
 
 | | |
 |---|---|
-| CPU | PicoRV32 RV32IMC (MUL/DIV on, IRQ off), synthesized as std cells |
-| Memory | Narrow 8-bit: 256 B instr + 64 B data, byte gather/scatter |
-| Bus | Two-tier AHB-Lite + APB |
-| Peripherals | GPIO (2 in / 5 out), UART, SPI |
-| Control | Scan chain + 3-mode clock-gating FSM + on-chip clock gen |
-| Clock | 10 MHz target (100 ns), external clk → ÷2 → gated cpu_clk |
-| Pins | 22 (20 signal + 2 power) |
+| CPU | PicoRV32 RV32IMC |
+| Memory | Narrow 8-bit: 256 B IMEM + 64 B DMEM |
+| Bus | AHB-Lite + APB |
+| IO | GPIO, UART, SPI |
+| Bring-up | Scan chain + clock-gating FSM |
 
-## Two key design decisions
+Details: [memory_map.md](memory_map.md) · [PINOUT.md](PINOUT.md) ·
+[AREA_REPORT.md](AREA_REPORT.md) · [TIMING_REPORT.md](TIMING_REPORT.md)
 
-**1. Narrow memory:** a 32-bit memory needs 4 SRAM macros per bank. Single
-8-bit macros + byte gather/scatter units make them look 32-bit to the CPU.
+## Repo layout
 
-**2. PicoRV32 as inline RTL, not a macro:** Ibex only hardened as a rigid
-853×871 µm block that could not tile with the 432 µm-wide SRAMs in 1000 µm.
-PicoRV32 (~40% smaller in literature) is handed to LibreLane as RTL, so its
-gates flow around the SRAM macros — the tiling problem disappears. Whole-SoC
-logic: 0.335 mm² synthesized.
+| Path | Contents |
+|------|----------|
+| `rtl/` | Live RTL (`chip_top_full`) |
+| `firmware/` | Demo programs (primes, piezo, game) |
+| `verification/` | Canonical verification (cocotb/pyuvm, block MDV, formal, GL) |
+| `verification/legacy_sv/` | Older directed SV goldens |
+| `verification/docs/` | How to run, gates, coverage, MDV |
+| `openlane/` | PD config |
+| `gds/` | GDS + DRC/LVS reports |
+| `docs/images/` | Layout screenshots |
+| `archive/` | Historical RTL (not live) |
 
-## The Metal3 heal (known GF180 SRAM/PDN issue)
+## How to verify
 
-The PDN's Metal3 connection to the GF180 SRAM macros leaves 4 sub-micron
-slivers (Metal3 width < 0.56 µm) — a documented tool issue
-(OpenLane #1549 / OpenROAD PR #2814; the upstream fix reduces but does not
-eliminate it for these macros). Fix: `gds/heal_metal3.tcl` widens the 4
-shapes to legal width in Magic post-P&R. The healed GDS then passes **full DRC
-(0 errors)** and **LVS (match)** — both re-verified on the healed file.
+    cd verification/cocotb
+    export PYTHONPATH="$(pwd):${PYTHONPATH}"
+    ./run_block_regress.sh
+    ./run_all_verify.sh
 
-Workflow: `librelane config.json` → run heal script → re-verify DRC + LVS.
+Full story: [VERIFICATION.md](VERIFICATION.md)
 
-## Layout
+## Review write-up
 
-`rtl/` design incl. `picorv32.v` CPU ·
-`tb/` self-checking testbenches + firmware .svh · `firmware/` 3 demo programs ·
-`openlane/chip_top_full/` flow config (config.json, SDC, PDN, SRAM macros) ·
-`gds/` healed GDS + heal script + signoff reports ·
-`synthesis/` SRAM blackbox stubs (flow inputs) · `older_version_of_design/` superseded modules
-
-## Verification
-
-Every block has a self-checking testbench (18 pass). The full SoC scan-loads a
-program, boots PicoRV32, and drives GPIO + UART (0x41) + SPI (0xB7)
-(`tb/tb_chip_v2.sv`). All three real firmwares verified on the CPU:
-
-- **primes** — UART prints `2 3 5 7 11 13 17 19 23 29 31 37 41 43 47` (MUL/MOD exercised)
-- **piezo_tune** — GPIO square-wave tone (1018 toggles)
-- **game** — SPI/LCD drive (15,376 SCLK toggles)
-## Docs
-
-[`AREA_REPORT`](AREA_REPORT.md) · [`TIMING_REPORT`](TIMING_REPORT.md) ·
-[`PINOUT`](PINOUT.md) · [`memory_map`](memory_map.md) ·
-[`progress_tracker`](progress_tracker.md)
-
-## Verification
-See `verification/docs/PICO_SOC_VERIFICATION_PLAN.md` and `verification/docs/FREEZE_STATUS.md`.
-
-### Run gates
-```bash
-cd verification/cocotb
-./run_block_regress.sh    # block MDV UART/SPI/GPIO
-make pyuvm-regress        # chip pyuvm suite
-Block MDV: verification/docs/BLOCK_MDV.md
-```
-
-
-## How to verify (gates)
-
-From `verification/cocotb`:
-
-1. Block MDV: `./run_block_regress.sh`
-2. Full gate: `./run_all_verify.sh`  (must print ALL VERIFY PASS, exit 0)
-3. Useful singles: `make smoke`, `make random`, `make dmem`, `make scan-lockout`
-
-Activate venv if needed, then:
-`export PYTHONPATH="$(pwd):${PYTHONPATH}"`
+[docs/detailed_schematic_review.md](docs/detailed_schematic_review.md)
