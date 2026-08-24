@@ -19,6 +19,8 @@ project:
   lvs_config: "lvs_config.json"
 
 pins:
+  - name: VSS
+    io_type: ground
   - name: clk
     io_type: input_schmitt
   - name: clk_int
@@ -35,19 +37,19 @@ pins:
     io_type: input_cmos
   - name: scan_out
     io_type: bidirectional
-  - name: gpio_out0
+  - name: "gpio_out[0]"
     io_type: bidirectional
-  - name: gpio_out1
+  - name: "gpio_out[1]"
     io_type: bidirectional
-  - name: gpio_out2
+  - name: "gpio_out[2]"
     io_type: bidirectional
-  - name: gpio_out3
+  - name: "gpio_out[3]"
     io_type: bidirectional
-  - name: gpio_out4
+  - name: "gpio_out[4]"
     io_type: bidirectional
-  - name: gpio_in0
+  - name: "gpio_in[0]"
     io_type: input_cmos
-  - name: gpio_in1
+  - name: "gpio_in[1]"
     io_type: input_cmos
   - name: uart_tx
     io_type: bidirectional
@@ -59,7 +61,5 @@ pins:
     io_type: bidirectional
   - name: spi_cs_n
     io_type: bidirectional
-  - name: vdd
+  - name: VDD
     io_type: power
-  - name: vss
-    io_type: ground
