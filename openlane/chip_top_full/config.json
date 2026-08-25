@@ -91,5 +91,6 @@
     "u_dmem_slave.u_dmem.u_mem.u_sram VDD VSS VDD VSS"
   ],
   "ERROR_ON_PDN_VIOLATIONS": false,
-  "PL_TARGET_DENSITY": 0.6
+  "GRT_ADJUSTMENT": 0.3,
+  "PL_TARGET_DENSITY_PCT": 60
 }
