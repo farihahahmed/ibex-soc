@@ -1,6 +1,7 @@
 # Pico SoC — Verification Report
 
-**Last updated:** 2026-08-23  
+**Last updated:** 2026-08-25
+**Gate status:** PASSING — 12 tests, 0 failures, exit code 0 (run against the v2 signoff RTL: 1 KB memory, RV32E+M+C, 31 MHz).  
 **Official gate:** `verification/cocotb/run_all_verify.sh` — exit **0** required (all included tests PASS; no `fail_ok` / known-fail exceptions).
 
 ---
@@ -28,10 +29,10 @@ Chip and block verification share agents and scoreboarding. Constrained-random, 
 | Item | Value |
 |------|--------|
 | Top | `chip_top_full` |
-| CPU | PicoRV32 (RV32IMC as configured in RTL) |
+| CPU | PicoRV32 (RV32E + M + C: 16 registers, hardware mul/div, compressed) |
 | Boot | Scan-chain IMEM load; FSM **RUN** ungates `cpu_clk` |
 | Peripherals | GPIO `0x0001_0000`, UART `0x0002_0000`, SPI `0x0003_0000` |
-| Memory | Narrow 8-bit SRAM + gather/scatter (IMEM 256 B, DMEM 64 B) |
+| Memory | Narrow 8-bit SRAM + gather/scatter (IMEM 512 B, DMEM 512 B = 1 KB, 9-bit addressing) |
 | Implementation | GF180MCU; OpenLane / LibreLane physical flow (outside this report) |
 
 RTL: `rtl/chip_top_full.sv` and modules under `rtl/`.  
@@ -209,11 +210,11 @@ verilator_coverage --rank coverage_rtl/obj_dir/coverage.dat
 
 | Program | Constraint | Check |
 |---------|------------|--------|
-| `primes` | ≤ 256 B IMEM | UART prime stream |
-| `piezo_tune` | ≤ 256 B IMEM | GPIO[0] activity |
-| `game` | ≤ 256 B IMEM | SPI sclk/mosi activity |
+| `primes` (116 B) | ≤ 512 B IMEM | UART prime stream |
+| `piezo_tune` (172 B) | ≤ 512 B IMEM | GPIO[0] activity |
+| `game` (122 B) | ≤ 512 B IMEM | SPI sclk/mosi activity |
 
-Sources and link script: `firmware/` (`link.ld` places code at `0x0`; stack within 64 B dmem). Piezo rebuilt as RV32I where the core configuration required it (no C / no halfword loads).
+Sources and link script: `firmware/` (`link.ld` places code at `0x0`; STACKADDR = 0x200, top of the 512 B dmem). Piezo rebuilt as RV32I where the core configuration required it (no C / no halfword loads).
 
 ---
 

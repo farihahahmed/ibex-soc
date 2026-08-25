@@ -66,10 +66,8 @@ export PYTHONPATH="$(pwd):${PYTHONPATH}"
 `./run_all_verify.sh` is the project exit gate and must complete with exit
 code 0. Detail in `VERIFICATION.md` and `verification/docs/`.
 
-**Current status:** the verification environment has not yet been updated for
-the 1 KB memory configuration — the testbench still references the previous
-256×8 / 64×8 SRAM models and does not elaborate. Re-running verification
-against the current RTL is the top outstanding task.
+**Current status:** the exit gate passes on the current design —
+12 tests, 0 failures, exit code 0 (2026-08-25).
 
 ### **Tooling**
 
