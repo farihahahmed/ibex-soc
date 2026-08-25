@@ -1,5 +1,5 @@
 # chip_top clocks — on-chip generated + gated (Columbia-style)
-create_clock -name clk -period 40.0 [get_ports clk]
+create_clock -name clk -period 32.0 [get_ports clk]
 
 set sys_drv [get_pins -of_objects [get_nets sys_clk] -filter {direction == output}]
 create_generated_clock -name sys_clk -source [get_ports clk] -divide_by 2 $sys_drv
