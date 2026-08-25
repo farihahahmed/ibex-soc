@@ -18,7 +18,7 @@ module dmem_narrow_top (
     logic [31:0] b_addr;
     logic [7:0]  b_wdata, b_rdata;
 
-    dmem_narrow #(.ADDR_BITS(6)) u_mem (
+    dmem_narrow #(.ADDR_BITS(9)) u_mem (
         .clk(clk), .rst_n(rst_n),
         .b_req(b_req), .b_sel(b_sel), .b_we(b_we),
         .b_addr(b_addr), .b_wdata(b_wdata),
@@ -39,7 +39,7 @@ module dmem_narrow_top (
     logic [31:0] lword;
     logic [8:0]  lbase;
     logic [31:0] addr_aligned;
-    assign addr_aligned = {26'b0, addr[5:2], 2'b00};
+    assign addr_aligned = {23'b0, addr[8:2], 2'b00};
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -51,7 +51,7 @@ module dmem_narrow_top (
                 D_IDLE: begin
                     if (ld_word_en) begin
                         lword <= ld_word_data;
-                        lbase <= {5'b0, ld_word_addr[3:0], 2'b00};
+                        lbase <= {ld_word_addr[6:0], 2'b00};
                         state <= L_B0;
                     end else if (req) begin
                         base_addr <= addr_aligned;
