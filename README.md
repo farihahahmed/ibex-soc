@@ -19,7 +19,7 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 
 ### **Signoff status**
 
-Artifact: `gds/chip_top_full_healed.gds`
+Artifact: `gds/chip_top_full_signoff.gds` (unmodified LibreLane output)
 Run: `openlane/chip_top_full/runs/RUN_2026-08-25_09-23-07` (tag `v2-signoff`)
 
 | Check | Result |
