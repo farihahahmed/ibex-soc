@@ -1,9 +1,10 @@
 DRC: 0 (Magic heal on signoff GDS, 2026-08-25)
-Source run: RUN_2026-08-25_08-43-38 (bit-identical reproduction of RUN_2026-08-25_07-58-50)
+Source run: RUN_2026-08-25_09-23-07
 Pre-heal: 4x M3.1 (Metal3 width < 56) at y~331 - same class healed in the v1 signoff.
 Heal: gds/heal_metal3.tcl widens the 4 M3 segments to minimum width.
-Antenna: 0 | LVS: match uniquely | Timing: clean, 9 corners (setup +3.17ns, hold +0.325ns)
-Config: 1100x1100 die, 32ns/31MHz, DIODE_ON_PORTS=both, 1KB memory (512+512), RV32EMC
-Utilization: 76.5%
+Antenna: 0 | LVS: match uniquely (13,972 devices / 13,047 nets)
+Timing: clean, all 9 corners - setup WNS +10.010 ns, hold WNS +0.087 ns
+Config: 1100x1100 die, 32 ns / 31 MHz, DIODE_ON_PORTS=both, 1 KB memory (512+512), RV32EMC
+Utilization: 76.3% | Power: 18.0 mW (nom_tt) | Routed wirelength: 992,388 um
 Note: heal effectiveness not independently re-verified with the flow's own Magic DRC
       (a standalone magic drc run lacks the flow setup and reports spurious counts).
