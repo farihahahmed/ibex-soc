@@ -16,7 +16,7 @@
 (declare-fun |scan_chain#2| (|scan_chain_s|) (_ BitVec 1)) ; \scan_load
 (declare-fun |scan_chain#3| (|scan_chain_s|) (_ BitVec 1)) ; \rst_n
 (define-fun |scan_chain#4| ((state |scan_chain_s|)) (_ BitVec 48) (ite (= ((_ extract 0 0) (|scan_chain#3| state)) #b1) (|scan_chain#0| state) #b000000000000000000000000000000000000000000000000)) ; \shift_reg
-(define-fun |scan_chain#5| ((state |scan_chain_s|)) Bool (= ((_ extract 47 46) (|scan_chain#4| state)) #b10)) ; $eq$/foss/designs/ibex_soc/rtl/scan_chain.sv:41$7_Y
+(define-fun |scan_chain#5| ((state |scan_chain_s|)) Bool (= ((_ extract 47 46) (|scan_chain#4| state)) #b10)) ; $eq$/foss/designs/pico_soc/rtl/scan_chain.sv:41$7_Y
 (define-fun |scan_chain#6| ((state |scan_chain_s|)) (_ BitVec 1) (bvand (|scan_chain#2| state) (ite (|scan_chain#5| state) #b1 #b0))) ; \clk_cfg_load
 ; yosys-smt2-output clk_cfg_load 1
 ; yosys-smt2-wire clk_cfg_load 1
@@ -27,7 +27,7 @@
 ; yosys-smt2-output clk_int 1
 ; yosys-smt2-wire clk_int 1
 (define-fun |scan_chain_n clk_int| ((state |scan_chain_s|)) Bool (= ((_ extract 8 8) (|scan_chain#4| state)) #b1))
-(define-fun |scan_chain#7| ((state |scan_chain_s|)) Bool (= ((_ extract 47 46) (|scan_chain#4| state)) #b01)) ; $eq$/foss/designs/ibex_soc/rtl/scan_chain.sv:40$5_Y
+(define-fun |scan_chain#7| ((state |scan_chain_s|)) Bool (= ((_ extract 47 46) (|scan_chain#4| state)) #b01)) ; $eq$/foss/designs/pico_soc/rtl/scan_chain.sv:40$5_Y
 (define-fun |scan_chain#8| ((state |scan_chain_s|)) (_ BitVec 1) (bvand (|scan_chain#2| state) (ite (|scan_chain#7| state) #b1 #b0))) ; \fsm_cfg_load
 ; yosys-smt2-output fsm_cfg_load 1
 ; yosys-smt2-wire fsm_cfg_load 1
@@ -49,7 +49,7 @@
 ; yosys-smt2-output mem_wdata 32
 ; yosys-smt2-wire mem_wdata 32
 (define-fun |scan_chain_n mem_wdata| ((state |scan_chain_s|)) (_ BitVec 32) ((_ extract 31 0) (|scan_chain#4| state)))
-(define-fun |scan_chain#10| ((state |scan_chain_s|)) Bool (not (or  (= ((_ extract 46 46) (|scan_chain#4| state)) #b1) (= ((_ extract 47 47) (|scan_chain#4| state)) #b1)))) ; $eq$/foss/designs/ibex_soc/rtl/scan_chain.sv:39$3_Y
+(define-fun |scan_chain#10| ((state |scan_chain_s|)) Bool (not (or  (= ((_ extract 46 46) (|scan_chain#4| state)) #b1) (= ((_ extract 47 47) (|scan_chain#4| state)) #b1)))) ; $eq$/foss/designs/pico_soc/rtl/scan_chain.sv:39$3_Y
 (define-fun |scan_chain#11| ((state |scan_chain_s|)) (_ BitVec 1) (bvand (|scan_chain#2| state) (ite (|scan_chain#10| state) #b1 #b0))) ; \mem_we
 ; yosys-smt2-output mem_we 1
 ; yosys-smt2-wire mem_we 1
@@ -167,26 +167,26 @@
 ; yosys-smt2-witness {"offset": 0, "path": ["\\scan_shift"], "smtname": "scan_shift", "smtoffset": 0, "type": "input", "width": 1}
 (define-fun |scan_chain_formal_n scan_shift| ((state |scan_chain_formal_s|)) Bool (|scan_chain_formal#15| state))
 (define-fun |scan_chain_formal#16| ((state |scan_chain_formal_s|)) Bool (= (ite (|scan_chain_formal#9| state) #b1 #b0) #b1)) ; $auto$wreduce.cc:514:run$52 [0]
-(define-fun |scan_chain_formal#17| ((state |scan_chain_formal_s|)) (_ BitVec 2) (bvadd #b00 (concat #b0 (ite (|scan_chain_formal#16| state) #b1 #b0)))) ; $add$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39$26_Y
+(define-fun |scan_chain_formal#17| ((state |scan_chain_formal_s|)) (_ BitVec 2) (bvadd #b00 (concat #b0 (ite (|scan_chain_formal#16| state) #b1 #b0)))) ; $add$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39$26_Y
 (define-fun |scan_chain_formal#18| ((state |scan_chain_formal_s|)) Bool (= (ite (|scan_chain_formal#4| state) #b1 #b0) #b1)) ; $auto$wreduce.cc:514:run$56 [0]
-(define-fun |scan_chain_formal#19| ((state |scan_chain_formal_s|)) (_ BitVec 3) (bvadd (concat #b0 (|scan_chain_formal#17| state)) (concat #b00 (ite (|scan_chain_formal#18| state) #b1 #b0)))) ; $add$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39$30_Y
+(define-fun |scan_chain_formal#19| ((state |scan_chain_formal_s|)) (_ BitVec 3) (bvadd (concat #b0 (|scan_chain_formal#17| state)) (concat #b00 (ite (|scan_chain_formal#18| state) #b1 #b0)))) ; $add$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39$30_Y
 (define-fun |scan_chain_formal#20| ((state |scan_chain_formal_s|)) Bool (= (ite (|scan_chain_formal#1| state) #b1 #b0) #b1)) ; $auto$wreduce.cc:514:run$54 [0]
-(define-fun |scan_chain_formal#21| ((state |scan_chain_formal_s|)) (_ BitVec 4) (bvadd (concat #b0 (|scan_chain_formal#19| state)) (concat #b000 (ite (|scan_chain_formal#20| state) #b1 #b0)))) ; $add$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39$34_Y
-(define-fun |scan_chain_formal#22| ((state |scan_chain_formal_s|)) Bool (bvule (|scan_chain_formal#21| state) #b0001)) ; $le$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39$35_Y
-; yosys-smt2-assert 0 $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39$22 /foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39.15-39.70
-(define-fun |scan_chain_formal_a 0| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#22| state) (not true))) ; $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:39$22
-(define-fun |scan_chain_formal#23| ((state |scan_chain_formal_s|)) Bool (not (or  (|scan_chain_formal#1| state) false))) ; $logic_not$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:37$19_Y
-(define-fun |scan_chain_formal#24| ((state |scan_chain_formal_s|)) Bool (or  (|scan_chain_formal#23| state) false  (|scan_chain_formal#14| state) false)) ; $logic_or$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:37$20_Y
-; yosys-smt2-assert 1 $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:37$18 /foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:37.15-37.50
-(define-fun |scan_chain_formal_a 1| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#24| state) (not true))) ; $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:37$18
-(define-fun |scan_chain_formal#25| ((state |scan_chain_formal_s|)) Bool (not (or  (|scan_chain_formal#4| state) false))) ; $logic_not$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:36$15_Y
-(define-fun |scan_chain_formal#26| ((state |scan_chain_formal_s|)) Bool (or  (|scan_chain_formal#25| state) false  (|scan_chain_formal#14| state) false)) ; $logic_or$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:36$16_Y
-; yosys-smt2-assert 2 $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:36$14 /foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:36.15-36.50
-(define-fun |scan_chain_formal_a 2| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#26| state) (not true))) ; $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:36$14
-(define-fun |scan_chain_formal#27| ((state |scan_chain_formal_s|)) Bool (not (or  (|scan_chain_formal#9| state) false))) ; $logic_not$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:35$11_Y
-(define-fun |scan_chain_formal#28| ((state |scan_chain_formal_s|)) Bool (or  (|scan_chain_formal#27| state) false  (|scan_chain_formal#14| state) false)) ; $logic_or$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:35$12_Y
-; yosys-smt2-assert 3 $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:35$10 /foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:35.15-35.44
-(define-fun |scan_chain_formal_a 3| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#28| state) (not true))) ; $assert$/foss/designs/ibex_soc/verification/formal/scan_chain_formal.sv:35$10
+(define-fun |scan_chain_formal#21| ((state |scan_chain_formal_s|)) (_ BitVec 4) (bvadd (concat #b0 (|scan_chain_formal#19| state)) (concat #b000 (ite (|scan_chain_formal#20| state) #b1 #b0)))) ; $add$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39$34_Y
+(define-fun |scan_chain_formal#22| ((state |scan_chain_formal_s|)) Bool (bvule (|scan_chain_formal#21| state) #b0001)) ; $le$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39$35_Y
+; yosys-smt2-assert 0 $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39$22 /foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39.15-39.70
+(define-fun |scan_chain_formal_a 0| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#22| state) (not true))) ; $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:39$22
+(define-fun |scan_chain_formal#23| ((state |scan_chain_formal_s|)) Bool (not (or  (|scan_chain_formal#1| state) false))) ; $logic_not$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:37$19_Y
+(define-fun |scan_chain_formal#24| ((state |scan_chain_formal_s|)) Bool (or  (|scan_chain_formal#23| state) false  (|scan_chain_formal#14| state) false)) ; $logic_or$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:37$20_Y
+; yosys-smt2-assert 1 $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:37$18 /foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:37.15-37.50
+(define-fun |scan_chain_formal_a 1| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#24| state) (not true))) ; $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:37$18
+(define-fun |scan_chain_formal#25| ((state |scan_chain_formal_s|)) Bool (not (or  (|scan_chain_formal#4| state) false))) ; $logic_not$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:36$15_Y
+(define-fun |scan_chain_formal#26| ((state |scan_chain_formal_s|)) Bool (or  (|scan_chain_formal#25| state) false  (|scan_chain_formal#14| state) false)) ; $logic_or$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:36$16_Y
+; yosys-smt2-assert 2 $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:36$14 /foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:36.15-36.50
+(define-fun |scan_chain_formal_a 2| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#26| state) (not true))) ; $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:36$14
+(define-fun |scan_chain_formal#27| ((state |scan_chain_formal_s|)) Bool (not (or  (|scan_chain_formal#9| state) false))) ; $logic_not$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:35$11_Y
+(define-fun |scan_chain_formal#28| ((state |scan_chain_formal_s|)) Bool (or  (|scan_chain_formal#27| state) false  (|scan_chain_formal#14| state) false)) ; $logic_or$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:35$12_Y
+; yosys-smt2-assert 3 $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:35$10 /foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:35.15-35.44
+(define-fun |scan_chain_formal_a 3| ((state |scan_chain_formal_s|)) Bool (or (|scan_chain_formal#28| state) (not true))) ; $assert$/foss/designs/pico_soc/verification/formal/scan_chain_formal.sv:35$10
 (define-fun |scan_chain_formal_a| ((state |scan_chain_formal_s|)) Bool (and
   (|scan_chain_formal_a 0| state)
   (|scan_chain_formal_a 1| state)

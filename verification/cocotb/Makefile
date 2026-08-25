@@ -6,8 +6,7 @@ TOPLEVEL = chip_top_full
 COCOTB_TEST_MODULES ?= test_chip_basic
 
 VERILOG_SOURCES = $(shell find ../../rtl -name "*.v" -o -name "*.sv" | sort)
-VERILOG_SOURCES += models/gf180mcu_fd_ip_sram__sram256x8m8wm1.v
-VERILOG_SOURCES += models/gf180mcu_fd_ip_sram__sram64x8m8wm1.v
+VERILOG_SOURCES += models/gf180mcu_fd_ip_sram__sram512x8m8wm1.v
 
 COMPILE_ARGS += -Pchip_top_full.NUM_OUT=5
 COMPILE_ARGS += -Pchip_top_full.NUM_IN=2

@@ -3,7 +3,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
-RTL=/foss/designs/ibex_soc/rtl
+RTL=/foss/designs/pico_soc/rtl
 
 echo "=== (1) Functional UART block-regress ==="
 make block-regress

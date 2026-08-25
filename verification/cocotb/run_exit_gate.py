@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 
-ROOT = "/foss/designs/ibex_soc/verification/cocotb"
+ROOT = "/foss/designs/pico_soc/verification/cocotb"
 os.environ["PYTHONPATH"] = ROOT + ":" + os.environ.get("PYTHONPATH", "")
 
 def run(cmd, cwd=ROOT):

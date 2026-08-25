@@ -1,8 +1,8 @@
 #!/bin/bash
 # Full verification exit gate for Pico SoC
 set -euo pipefail
-export PYTHONPATH="/foss/designs/ibex_soc/verification/cocotb:${PYTHONPATH:-}"
-ROOT=/foss/designs/ibex_soc/verification/cocotb
+export PYTHONPATH="/foss/designs/pico_soc/verification/cocotb:${PYTHONPATH:-}"
+ROOT=/foss/designs/pico_soc/verification/cocotb
 cd "$ROOT"
 
 echo "############################################"

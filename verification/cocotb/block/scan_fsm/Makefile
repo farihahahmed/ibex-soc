@@ -5,11 +5,11 @@ COCOTB_TEST_MODULES ?= test_scan_fsm_int
 
 VERILOG_SOURCES = \
   scan_fsm_wrap.sv \
-  /foss/designs/ibex_soc/rtl/scan_chain.sv \
-  /foss/designs/ibex_soc/rtl/test_fsm.sv
+  /foss/designs/pico_soc/rtl/scan_chain.sv \
+  /foss/designs/pico_soc/rtl/test_fsm.sv
 
 COMPILE_ARGS += -g2012
-export PYTHONPATH := /foss/designs/ibex_soc/verification/cocotb:$(PYTHONPATH)
+export PYTHONPATH := /foss/designs/pico_soc/verification/cocotb:$(PYTHONPATH)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 

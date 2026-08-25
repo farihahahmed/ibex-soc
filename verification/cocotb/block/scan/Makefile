@@ -3,7 +3,7 @@ TOPLEVEL_LANG = verilog
 TOPLEVEL = scan_chain
 COCOTB_TEST_MODULES ?= test_scan_smoke
 
-VERILOG_SOURCES = /foss/designs/ibex_soc/rtl/scan_chain.sv
+VERILOG_SOURCES = /foss/designs/pico_soc/rtl/scan_chain.sv
 COMPILE_ARGS += -g2012
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
