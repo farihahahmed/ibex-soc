@@ -2,11 +2,10 @@
   "DESIGN_NAME": "chip_top_full",
   "VERILOG_FILES": [
     "dir::soc_flat.v",
-    "dir::../../synthesis/sram_blackbox.v",
-    "dir::../../synthesis/sram_blackbox_64.v"
+    "dir::../../synthesis/sram_blackbox.v"
   ],
   "CLOCK_PORT": "clk",
-  "CLOCK_PERIOD": 32,
+  "CLOCK_PERIOD": 100,
   "PDK": "gf180mcuD",
   "STD_CELL_LIBRARY": "gf180mcu_fd_sc_mcu7t5v0",
   "PNR_SDC_FILE": "dir::chip_top.sdc",
@@ -76,24 +75,21 @@
   "PDN_VERTICAL_HALO": 10,
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
   "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.1,
-  "GRT_RESIZER_HOLD_MAX_BUFFER_PERCENT": 75,
   "PL_RESIZER_HOLD_MAX_BUFFER_PCT": 20,
   "GRT_RESIZER_HOLD_MAX_BUFFER_PCT": 20,
   "MAGIC_DRC_USE_GDS": false,
   "MAGIC_EXT_USE_GDS": false,
-  "FP_MACRO_HORIZONTAL_HALO": 8,
-  "FP_MACRO_VERTICAL_HALO": 8,
-  "HEURISTIC_ANTENNA_THRESHOLD": 300,
-  "FP_CORE_UTIL": 45,
+  "FP_MACRO_HORIZONTAL_HALO": 4,
+  "FP_MACRO_VERTICAL_HALO": 4,
+  "HEURISTIC_ANTENNA_THRESHOLD": 200,
   "DPL_CELL_PADDING": 2,
   "GPL_CELL_PADDING": 1,
   "GRT_OBS": null,
-  "DIODE_ON_PORTS": "none",
+  "DIODE_ON_PORTS": "both",
   "PDN_MACRO_CONNECTIONS": [
     "u_mem.u_imem.u_mem.u_sram VDD VSS VDD VSS",
     "u_dmem_slave.u_dmem.u_mem.u_sram VDD VSS VDD VSS"
   ],
   "ERROR_ON_PDN_VIOLATIONS": false,
-  "PL_TARGET_DENSITY_PCT": 68,
-  "GRT_ADJUSTMENT": 0.15
+  "PL_TARGET_DENSITY": 0.6
 }
