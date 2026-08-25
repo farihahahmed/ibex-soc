@@ -80,6 +80,11 @@ module imem_narrow_top (
             rbstate <= RB_IDLE; rb_addr <= 9'b0; rb_data_q <= 32'b0;
         end else begin
             case (rbstate)
+                // A read is only accepted when no load is in flight. The scan
+                // protocol makes this unreachable in practice - shifting the
+                // 48-bit read frame takes ~50 cycles while a word load takes 5,
+                // so ld_busy has always cleared by the time rd_word_en arrives.
+                // The qualifier is kept as a guard, not as a serviced case.
                 RB_IDLE: if (rd_word_en && !ld_busy && scan_owns) begin
                              rb_addr <= {rd_word_addr[6:0], 2'b00};
                              rbstate <= RB_REQ;

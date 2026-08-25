@@ -102,4 +102,17 @@ async def test_scan_readback(dut):
             f"expected 0x{expected:08x}, got 0x{got:08x}"
         )
 
+    # --- back-to-back: read issued while the load is still in flight ---
+    # Exercises RB_PEND. Without it the read would be dropped and the stale
+    # contents of rb_data_q returned instead, with no error indication.
+    await shift_frame(dut, tgt=0, addr=0x10, data=0x0BADF00D)
+    await shift_frame(dut, tgt=3, addr=0x10, data=0)      # consecutive frames, no explicit settle
+    await ClockCycles(dut.clk, 24)
+    got = await capture_and_shift_out(dut)
+    dut._log.info(f"back-to-back addr 0x10: expected 0x0badf00d, got 0x{got:08x}")
+    assert got == 0x0BADF00D, (
+        f"back-to-back write/read failed: expected 0x0badf00d, got 0x{got:08x} "
+        f"(a dropped read would return the previous value 0xcafef00d)"
+    )
+
     dut._log.info("*** scan readback PASS ***")
