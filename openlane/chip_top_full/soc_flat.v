@@ -1025,7 +1025,7 @@ module dmem_narrow (
 			d = 8'h00;
 		end
 	end
-	gf180mcu_fd_ip_sram__sram64x8m8wm1 u_sram(
+	gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram(
 		.CLK(clk),
 		.CEN(cen),
 		.GWEN(gwen),
@@ -1082,7 +1082,7 @@ module dmem_narrow_top (
 	reg [31:0] b_addr;
 	reg [7:0] b_wdata;
 	wire [7:0] b_rdata;
-	dmem_narrow #(.ADDR_BITS(6)) u_mem(
+	dmem_narrow #(.ADDR_BITS(9)) u_mem(
 		.clk(clk),
 		.rst_n(rst_n),
 		.b_req(b_req),
@@ -1106,7 +1106,7 @@ module dmem_narrow_top (
 	reg [31:0] lword;
 	reg [8:0] lbase;
 	wire [31:0] addr_aligned;
-	assign addr_aligned = {26'b00000000000000000000000000, addr[5:2], 2'b00};
+	assign addr_aligned = {23'b00000000000000000000000, addr[8:2], 2'b00};
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n) begin
 			state <= 4'd0;
@@ -1127,7 +1127,7 @@ module dmem_narrow_top (
 				4'd0:
 					if (ld_word_en) begin
 						lword <= ld_word_data;
-						lbase <= {5'b00000, ld_word_addr[3:0], 2'b00};
+						lbase <= {ld_word_addr[6:0], 2'b00};
 						state <= 4'd9;
 					end
 					else if (req) begin
@@ -1485,7 +1485,7 @@ module imem_narrow (
 	output wire m_rvalid;
 	output wire [7:0] m_rdata;
 	input wire ld_en;
-	input wire [7:0] ld_addr;
+	input wire [8:0] ld_addr;
 	input wire [7:0] ld_data;
 	assign m_gnt = 1'b1;
 	reg cen;
@@ -1493,9 +1493,9 @@ module imem_narrow (
 	reg [7:0] wen;
 	reg [7:0] d;
 	wire [7:0] q;
-	reg [7:0] a;
-	wire [7:0] rd_addr;
-	assign rd_addr = m_addr[7:0];
+	reg [8:0] a;
+	wire [8:0] rd_addr;
+	assign rd_addr = m_addr[8:0];
 	always @(*) begin
 		if (_sv2v_0)
 			;
@@ -1517,11 +1517,11 @@ module imem_narrow (
 			cen = 1'b1;
 			gwen = 1'b1;
 			wen = 8'hff;
-			a = 8'b00000000;
+			a = 9'b000000000;
 			d = 8'h00;
 		end
 	end
-	gf180mcu_fd_ip_sram__sram256x8m8wm1 u_sram(
+	gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram(
 		.CLK(clk),
 		.CEN(cen),
 		.GWEN(gwen),
@@ -1572,11 +1572,11 @@ module imem_narrow_top (
 	wire [31:0] g_m_addr;
 	wire [7:0] g_m_rdata;
 	reg s_ld_en;
-	reg [7:0] s_ld_addr;
+	reg [8:0] s_ld_addr;
 	reg [7:0] s_ld_data;
 	reg [2:0] sstate;
 	reg [31:0] word_lat;
-	reg [7:0] base_lat;
+	reg [8:0] base_lat;
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n) begin
 			sstate <= 3'd0;
@@ -1588,7 +1588,7 @@ module imem_narrow_top (
 				3'd0:
 					if (ld_word_en) begin
 						word_lat <= ld_word_data;
-						base_lat <= {2'b00, ld_word_addr[5:0], 2'b00};
+						base_lat <= {ld_word_addr[6:0], 2'b00};
 						sstate <= 3'd1;
 					end
 				3'd1: sstate <= 3'd2;
@@ -1601,27 +1601,27 @@ module imem_narrow_top (
 		if (_sv2v_0)
 			;
 		s_ld_en = 1'b0;
-		s_ld_addr = 8'b00000000;
+		s_ld_addr = 9'b000000000;
 		s_ld_data = 8'b00000000;
 		case (sstate)
 			3'd1: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 8'd0;
+				s_ld_addr = base_lat + 9'd0;
 				s_ld_data = word_lat[7:0];
 			end
 			3'd2: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 8'd1;
+				s_ld_addr = base_lat + 9'd1;
 				s_ld_data = word_lat[15:8];
 			end
 			3'd3: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 8'd2;
+				s_ld_addr = base_lat + 9'd2;
 				s_ld_data = word_lat[23:16];
 			end
 			3'd4: begin
 				s_ld_en = 1;
-				s_ld_addr = base_lat + 8'd3;
+				s_ld_addr = base_lat + 9'd3;
 				s_ld_data = word_lat[31:24];
 			end
 			default:
@@ -3857,6 +3857,31 @@ module picorv32 (
 		current_pc = 'bx;
 	end
 endmodule
+module picorv32_regs (
+	clk,
+	wen,
+	waddr,
+	raddr1,
+	raddr2,
+	wdata,
+	rdata1,
+	rdata2
+);
+	input clk;
+	input wen;
+	input [5:0] waddr;
+	input [5:0] raddr1;
+	input [5:0] raddr2;
+	input [31:0] wdata;
+	output wire [31:0] rdata1;
+	output wire [31:0] rdata2;
+	reg [31:0] regs [0:30];
+	always @(posedge clk)
+		if (wen)
+			regs[~waddr[4:0]] <= wdata;
+	assign rdata1 = regs[~raddr1[4:0]];
+	assign rdata2 = regs[~raddr2[4:0]];
+endmodule
 module picorv32_pcpi_mul (
 	clk,
 	resetn,
@@ -4157,4 +4182,455 @@ module picorv32_pcpi_div (
 			quotient_msk <= quotient_msk >> 1;
 		end
 	end
+endmodule
+module picorv32_axi (
+	clk,
+	resetn,
+	trap,
+	mem_axi_awvalid,
+	mem_axi_awready,
+	mem_axi_awaddr,
+	mem_axi_awprot,
+	mem_axi_wvalid,
+	mem_axi_wready,
+	mem_axi_wdata,
+	mem_axi_wstrb,
+	mem_axi_bvalid,
+	mem_axi_bready,
+	mem_axi_arvalid,
+	mem_axi_arready,
+	mem_axi_araddr,
+	mem_axi_arprot,
+	mem_axi_rvalid,
+	mem_axi_rready,
+	mem_axi_rdata,
+	pcpi_valid,
+	pcpi_insn,
+	pcpi_rs1,
+	pcpi_rs2,
+	pcpi_wr,
+	pcpi_rd,
+	pcpi_wait,
+	pcpi_ready,
+	irq,
+	eoi,
+	trace_valid,
+	trace_data
+);
+	parameter [0:0] ENABLE_COUNTERS = 1;
+	parameter [0:0] ENABLE_COUNTERS64 = 1;
+	parameter [0:0] ENABLE_REGS_16_31 = 1;
+	parameter [0:0] ENABLE_REGS_DUALPORT = 1;
+	parameter [0:0] TWO_STAGE_SHIFT = 1;
+	parameter [0:0] BARREL_SHIFTER = 0;
+	parameter [0:0] TWO_CYCLE_COMPARE = 0;
+	parameter [0:0] TWO_CYCLE_ALU = 0;
+	parameter [0:0] COMPRESSED_ISA = 0;
+	parameter [0:0] CATCH_MISALIGN = 1;
+	parameter [0:0] CATCH_ILLINSN = 1;
+	parameter [0:0] ENABLE_PCPI = 0;
+	parameter [0:0] ENABLE_MUL = 0;
+	parameter [0:0] ENABLE_FAST_MUL = 0;
+	parameter [0:0] ENABLE_DIV = 0;
+	parameter [0:0] ENABLE_IRQ = 0;
+	parameter [0:0] ENABLE_IRQ_QREGS = 1;
+	parameter [0:0] ENABLE_IRQ_TIMER = 1;
+	parameter [0:0] ENABLE_TRACE = 0;
+	parameter [0:0] REGS_INIT_ZERO = 0;
+	parameter [31:0] MASKED_IRQ = 32'h00000000;
+	parameter [31:0] LATCHED_IRQ = 32'hffffffff;
+	parameter [31:0] PROGADDR_RESET = 32'h00000000;
+	parameter [31:0] PROGADDR_IRQ = 32'h00000010;
+	parameter [31:0] STACKADDR = 32'hffffffff;
+	input clk;
+	input resetn;
+	output wire trap;
+	output wire mem_axi_awvalid;
+	input mem_axi_awready;
+	output wire [31:0] mem_axi_awaddr;
+	output wire [2:0] mem_axi_awprot;
+	output wire mem_axi_wvalid;
+	input mem_axi_wready;
+	output wire [31:0] mem_axi_wdata;
+	output wire [3:0] mem_axi_wstrb;
+	input mem_axi_bvalid;
+	output wire mem_axi_bready;
+	output wire mem_axi_arvalid;
+	input mem_axi_arready;
+	output wire [31:0] mem_axi_araddr;
+	output wire [2:0] mem_axi_arprot;
+	input mem_axi_rvalid;
+	output wire mem_axi_rready;
+	input [31:0] mem_axi_rdata;
+	output wire pcpi_valid;
+	output wire [31:0] pcpi_insn;
+	output wire [31:0] pcpi_rs1;
+	output wire [31:0] pcpi_rs2;
+	input pcpi_wr;
+	input [31:0] pcpi_rd;
+	input pcpi_wait;
+	input pcpi_ready;
+	input [31:0] irq;
+	output wire [31:0] eoi;
+	output wire trace_valid;
+	output wire [35:0] trace_data;
+	wire mem_valid;
+	wire [31:0] mem_addr;
+	wire [31:0] mem_wdata;
+	wire [3:0] mem_wstrb;
+	wire mem_instr;
+	wire mem_ready;
+	wire [31:0] mem_rdata;
+	picorv32_axi_adapter axi_adapter(
+		.clk(clk),
+		.resetn(resetn),
+		.mem_axi_awvalid(mem_axi_awvalid),
+		.mem_axi_awready(mem_axi_awready),
+		.mem_axi_awaddr(mem_axi_awaddr),
+		.mem_axi_awprot(mem_axi_awprot),
+		.mem_axi_wvalid(mem_axi_wvalid),
+		.mem_axi_wready(mem_axi_wready),
+		.mem_axi_wdata(mem_axi_wdata),
+		.mem_axi_wstrb(mem_axi_wstrb),
+		.mem_axi_bvalid(mem_axi_bvalid),
+		.mem_axi_bready(mem_axi_bready),
+		.mem_axi_arvalid(mem_axi_arvalid),
+		.mem_axi_arready(mem_axi_arready),
+		.mem_axi_araddr(mem_axi_araddr),
+		.mem_axi_arprot(mem_axi_arprot),
+		.mem_axi_rvalid(mem_axi_rvalid),
+		.mem_axi_rready(mem_axi_rready),
+		.mem_axi_rdata(mem_axi_rdata),
+		.mem_valid(mem_valid),
+		.mem_instr(mem_instr),
+		.mem_ready(mem_ready),
+		.mem_addr(mem_addr),
+		.mem_wdata(mem_wdata),
+		.mem_wstrb(mem_wstrb),
+		.mem_rdata(mem_rdata)
+	);
+	picorv32 #(
+		.ENABLE_COUNTERS(ENABLE_COUNTERS),
+		.ENABLE_COUNTERS64(ENABLE_COUNTERS64),
+		.ENABLE_REGS_16_31(ENABLE_REGS_16_31),
+		.ENABLE_REGS_DUALPORT(ENABLE_REGS_DUALPORT),
+		.TWO_STAGE_SHIFT(TWO_STAGE_SHIFT),
+		.BARREL_SHIFTER(BARREL_SHIFTER),
+		.TWO_CYCLE_COMPARE(TWO_CYCLE_COMPARE),
+		.TWO_CYCLE_ALU(TWO_CYCLE_ALU),
+		.COMPRESSED_ISA(COMPRESSED_ISA),
+		.CATCH_MISALIGN(CATCH_MISALIGN),
+		.CATCH_ILLINSN(CATCH_ILLINSN),
+		.ENABLE_PCPI(ENABLE_PCPI),
+		.ENABLE_MUL(ENABLE_MUL),
+		.ENABLE_FAST_MUL(ENABLE_FAST_MUL),
+		.ENABLE_DIV(ENABLE_DIV),
+		.ENABLE_IRQ(ENABLE_IRQ),
+		.ENABLE_IRQ_QREGS(ENABLE_IRQ_QREGS),
+		.ENABLE_IRQ_TIMER(ENABLE_IRQ_TIMER),
+		.ENABLE_TRACE(ENABLE_TRACE),
+		.REGS_INIT_ZERO(REGS_INIT_ZERO),
+		.MASKED_IRQ(MASKED_IRQ),
+		.LATCHED_IRQ(LATCHED_IRQ),
+		.PROGADDR_RESET(PROGADDR_RESET),
+		.PROGADDR_IRQ(PROGADDR_IRQ),
+		.STACKADDR(STACKADDR)
+	) picorv32_core(
+		.clk(clk),
+		.resetn(resetn),
+		.trap(trap),
+		.mem_valid(mem_valid),
+		.mem_addr(mem_addr),
+		.mem_wdata(mem_wdata),
+		.mem_wstrb(mem_wstrb),
+		.mem_instr(mem_instr),
+		.mem_ready(mem_ready),
+		.mem_rdata(mem_rdata),
+		.pcpi_valid(pcpi_valid),
+		.pcpi_insn(pcpi_insn),
+		.pcpi_rs1(pcpi_rs1),
+		.pcpi_rs2(pcpi_rs2),
+		.pcpi_wr(pcpi_wr),
+		.pcpi_rd(pcpi_rd),
+		.pcpi_wait(pcpi_wait),
+		.pcpi_ready(pcpi_ready),
+		.irq(irq),
+		.eoi(eoi),
+		.trace_valid(trace_valid),
+		.trace_data(trace_data)
+	);
+endmodule
+module picorv32_axi_adapter (
+	clk,
+	resetn,
+	mem_axi_awvalid,
+	mem_axi_awready,
+	mem_axi_awaddr,
+	mem_axi_awprot,
+	mem_axi_wvalid,
+	mem_axi_wready,
+	mem_axi_wdata,
+	mem_axi_wstrb,
+	mem_axi_bvalid,
+	mem_axi_bready,
+	mem_axi_arvalid,
+	mem_axi_arready,
+	mem_axi_araddr,
+	mem_axi_arprot,
+	mem_axi_rvalid,
+	mem_axi_rready,
+	mem_axi_rdata,
+	mem_valid,
+	mem_instr,
+	mem_ready,
+	mem_addr,
+	mem_wdata,
+	mem_wstrb,
+	mem_rdata
+);
+	input clk;
+	input resetn;
+	output wire mem_axi_awvalid;
+	input mem_axi_awready;
+	output wire [31:0] mem_axi_awaddr;
+	output wire [2:0] mem_axi_awprot;
+	output wire mem_axi_wvalid;
+	input mem_axi_wready;
+	output wire [31:0] mem_axi_wdata;
+	output wire [3:0] mem_axi_wstrb;
+	input mem_axi_bvalid;
+	output wire mem_axi_bready;
+	output wire mem_axi_arvalid;
+	input mem_axi_arready;
+	output wire [31:0] mem_axi_araddr;
+	output wire [2:0] mem_axi_arprot;
+	input mem_axi_rvalid;
+	output wire mem_axi_rready;
+	input [31:0] mem_axi_rdata;
+	input mem_valid;
+	input mem_instr;
+	output wire mem_ready;
+	input [31:0] mem_addr;
+	input [31:0] mem_wdata;
+	input [3:0] mem_wstrb;
+	output wire [31:0] mem_rdata;
+	reg ack_awvalid;
+	reg ack_arvalid;
+	reg ack_wvalid;
+	reg xfer_done;
+	assign mem_axi_awvalid = (mem_valid && |mem_wstrb) && !ack_awvalid;
+	assign mem_axi_awaddr = mem_addr;
+	assign mem_axi_awprot = 0;
+	assign mem_axi_arvalid = (mem_valid && !mem_wstrb) && !ack_arvalid;
+	assign mem_axi_araddr = mem_addr;
+	assign mem_axi_arprot = (mem_instr ? 3'b100 : 3'b000);
+	assign mem_axi_wvalid = (mem_valid && |mem_wstrb) && !ack_wvalid;
+	assign mem_axi_wdata = mem_wdata;
+	assign mem_axi_wstrb = mem_wstrb;
+	assign mem_ready = mem_axi_bvalid || mem_axi_rvalid;
+	assign mem_axi_bready = mem_valid && |mem_wstrb;
+	assign mem_axi_rready = mem_valid && !mem_wstrb;
+	assign mem_rdata = mem_axi_rdata;
+	always @(posedge clk)
+		if (!resetn)
+			ack_awvalid <= 0;
+		else begin
+			xfer_done <= mem_valid && mem_ready;
+			if (mem_axi_awready && mem_axi_awvalid)
+				ack_awvalid <= 1;
+			if (mem_axi_arready && mem_axi_arvalid)
+				ack_arvalid <= 1;
+			if (mem_axi_wready && mem_axi_wvalid)
+				ack_wvalid <= 1;
+			if (xfer_done || !mem_valid) begin
+				ack_awvalid <= 0;
+				ack_arvalid <= 0;
+				ack_wvalid <= 0;
+			end
+		end
+endmodule
+module picorv32_wb (
+	trap,
+	wb_rst_i,
+	wb_clk_i,
+	wbm_adr_o,
+	wbm_dat_o,
+	wbm_dat_i,
+	wbm_we_o,
+	wbm_sel_o,
+	wbm_stb_o,
+	wbm_ack_i,
+	wbm_cyc_o,
+	pcpi_valid,
+	pcpi_insn,
+	pcpi_rs1,
+	pcpi_rs2,
+	pcpi_wr,
+	pcpi_rd,
+	pcpi_wait,
+	pcpi_ready,
+	irq,
+	eoi,
+	trace_valid,
+	trace_data,
+	mem_instr
+);
+	parameter [0:0] ENABLE_COUNTERS = 1;
+	parameter [0:0] ENABLE_COUNTERS64 = 1;
+	parameter [0:0] ENABLE_REGS_16_31 = 1;
+	parameter [0:0] ENABLE_REGS_DUALPORT = 1;
+	parameter [0:0] TWO_STAGE_SHIFT = 1;
+	parameter [0:0] BARREL_SHIFTER = 0;
+	parameter [0:0] TWO_CYCLE_COMPARE = 0;
+	parameter [0:0] TWO_CYCLE_ALU = 0;
+	parameter [0:0] COMPRESSED_ISA = 0;
+	parameter [0:0] CATCH_MISALIGN = 1;
+	parameter [0:0] CATCH_ILLINSN = 1;
+	parameter [0:0] ENABLE_PCPI = 0;
+	parameter [0:0] ENABLE_MUL = 0;
+	parameter [0:0] ENABLE_FAST_MUL = 0;
+	parameter [0:0] ENABLE_DIV = 0;
+	parameter [0:0] ENABLE_IRQ = 0;
+	parameter [0:0] ENABLE_IRQ_QREGS = 1;
+	parameter [0:0] ENABLE_IRQ_TIMER = 1;
+	parameter [0:0] ENABLE_TRACE = 0;
+	parameter [0:0] REGS_INIT_ZERO = 0;
+	parameter [31:0] MASKED_IRQ = 32'h00000000;
+	parameter [31:0] LATCHED_IRQ = 32'hffffffff;
+	parameter [31:0] PROGADDR_RESET = 32'h00000000;
+	parameter [31:0] PROGADDR_IRQ = 32'h00000010;
+	parameter [31:0] STACKADDR = 32'hffffffff;
+	output wire trap;
+	input wb_rst_i;
+	input wb_clk_i;
+	output reg [31:0] wbm_adr_o;
+	output reg [31:0] wbm_dat_o;
+	input [31:0] wbm_dat_i;
+	output reg wbm_we_o;
+	output reg [3:0] wbm_sel_o;
+	output reg wbm_stb_o;
+	input wbm_ack_i;
+	output reg wbm_cyc_o;
+	output wire pcpi_valid;
+	output wire [31:0] pcpi_insn;
+	output wire [31:0] pcpi_rs1;
+	output wire [31:0] pcpi_rs2;
+	input pcpi_wr;
+	input [31:0] pcpi_rd;
+	input pcpi_wait;
+	input pcpi_ready;
+	input [31:0] irq;
+	output wire [31:0] eoi;
+	output wire trace_valid;
+	output wire [35:0] trace_data;
+	output wire mem_instr;
+	wire mem_valid;
+	wire [31:0] mem_addr;
+	wire [31:0] mem_wdata;
+	wire [3:0] mem_wstrb;
+	reg mem_ready;
+	reg [31:0] mem_rdata;
+	wire clk;
+	wire resetn;
+	assign clk = wb_clk_i;
+	assign resetn = ~wb_rst_i;
+	picorv32 #(
+		.ENABLE_COUNTERS(ENABLE_COUNTERS),
+		.ENABLE_COUNTERS64(ENABLE_COUNTERS64),
+		.ENABLE_REGS_16_31(ENABLE_REGS_16_31),
+		.ENABLE_REGS_DUALPORT(ENABLE_REGS_DUALPORT),
+		.TWO_STAGE_SHIFT(TWO_STAGE_SHIFT),
+		.BARREL_SHIFTER(BARREL_SHIFTER),
+		.TWO_CYCLE_COMPARE(TWO_CYCLE_COMPARE),
+		.TWO_CYCLE_ALU(TWO_CYCLE_ALU),
+		.COMPRESSED_ISA(COMPRESSED_ISA),
+		.CATCH_MISALIGN(CATCH_MISALIGN),
+		.CATCH_ILLINSN(CATCH_ILLINSN),
+		.ENABLE_PCPI(ENABLE_PCPI),
+		.ENABLE_MUL(ENABLE_MUL),
+		.ENABLE_FAST_MUL(ENABLE_FAST_MUL),
+		.ENABLE_DIV(ENABLE_DIV),
+		.ENABLE_IRQ(ENABLE_IRQ),
+		.ENABLE_IRQ_QREGS(ENABLE_IRQ_QREGS),
+		.ENABLE_IRQ_TIMER(ENABLE_IRQ_TIMER),
+		.ENABLE_TRACE(ENABLE_TRACE),
+		.REGS_INIT_ZERO(REGS_INIT_ZERO),
+		.MASKED_IRQ(MASKED_IRQ),
+		.LATCHED_IRQ(LATCHED_IRQ),
+		.PROGADDR_RESET(PROGADDR_RESET),
+		.PROGADDR_IRQ(PROGADDR_IRQ),
+		.STACKADDR(STACKADDR)
+	) picorv32_core(
+		.clk(clk),
+		.resetn(resetn),
+		.trap(trap),
+		.mem_valid(mem_valid),
+		.mem_addr(mem_addr),
+		.mem_wdata(mem_wdata),
+		.mem_wstrb(mem_wstrb),
+		.mem_instr(mem_instr),
+		.mem_ready(mem_ready),
+		.mem_rdata(mem_rdata),
+		.pcpi_valid(pcpi_valid),
+		.pcpi_insn(pcpi_insn),
+		.pcpi_rs1(pcpi_rs1),
+		.pcpi_rs2(pcpi_rs2),
+		.pcpi_wr(pcpi_wr),
+		.pcpi_rd(pcpi_rd),
+		.pcpi_wait(pcpi_wait),
+		.pcpi_ready(pcpi_ready),
+		.irq(irq),
+		.eoi(eoi),
+		.trace_valid(trace_valid),
+		.trace_data(trace_data)
+	);
+	localparam IDLE = 2'b00;
+	localparam WBSTART = 2'b01;
+	localparam WBEND = 2'b10;
+	reg [1:0] state;
+	wire we;
+	assign we = ((mem_wstrb[0] | mem_wstrb[1]) | mem_wstrb[2]) | mem_wstrb[3];
+	always @(posedge wb_clk_i)
+		if (wb_rst_i) begin
+			wbm_adr_o <= 0;
+			wbm_dat_o <= 0;
+			wbm_we_o <= 0;
+			wbm_sel_o <= 0;
+			wbm_stb_o <= 0;
+			wbm_cyc_o <= 0;
+			state <= IDLE;
+		end
+		else
+			case (state)
+				IDLE:
+					if (mem_valid) begin
+						wbm_adr_o <= mem_addr;
+						wbm_dat_o <= mem_wdata;
+						wbm_we_o <= we;
+						wbm_sel_o <= mem_wstrb;
+						wbm_stb_o <= 1'b1;
+						wbm_cyc_o <= 1'b1;
+						state <= WBSTART;
+					end
+					else begin
+						mem_ready <= 1'b0;
+						wbm_stb_o <= 1'b0;
+						wbm_cyc_o <= 1'b0;
+						wbm_we_o <= 1'b0;
+					end
+				WBSTART:
+					if (wbm_ack_i) begin
+						mem_rdata <= wbm_dat_i;
+						mem_ready <= 1'b1;
+						state <= WBEND;
+						wbm_stb_o <= 1'b0;
+						wbm_cyc_o <= 1'b0;
+						wbm_we_o <= 1'b0;
+					end
+				WBEND: begin
+					mem_ready <= 1'b0;
+					state <= IDLE;
+				end
+				default: state <= IDLE;
+			endcase
 endmodule

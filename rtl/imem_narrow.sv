@@ -8,15 +8,15 @@ module imem_narrow (
     output logic        m_rvalid,
     output logic [7:0]  m_rdata,
     input  logic        ld_en,
-    input  logic [7:0]  ld_addr,
+    input  logic [8:0]  ld_addr,
     input  logic [7:0]  ld_data
 );
     assign m_gnt = 1'b1;
     logic        cen, gwen;
     logic [7:0]  wen, d, q;
-    logic [7:0]  a;
-    logic [7:0]  rd_addr;
-    assign rd_addr = m_addr[7:0];
+    logic [8:0]  a;
+    logic [8:0]  rd_addr;
+    assign rd_addr = m_addr[8:0];
 
     always_comb begin
         if (ld_en) begin
@@ -24,11 +24,11 @@ module imem_narrow (
         end else if (m_sel) begin
             cen=1'b0; gwen=1'b1; wen=8'hFF; a=rd_addr; d=8'h00;
         end else begin
-            cen=1'b1; gwen=1'b1; wen=8'hFF; a=8'b0; d=8'h00;
+            cen=1'b1; gwen=1'b1; wen=8'hFF; a=9'b0; d=8'h00;
         end
     end
 
-    gf180mcu_fd_ip_sram__sram256x8m8wm1 u_sram (
+    gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram (
         .CLK(clk), .CEN(cen), .GWEN(gwen), .WEN(wen),
         .A(a), .D(d), .Q(q)
     );

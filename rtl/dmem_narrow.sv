@@ -27,7 +27,7 @@ module dmem_narrow #(
         end
     end
 
-    gf180mcu_fd_ip_sram__sram64x8m8wm1 u_sram (
+    gf180mcu_fd_ip_sram__sram512x8m8wm1 u_sram (
         .CLK(clk), .CEN(cen), .GWEN(gwen), .WEN(wen),
         .A(a), .D(d), .Q(q)
     );
