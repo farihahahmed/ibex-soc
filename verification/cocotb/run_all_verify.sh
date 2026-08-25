@@ -18,14 +18,17 @@ run "chip random"  make COCOTB_TEST_MODULES=test_pyuvm_random
 run "chip primes"  make COCOTB_TEST_MODULES=test_pyuvm_primes
 run "chip piezo"   make COCOTB_TEST_MODULES=test_pyuvm_piezo
 run "chip game"    make COCOTB_TEST_MODULES=test_pyuvm_game
-run "chip dmem"    make COCOTB_TEST_MODULES=test_pyuvm_dmem || make dmem
+run "chip dmem"    make COCOTB_TEST_MODULES=test_pyuvm_dmem
+
+# Control / debug paths
+run "scan readback"  make COCOTB_TEST_MODULES=test_scan_readback
+run "scan status"    make COCOTB_TEST_MODULES=test_scan_status
+run "clk generator"  make COCOTB_TEST_MODULES=test_clkgen
+run "fsm countdown"  make COCOTB_TEST_MODULES=test_pyuvm_countdown
+run "scan lockout"   make COCOTB_TEST_MODULES=test_pyuvm_scan_lockout
 
 # Block MDV
-run "block uart smoke"  make -C block/uart MODULE=test_uart_smoke COCOTB_TEST_MODULES=test_uart_smoke || true
-# If uart uses different name, adjust:
-if [ -f block/uart/test_uart_smoke.py ]; then
-  (cd block/uart && make MODULE=test_uart_smoke COCOTB_TEST_MODULES=test_uart_smoke)
-fi
+run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke COCOTB_TEST_MODULES=test_uart_smoke'
 (cd block/gpio && make MODULE=test_gpio_smoke COCOTB_TEST_MODULES=test_gpio_smoke)
 (cd block/gpio && make MODULE=test_gpio_write COCOTB_TEST_MODULES=test_gpio_write)
 (cd block/spi  && make MODULE=test_spi_smoke  COCOTB_TEST_MODULES=test_spi_smoke)

@@ -36,6 +36,7 @@ module chip_top_full #(
         .cfg_div_in(clkgen_div), .clk_out(sys_clk)
     );
 
+    logic [31:0] status_word;
     logic        scan_mem_we, scan_mem_re;
     logic [15:0] scan_mem_addr;
     logic [31:0] scan_mem_wdata, scan_mem_rdata;
@@ -46,6 +47,7 @@ module chip_top_full #(
         .scan_i0o1(scan_i0o1), .scan_out(scan_out),
         .mem_we(scan_mem_we), .mem_re(scan_mem_re), .mem_addr(scan_mem_addr),
         .mem_wdata(scan_mem_wdata), .mem_rdata(scan_mem_rdata),
+        .status_in(status_word),
         .fsm_cfg_load(fsm_cfg_load), .fsm_mode(fsm_mode), .fsm_count(fsm_count),
         .clk_cfg_load(clkgen_cfg_load), .clk_int(clkgen_int), .clk_div(clkgen_div)
     );
@@ -79,6 +81,34 @@ module chip_top_full #(
     logic [31:0] p_mem_addr, p_mem_wdata, p_mem_rdata;
     logic [3:0]  p_mem_wstrb;
     logic        p_trap;
+
+    // ---- trap capture -------------------------------------------------------
+    // PicoRV32 raises trap on an illegal instruction or misaligned access and
+    // then halts. Software cannot report this (it is no longer running) and
+    // there is no spare pin, so the trap is synchronised into the sys_clk
+    // domain and latched. It is readable over the scan chain as bit 0 of the
+    // status word (tgt=3, addr[13]=1). Sticky until reset.
+    //
+    // cpu_clk is a gated version of sys_clk, so p_trap can freeze mid-flight
+    // when the FSM leaves RUN; the two-flop synchroniser makes sampling it from
+    // sys_clk safe, and the sticky bit preserves the event after the clock stops.
+    logic trap_sync1, trap_sync2, trap_sticky;
+    always_ff @(posedge sys_clk or negedge rst_n) begin
+        if (!rst_n) begin
+            trap_sync1 <= 1'b0; trap_sync2 <= 1'b0; trap_sticky <= 1'b0;
+        end else begin
+            trap_sync1 <= p_trap;
+            trap_sync2 <= trap_sync1;
+            if (trap_sync2) trap_sticky <= 1'b1;
+        end
+    end
+
+    // Status word, readable via scan (tgt=3, addr[13]=1):
+    //   [0]    CPU trap (sticky since reset)
+    //   [2:1]  FSM mode (0=IDLE, 1=RUN, 2=COUNTDOWN)
+    //   [3]    scan owns memory
+    //   [31:4] reserved, reads 0
+    assign status_word = {28'b0, scan_owns_mem, fsm_mode_o, trap_sticky};
 
     picorv32 #(
         .ENABLE_MUL(1), .ENABLE_DIV(1), .COMPRESSED_ISA(1),

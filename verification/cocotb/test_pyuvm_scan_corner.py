@@ -13,7 +13,7 @@ class ScanCorner(uvm_test):
     async def run_phase(self):
         self.raise_objection()
         self.env.scoreboard.require_events = set()  # no FW
-        # illegal tgt=3
+        # tgt=3 is MEMORY_READ: must not disturb the FSM mode
         it = ScanItem("bad", tgt=3, addr=0, data=0xDEAD)
         await self.env.scan_agent.sequencer.start_item(it)
         await self.env.scan_agent.sequencer.finish_item(it)

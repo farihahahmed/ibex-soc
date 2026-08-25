@@ -24,7 +24,7 @@ class PyuvmScanCornersTest(uvm_test):
         await Timer(200, unit="ns")
         assert int(dut.u_fsm.mode_o.value) == 0
 
-        # Illegal tgt=3 with RUN-looking data → IDLE
+        # tgt=3 (MEMORY_READ) with RUN-looking data must not change mode
         await self._scan(3, 0, 0x00010000)
         for _ in range(20):
             await RisingEdge(dut.clk)

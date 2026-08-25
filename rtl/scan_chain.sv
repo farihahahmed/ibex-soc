@@ -6,6 +6,12 @@
 // scan_load to start the read; wait >=16 sys_clk cycles for the byte-gather to
 // assemble the word; pulse scan_i0o1 to capture it; shift it out. Only serviced
 // while the FSM is IDLE (scan owns the memory).
+//
+// STATUS READBACK (tgt=3, addr[13]=1): imem needs only 7 of the 14 address
+// bits, so the top bit selects a status word instead of memory. No memory
+// access is started; scan_i0o1 captures status_in directly. This is the only
+// way to observe a CPU trap - a trapped CPU cannot report it in software, and
+// there is no spare pin.
 module scan_chain (
     input  logic        clk,
     input  logic        rst_n,
@@ -19,6 +25,7 @@ module scan_chain (
     output logic [15:0] mem_addr,
     output logic [31:0] mem_wdata,
     input  logic [31:0] mem_rdata,
+    input  logic [31:0] status_in,
     output logic        fsm_cfg_load,
     output logic [1:0]  fsm_mode,
     output logic [15:0] fsm_count,
@@ -31,19 +38,27 @@ module scan_chain (
 
     assign scan_out = shift_reg[0];
 
+    logic [1:0] tgt_pre;
+    assign tgt_pre = shift_reg[47:46];
+
+    // tgt=3 with the top address bit set selects the status word, not memory.
+    logic status_sel;
+    assign status_sel = (tgt_pre == 2'd3) & shift_reg[45];
+
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)            shift_reg <= '0;
-        else if (scan_i0o1)    shift_reg[31:0] <= mem_rdata;
+        else if (scan_i0o1)    shift_reg[31:0] <= status_sel ? status_in : mem_rdata;
         else if (scan_shift)   shift_reg <= {scan_in, shift_reg[FRAME_BITS-1:1]};
     end
 
     logic [1:0] tgt;
     assign tgt        = shift_reg[47:46];
+
     assign mem_addr   = {2'b00, shift_reg[45:32]};
     assign mem_wdata  = shift_reg[31:0];
 
     assign mem_we       = scan_load & (tgt == 2'd0);
-    assign mem_re       = scan_load & (tgt == 2'd3);
+    assign mem_re       = scan_load & (tgt == 2'd3) & ~shift_reg[45];
     assign fsm_cfg_load = scan_load & (tgt == 2'd1);
     assign clk_cfg_load = scan_load & (tgt == 2'd2);
 
