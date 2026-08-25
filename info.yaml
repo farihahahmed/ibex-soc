@@ -15,7 +15,7 @@ project:
   title: "PicoRV32 SoC on GF180MCU"
   team: "A45 - ColumbiaGals"
   discord: "farihah__ahmed"
-  description: "RISC-V RV32IMC SoC: PicoRV32 core, narrow 8-bit SRAM, AHB-Lite/APB bus, GPIO/UART/SPI, scan-configured control"
+  description: "RISC-V RV32E+M+C SoC: PicoRV32 core, narrow 8-bit SRAM, AHB-Lite/APB bus, GPIO/UART/SPI, scan-configured control"
   lvs_config: "lvs_config.json"
 
 pins:

@@ -1,7 +1,12 @@
 # Pinout — chip_top_full
 
-**22 pins total: 20 signal + 2 power** (12 input, 8 output, 2 power). No bidirectional pins.
-Verified from the top-level ports of the synthesized netlist `chip_top.nl.v`.
+**22 pins total: 20 signal + 2 power** (12 input, 8 output, 2 power).
+Verified from the top-level ports of the placed-and-routed netlist `gds/chip_top_full.pnl.v`.
+
+The design drives all 8 outputs as pure outputs (no tri-state, no MISO). The A45
+pad frame assigns bidirectional `bi_t` pad cells to them, which is why `info.yaml`
+lists those pins as `bidirectional` — the output-enable is tied active and the
+input leg is unused.
 
 | Group | Pin | Type |
 |-------|-----|------|
@@ -31,7 +36,7 @@ Verified from the top-level ports of the synthesized netlist `chip_top.nl.v`.
 ## Notes
 
 - **clk_int** selects the clock source (1 = internal generated clock, 0 = external `clk` fallback).
-- **scan_i0o1** selects scan direction (in vs out) for readback, replacing separate capture/select pins.
+- **scan_i0o1** selects scan direction (in vs out), replacing separate capture/select pins. Note: memory readback is not currently functional — `chip_top_full` ties `scan_chain.mem_rdata` to `32'b0`, so the readback path returns zero.
 - FSM control (`start`/`load_done`) and state (`fsm_state`) are **not** pins — they are configured and observed through the scan chain (Columbia-style), which removed 4 pins.
 - **spi_miso** is omitted: the SPI interface is output-only (drives an LCD), matching the reference design.
 - GPIO is **2 in / 5 out**: 2 buttons in, 5 outputs for LEDs (and optionally a piezo).
@@ -39,5 +44,5 @@ Verified from the top-level ports of the synthesized netlist `chip_top.nl.v`.
 ## How it was derived
 
 Synthesized the full SoC with Yosys; the top-level module port list of the resulting
-netlist (`chip_top.nl.v`) is the physical signal-pin set. Power pins (VDD/VSS) are added
+netlist (`gds/chip_top_full.pnl.v`) is the physical signal-pin set. Power pins (VDD/VSS) are added
 at the pad ring. Confirmed by gate-level simulation driving all pins.
