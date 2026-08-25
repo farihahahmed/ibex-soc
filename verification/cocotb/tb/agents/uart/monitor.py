@@ -18,6 +18,9 @@ class UartMonitor(uvm_component):
             for b in range(8):
                 await ClockCycles(dut.clk, self.bit_cycles)
                 val |= (int(dut.uart_tx.value) & 1) << b
+            # consume the stop bit before hunting for the next start bit,
+            # otherwise the search restarts mid-frame and decodes garbage
+            await ClockCycles(dut.clk, self.bit_cycles)
             item = UartItem(data=val)
             self.logger.info(f"[UART mon] {item}")
             self.ap.write(item)

@@ -84,11 +84,14 @@ module dmem_narrow_top (
                     if (cap_cnt == 3'd4) state <= R_PRESENT;
                 end
                 R_PRESENT: state <= D_IDLE;
+
+                // Walk all 4 byte slots, but only actually write when BE is set
                 W_B0: state <= W_B1;
                 W_B1: state <= W_B2;
                 W_B2: state <= W_B3;
                 W_B3: state <= W_DONE;
                 W_DONE: state <= D_IDLE;
+
                 L_B0: state <= L_B1;
                 L_B1: state <= L_B2;
                 L_B2: state <= L_B3;
@@ -110,10 +113,13 @@ module dmem_narrow_top (
                 end
             end
             R_DRAIN: begin b_sel=1'b1; b_addr=base_addr + 32'd3; end
-            W_B0: if (be_lat[0]) begin b_req=1;b_we=1;b_addr=base_addr+0;b_wdata=wdata_lat[7:0];   end
-            W_B1: if (be_lat[1]) begin b_req=1;b_we=1;b_addr=base_addr+1;b_wdata=wdata_lat[15:8];  end
-            W_B2: if (be_lat[2]) begin b_req=1;b_we=1;b_addr=base_addr+2;b_wdata=wdata_lat[23:16]; end
-            W_B3: if (be_lat[3]) begin b_req=1;b_we=1;b_addr=base_addr+3;b_wdata=wdata_lat[31:24]; end
+
+            // Only assert write when the corresponding BE bit is set
+            W_B0: if (be_lat[0]) begin b_req=1; b_we=1; b_addr=base_addr+0; b_wdata=wdata_lat[7:0];   end
+            W_B1: if (be_lat[1]) begin b_req=1; b_we=1; b_addr=base_addr+1; b_wdata=wdata_lat[15:8];  end
+            W_B2: if (be_lat[2]) begin b_req=1; b_we=1; b_addr=base_addr+2; b_wdata=wdata_lat[23:16]; end
+            W_B3: if (be_lat[3]) begin b_req=1; b_we=1; b_addr=base_addr+3; b_wdata=wdata_lat[31:24]; end
+
             L_B0: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+0;b_wdata=lword[7:0];   end
             L_B1: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+1;b_wdata=lword[15:8];  end
             L_B2: begin b_req=1;b_we=1;b_addr={23'b0,lbase}+2;b_wdata=lword[23:16]; end

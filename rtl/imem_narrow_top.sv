@@ -31,7 +31,7 @@ module imem_narrow_top (
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            sstate <= S_IDLE; word_lat <= 32'b0; base_lat <= 8'b0;
+            sstate <= S_IDLE; word_lat <= 32'b0; base_lat <= 9'b0;
         end else begin
             case (sstate)
                 S_IDLE: if (ld_word_en) begin

@@ -1,5 +1,5 @@
 // ============================================================================
-// spi.sv - my SPI master (Mode 0). Talks to an LED/LCD/sensor over 4 wires.
+// spi.sv - SPI master (Mode 0). Talks to an LED/LCD/sensor over 4 wires.
 //
 // SPI is SYNCHRONOUS: I generate the clock (SCLK), and both sides shift on it.
 // No baud-rate guessing like UART - the clock line itself marks each bit.
@@ -19,10 +19,13 @@
 // Register interface:
 //   write we=1 -> load wdata[7:0] into TX and start a transfer.
 //   read       -> bit0 = busy (1 = transfer in progress), bits[15:8] = last RX byte.
+//
+// FIX: bit counting / termination was off-by-one (NBA on bit_count). Now we
+// count on the rising edge (sample) and finish cleanly after the 8th sample.
 // ============================================================================
 
 module spi #(
-    parameter int CLK_DIV = 4        // SCLK = system clock / (2*CLK_DIV). Slower than my clock.
+    parameter int CLK_DIV = 4        // SCLK = system clock / (2*CLK_DIV)
 )(
     input  logic        clk,
     input  logic        rst_n,
@@ -34,19 +37,18 @@ module spi #(
     output logic [31:0] rdata,
 
     // ---- SPI pins ----
-    output logic        sclk,        // clock I drive to the slave.
-    output logic        mosi,        // data out to the slave.
-    input  logic        miso,        // data in from the slave.
-    output logic        cs_n         // chip select, active low.
+    output logic        sclk,
+    output logic        mosi,
+    input  logic        miso,
+    output logic        cs_n
 );
 
     // --------------------------------------------------------------------
     // Clock divider: SCLK toggles every CLK_DIV system-clock cycles (while busy).
-    // That makes SCLK slow enough for the slave to follow.
     // --------------------------------------------------------------------
-    logic [$clog2(CLK_DIV)-1:0] div_cnt;   // counts up to CLK_DIV.
-    logic                        tick;      // pulses when it's time to toggle SCLK.
-    logic                        busy;      // am I in a transfer?
+    logic [$clog2(CLK_DIV)-1:0] div_cnt;
+    logic                        tick;
+    logic                        busy;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -55,7 +57,7 @@ module spi #(
         end else if (busy) begin
             if (div_cnt == CLK_DIV-1) begin
                 div_cnt <= '0;
-                tick    <= 1'b1;           // time to toggle the SPI clock.
+                tick    <= 1'b1;
             end else begin
                 div_cnt <= div_cnt + 1'b1;
                 tick    <= 1'b0;
@@ -69,27 +71,27 @@ module spi #(
     // --------------------------------------------------------------------
     // Transfer state machine + shift registers.
     //   IDLE     : CS high, SCLK low, waiting. On a write, load TX and start.
-    //   TRANSFER : pulse SCLK 8 times. On each falling edge drive next MOSI bit;
-    //              on each rising edge sample MISO. Count 8 bits, then done.
+    //   TRANSFER : 8 rising edges sample MISO, 8 falling edges shift MOSI.
+    //              Finish immediately after the 8th sample.
     // --------------------------------------------------------------------
     typedef enum logic {IDLE, TRANSFER} state_t;
     state_t state;
 
-    logic [7:0] tx_shift;            // byte going out (shifts left, MSB first).
-    logic [7:0] rx_shift;            // byte coming in (shifts in from MISO).
-    logic [3:0] bit_count;           // how many SCLK edges so far (0..16 = 8 bits x2 edges).
-    logic       sclk_int;            // my internal SCLK level.
-    logic [7:0] rx_data;             // the finished received byte.
+    logic [7:0] tx_shift;
+    logic [7:0] rx_shift;
+    logic [3:0] bit_count;
+    logic       sclk_int;
+    logic [7:0] rx_data;
 
     assign sclk = sclk_int;
-    assign mosi = tx_shift[7];       // MSB first: always drive the top bit.
+    assign mosi = tx_shift[7];       // MSB first
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state     <= IDLE;
             busy      <= 1'b0;
-            cs_n      <= 1'b1;        // deselected.
-            sclk_int  <= 1'b0;        // Mode 0: idle low.
+            cs_n      <= 1'b1;
+            sclk_int  <= 1'b0;
             tx_shift  <= 8'h0;
             rx_shift  <= 8'h0;
             rx_data   <= 8'h0;
@@ -99,10 +101,10 @@ module spi #(
                 IDLE: begin
                     sclk_int <= 1'b0;
                     cs_n     <= 1'b1;
-                    if (sel && we) begin        // CPU wrote a byte -> start a transfer.
+                    if (sel && we) begin
                         tx_shift  <= wdata[7:0];
                         busy      <= 1'b1;
-                        cs_n      <= 1'b0;       // select the slave.
+                        cs_n      <= 1'b0;
                         bit_count <= 4'h0;
                         state     <= TRANSFER;
                     end
@@ -110,24 +112,25 @@ module spi #(
 
                 TRANSFER: begin
                     if (tick) begin
-                        sclk_int <= ~sclk_int;  // toggle the SPI clock.
+                        sclk_int <= ~sclk_int;
 
                         if (~sclk_int) begin
-                            // this tick drives SCLK LOW->HIGH = rising edge: SAMPLE MISO.
+                            // Rising edge → sample MISO
                             rx_shift <= {rx_shift[6:0], miso};
-                        end else begin
-                            // this tick drives SCLK HIGH->LOW = falling edge: SHIFT MOSI.
-                            tx_shift <= {tx_shift[6:0], 1'b0};
-                            bit_count <= bit_count + 1'b1;
-                        end
 
-                        // after 8 full bits (8 falling edges), finish.
-                        if (bit_count == 4'd8) begin
-                            state    <= IDLE;
-                            busy     <= 1'b0;
-                            cs_n     <= 1'b1;       // deselect.
-                            sclk_int <= 1'b0;
-                            rx_data  <= rx_shift;   // latch the received byte.
+                            if (bit_count == 4'd7) begin
+                                // 8th sample just captured → done
+                                state    <= IDLE;
+                                busy     <= 1'b0;
+                                cs_n     <= 1'b1;
+                                sclk_int <= 1'b0;
+                                rx_data  <= {rx_shift[6:0], miso};
+                            end else begin
+                                bit_count <= bit_count + 1'b1;
+                            end
+                        end else begin
+                            // Falling edge → shift next MOSI bit
+                            tx_shift <= {tx_shift[6:0], 1'b0};
                         end
                     end
                 end

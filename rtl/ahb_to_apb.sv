@@ -53,7 +53,12 @@ module ahb_to_apb (
         end
     end
 
-    // capture write data in the SETUP cycle (= AHB data phase).
+    // Capture write data in the SETUP cycle. Note this is NOT the AHB data
+    // phase in the strict sense - HREADY stays low in IDLE while ahb_access is
+    // high, so the address phase is extended. The capture is still correct
+    // because ibex_to_ahb drives HWDATA combinationally from the master, and
+    // PicoRV32 holds mem_wdata stable for the whole transaction. A master that
+    // pipelined HWDATA would break this.
     logic [31:0] wdata_q;
     always_ff @(posedge HCLK or negedge HRESETn) begin
         if (!HRESETn) wdata_q <= 32'h0;
