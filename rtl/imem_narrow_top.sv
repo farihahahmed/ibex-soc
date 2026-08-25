@@ -9,7 +9,13 @@ module imem_narrow_top (
     input  logic        ld_word_en,
     input  logic [15:0] ld_word_addr,
     input  logic [31:0] ld_word_data,
-    output logic        ld_busy
+    output logic        ld_busy,
+    // ---- scan readback (see scan_chain.sv) ----
+    input  logic        scan_owns,      // 1 = scan owns memory, CPU port cut off
+    input  logic        rd_word_en,     // pulse to start a readback
+    input  logic [15:0] rd_word_addr,   // word address to read
+    output logic [31:0] rd_word_data,   // last word read (held until next read)
+    output logic        rd_busy
 );
     logic        g_m_req, g_m_sel, g_m_gnt, g_m_rvalid;
     logic [31:0] g_m_addr;
@@ -56,10 +62,53 @@ module imem_narrow_top (
     end
     assign ld_busy = (sstate != S_IDLE);
 
+    logic        g_c_req, g_c_gnt, g_c_rvalid;
+    logic [31:0] g_c_addr, g_c_rdata;
+
+    // ---- scan readback FSM -------------------------------------------------
+    // Reuses the byte-gather path, so a readback returns exactly what a fetch of
+    // the same address would. Only runs while scan owns the memory, so it can
+    // never collide with a CPU fetch. The result is registered and held, because
+    // the scan chain captures it several cycles later (on scan_i0o1).
+    typedef enum logic [1:0] { RB_IDLE, RB_REQ, RB_WAIT } rbstate_t;
+    rbstate_t    rbstate;
+    logic [8:0]  rb_addr;
+    logic [31:0] rb_data_q;
+
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rbstate <= RB_IDLE; rb_addr <= 9'b0; rb_data_q <= 32'b0;
+        end else begin
+            case (rbstate)
+                RB_IDLE: if (rd_word_en && !ld_busy && scan_owns) begin
+                             rb_addr <= {rd_word_addr[6:0], 2'b00};
+                             rbstate <= RB_REQ;
+                         end
+                RB_REQ:  if (g_c_gnt)    rbstate <= RB_WAIT;
+                RB_WAIT: if (g_c_rvalid) begin
+                             rb_data_q <= g_c_rdata;
+                             rbstate   <= RB_IDLE;
+                         end
+                default: rbstate <= RB_IDLE;
+            endcase
+        end
+    end
+
+    assign rd_busy      = (rbstate != RB_IDLE);
+    assign rd_word_data = rb_data_q;
+
+    // Arbitration: while scan owns the memory the CPU fetch port is cut off and
+    // the readback FSM drives the gather unit instead.
+    assign g_c_req  = scan_owns ? (rbstate == RB_REQ) : req;
+    assign g_c_addr = scan_owns ? {23'b0, rb_addr}    : addr;
+    assign gnt      = scan_owns ? 1'b0 : g_c_gnt;
+    assign rvalid   = scan_owns ? 1'b0 : g_c_rvalid;
+    assign rdata    = g_c_rdata;
+
     fetch_gather u_gather (
         .clk(clk), .rst_n(rst_n),
-        .c_req(req), .c_gnt(gnt), .c_addr(addr),
-        .c_rvalid(rvalid), .c_rdata(rdata),
+        .c_req(g_c_req), .c_gnt(g_c_gnt), .c_addr(g_c_addr),
+        .c_rvalid(g_c_rvalid), .c_rdata(g_c_rdata),
         .m_req(g_m_req), .m_sel(g_m_sel), .m_gnt(g_m_gnt),
         .m_addr(g_m_addr), .m_rvalid(g_m_rvalid), .m_rdata(g_m_rdata)
     );

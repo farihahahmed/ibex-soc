@@ -5,8 +5,8 @@
 module chip_top_full #(
     parameter int NUM_OUT     = 5,
     parameter int NUM_IN      = 2,
-    parameter int CLK_FREQ    = 8,
-    parameter int BAUD_RATE   = 1,
+    parameter int CLK_FREQ    = 31_250_000,  // silicon: 32 ns clock = 31.25 MHz
+    parameter int BAUD_RATE   = 115_200,     // BAUD_DIV = 271 -> 115,313 baud (+0.1%)
     parameter int SPI_CLK_DIV = 2
 )(
     input  logic clk,
@@ -36,7 +36,7 @@ module chip_top_full #(
         .cfg_div_in(clkgen_div), .clk_out(sys_clk)
     );
 
-    logic        scan_mem_we;
+    logic        scan_mem_we, scan_mem_re;
     logic [15:0] scan_mem_addr;
     logic [31:0] scan_mem_wdata, scan_mem_rdata;
     logic        fsm_cfg_load; logic [1:0] fsm_mode; logic [15:0] fsm_count;
@@ -44,8 +44,8 @@ module chip_top_full #(
         .clk(sys_clk), .rst_n(rst_n),
         .scan_in(scan_in), .scan_shift(scan_shift), .scan_load(scan_load),
         .scan_i0o1(scan_i0o1), .scan_out(scan_out),
-        .mem_we(scan_mem_we), .mem_addr(scan_mem_addr),
-        .mem_wdata(scan_mem_wdata), .mem_rdata(32'b0),
+        .mem_we(scan_mem_we), .mem_re(scan_mem_re), .mem_addr(scan_mem_addr),
+        .mem_wdata(scan_mem_wdata), .mem_rdata(scan_mem_rdata),
         .fsm_cfg_load(fsm_cfg_load), .fsm_mode(fsm_mode), .fsm_count(fsm_count),
         .clk_cfg_load(clkgen_cfg_load), .clk_int(clkgen_int), .clk_div(clkgen_div)
     );
@@ -115,7 +115,7 @@ module chip_top_full #(
         .instr_rvalid_o(instr_rvalid), .instr_rdata_o(instr_rdata),
         .scan_owns_mem(scan_owns_mem),
         .scan_we(scan_mem_we), .scan_addr(scan_mem_addr), .scan_wdata(scan_mem_wdata),
-        .scan_sel_dmem(1'b0)
+        .scan_re(scan_mem_re), .scan_rdata(scan_mem_rdata)
     );
 
     logic [31:0] HADDR, HWDATA, HRDATA;

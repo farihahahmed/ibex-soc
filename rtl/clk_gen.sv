@@ -30,5 +30,28 @@ module clk_gen (
         end
     end
 
-    assign clk_out = clk_int ? div_clk : clk_ext;
+    // Glitch-free 2:1 clock mux. A bare combinational select can emit a runt
+    // pulse; instead each branch has a 2-flop synchronizer on the NEGATIVE edge
+    // of its own clock (so its enable changes only while that clock is low), and
+    // each is blocked while the other is still enabled. At most one gated clock
+    // is ever active, so the OR is safe. Both clocks must run for a switch.
+    logic int_en_q1, int_en_q2, ext_en_q1, ext_en_q2;
+
+    always_ff @(negedge div_clk or negedge rst_n) begin
+        if (!rst_n) begin int_en_q1 <= 1'b0; int_en_q2 <= 1'b0; end
+        else begin
+            int_en_q1 <= clk_int & ~ext_en_q2;
+            int_en_q2 <= int_en_q1;
+        end
+    end
+
+    always_ff @(negedge clk_ext or negedge rst_n) begin
+        if (!rst_n) begin ext_en_q1 <= 1'b0; ext_en_q2 <= 1'b0; end
+        else begin
+            ext_en_q1 <= ~clk_int & ~int_en_q2;
+            ext_en_q2 <= ext_en_q1;
+        end
+    end
+
+    assign clk_out = (div_clk & int_en_q2) | (clk_ext & ext_en_q2);
 endmodule

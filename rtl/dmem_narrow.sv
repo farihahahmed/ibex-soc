@@ -1,5 +1,5 @@
 module dmem_narrow #(
-    parameter int ADDR_BITS = 6
+    parameter int ADDR_BITS = 9
 )(
     input  logic        clk,
     input  logic        rst_n,
