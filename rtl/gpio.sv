@@ -25,5 +25,11 @@ module gpio #(
         else begin sync1 <= gpio_in; sync2 <= sync1; end
     end
 
-    assign rdata = {{(32-NUM_IN){1'b0}}, sync2};
+    // Read layout (backward compatible - inputs stay in the low bits):
+    //   [NUM_IN-1:0]                synchronised input pins
+    //   [NUM_IN+NUM_OUT-1:NUM_IN]   output register readback
+    //   [31:NUM_IN+NUM_OUT]         reserved, reads 0
+    // Reading back the output register lets software confirm what it drove, and
+    // lets a read-modify-write update one output without disturbing the others.
+    assign rdata = {{(32-NUM_IN-NUM_OUT){1'b0}}, out_reg, sync2};
 endmodule
