@@ -82,7 +82,7 @@ module chip_top_full #(
 
     picorv32 #(
         .ENABLE_MUL(1), .ENABLE_DIV(1), .COMPRESSED_ISA(1),
-        .ENABLE_IRQ(0), .PROGADDR_RESET(32'h0), .STACKADDR(32'h40),
+        .ENABLE_IRQ(0), .PROGADDR_RESET(32'h0), .STACKADDR(32'h200),
         .BARREL_SHIFTER(0), .ENABLE_FAST_MUL(0),
         .ENABLE_COUNTERS(0), .ENABLE_COUNTERS64(0)
     ) u_cpu (
