@@ -93,7 +93,7 @@ piezo:
 
 coverage-rtl:
 	mkdir -p coverage_rtl
-	verilator --cc --coverage --top-module chip_top_full \
+	verilator --cc --coverage --timing --top-module chip_top_full \
 	  -Wno-fatal -Wno-TIMESCALEMOD -Wno-DECLFILENAME -Wno-WIDTHTRUNC -Wno-WIDTHEXPAND \
 	  -I../../rtl ../../rtl/*.sv ../../rtl/*.v models/*.v \
 	  --Mdir coverage_rtl/obj_dir

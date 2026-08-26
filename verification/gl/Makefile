@@ -1,8 +1,8 @@
 PDK ?= /foss/pdks/ciel/gf180mcu/versions/7b70722e33c03fcb5dabcf4d479fb0822d9251c9/gf180mcuD
 SC   = $(PDK)/libs.ref/gf180mcu_fd_sc_mcu7t5v0/verilog
 SRAM = $(PDK)/libs.ref/gf180mcu_fd_ip_sram/verilog
-# Pico-era final netlist (2026-08-08), not Ibex
-NETLIST = ../../openlane/chip_top_full/runs/RUN_2026-08-08_06-31-45/final/nl/chip_top_full.nl.v
+# Current signoff netlist, kept in gds/ alongside the GDS it matches.
+NETLIST = ../../gds/chip_top_full.pnl.v
 
 .PHONY: gl-smoke
 gl-smoke:
