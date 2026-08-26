@@ -1,6 +1,6 @@
 # How to run Pico SoC verification
 
-export PYTHONPATH="/foss/designs/pico_soc/verification/cocotb:\${PYTHONPATH}"
+export PYTHONPATH="../../verification/cocotb:\${PYTHONPATH}"
 
 ## Chip-level
 cd verification/cocotb

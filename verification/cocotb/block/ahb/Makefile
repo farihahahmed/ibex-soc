@@ -2,10 +2,10 @@ SIM ?= icarus
 TOPLEVEL_LANG = verilog
 TOPLEVEL = ahb_interconnect
 
-VERILOG_SOURCES = /foss/designs/pico_soc/rtl/ahb_interconnect.sv
+VERILOG_SOURCES = ../../../../rtl/ahb_interconnect.sv
 COMPILE_ARGS += -g2012
 
-export PYTHONPATH := /foss/designs/pico_soc/verification/cocotb:$(PYTHONPATH)
+export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
 COCOTB_TEST_MODULES ?= test_ahb_smoke
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

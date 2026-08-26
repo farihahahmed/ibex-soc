@@ -4,10 +4,10 @@ TOPLEVEL_LANG = verilog
 TOPLEVEL = apb_spi
 MODULE = test_spi_smoke
 
-VERILOG_SOURCES = /foss/designs/pico_soc/rtl/apb_spi.sv /foss/designs/pico_soc/rtl/spi.sv
+VERILOG_SOURCES = ../../../../rtl/apb_spi.sv ../../../../rtl/spi.sv
 COMPILE_ARGS += -g2012
 
-export PYTHONPATH := /foss/designs/pico_soc/verification/cocotb:$(PYTHONPATH)
+export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 

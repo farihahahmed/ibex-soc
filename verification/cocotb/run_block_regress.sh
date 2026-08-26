@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
-export PYTHONPATH="/foss/designs/pico_soc/verification/cocotb:${PYTHONPATH:-}"
-ROOT=/foss/designs/pico_soc/verification/cocotb
+export PYTHONPATH="../../verification/cocotb:${PYTHONPATH:-}"
+ROOT=../../verification/cocotb
 
 run() {
   local dir=$1

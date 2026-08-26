@@ -6,10 +6,10 @@ COMPILE_ARGS += -Papb_uart.CLK_FREQ=8
 COMPILE_ARGS += -Papb_uart.BAUD_RATE=1
 
 VERILOG_SOURCES = \
-  /foss/designs/pico_soc/rtl/apb_uart.sv \
-  /foss/designs/pico_soc/rtl/uart.sv
+  ../../../../rtl/apb_uart.sv \
+  ../../../../rtl/uart.sv
 
-export PYTHONPATH := /foss/designs/pico_soc/verification/cocotb:$(PYTHONPATH)
+export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 

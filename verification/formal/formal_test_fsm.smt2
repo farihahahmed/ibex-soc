@@ -53,8 +53,8 @@
 ; yosys-smt2-wire rst_n 1
 ; yosys-smt2-witness {"offset": 0, "path": ["\\rst_n"], "smtname": "rst_n", "smtoffset": 0, "type": "input", "width": 1}
 (define-fun |test_fsm_n rst_n| ((state |test_fsm_s|)) Bool (= ((_ extract 0 0) (|test_fsm#7| state)) #b1))
-(define-fun |test_fsm#12| ((state |test_fsm_s|)) Bool (distinct (|test_fsm#8| state) #b0000000000000000)) ; $ne$/foss/designs/pico_soc/rtl/test_fsm.sv:27$4_Y
-(define-fun |test_fsm#13| ((state |test_fsm_s|)) Bool (= (|test_fsm#11| state) #b10)) ; $eq$/foss/designs/pico_soc/rtl/test_fsm.sv:27$3_Y
+(define-fun |test_fsm#12| ((state |test_fsm_s|)) Bool (distinct (|test_fsm#8| state) #b0000000000000000)) ; $ne$../../rtl/test_fsm.sv:27$4_Y
+(define-fun |test_fsm#13| ((state |test_fsm_s|)) Bool (= (|test_fsm#11| state) #b10)) ; $eq$../../rtl/test_fsm.sv:27$3_Y
 (define-fun |test_fsm#14| ((state |test_fsm_s|)) Bool (= (|test_fsm#11| state) #b01)) ; $procmux$20_CMP
 (define-fun |test_fsm#15| ((state |test_fsm_s|)) (_ BitVec 1) (ite (|test_fsm#14| state) #b1 (ite (|test_fsm#13| state) (ite (|test_fsm#12| state) #b1 #b0) #b0))) ; \run_gate
 ; yosys-smt2-wire run_gate 1
@@ -68,8 +68,8 @@
 (define-fun |test_fsm#17| ((state |test_fsm_s|)) (_ BitVec 1) (ite (= ((_ extract 0 0) (|test_fsm#7| state)) #b1) (|test_fsm#15| state) #b0)) ; $auto$rtlil.cc:3390:Mux$60
 (define-fun |test_fsm#18| ((state |test_fsm_s|)) (_ BitVec 2) (ite (|test_fsm#4| state) (|test_fsm#5| state) (|test_fsm#11| state))) ; $0\mode[1:0]
 (define-fun |test_fsm#19| ((state |test_fsm_s|)) (_ BitVec 2) (ite (= ((_ extract 0 0) (|test_fsm#7| state)) #b1) (|test_fsm#18| state) #b00)) ; $auto$rtlil.cc:3390:Mux$58
-(define-fun |test_fsm#20| ((state |test_fsm_s|)) (_ BitVec 16) (bvsub (|test_fsm#8| state) #b0000000000000001)) ; $sub$/foss/designs/pico_soc/rtl/test_fsm.sv:28$6_Y
-(define-fun |test_fsm#21| ((state |test_fsm_s|)) Bool (and (or  (|test_fsm#13| state) false) (or  (|test_fsm#12| state) false))) ; $logic_and$/foss/designs/pico_soc/rtl/test_fsm.sv:27$5_Y
+(define-fun |test_fsm#20| ((state |test_fsm_s|)) (_ BitVec 16) (bvsub (|test_fsm#8| state) #b0000000000000001)) ; $sub$../../rtl/test_fsm.sv:28$6_Y
+(define-fun |test_fsm#21| ((state |test_fsm_s|)) Bool (and (or  (|test_fsm#13| state) false) (or  (|test_fsm#12| state) false))) ; $logic_and$../../rtl/test_fsm.sv:27$5_Y
 (define-fun |test_fsm#22| ((state |test_fsm_s|)) (_ BitVec 16) (ite (|test_fsm#21| state) (|test_fsm#20| state) (|test_fsm#8| state))) ; $procmux$21_Y
 (define-fun |test_fsm#23| ((state |test_fsm_s|)) (_ BitVec 16) (ite (|test_fsm#4| state) (|test_fsm#3| state) (|test_fsm#22| state))) ; $0\count[15:0]
 (define-fun |test_fsm#24| ((state |test_fsm_s|)) (_ BitVec 16) (ite (= ((_ extract 0 0) (|test_fsm#7| state)) #b1) (|test_fsm#23| state) #b0000000000000000)) ; $auto$rtlil.cc:3390:Mux$56
@@ -122,10 +122,10 @@
 (define-fun |test_fsm_formal_n rst_n| ((state |test_fsm_formal_s|)) Bool (|test_fsm_formal#7| state))
 ; yosys-smt2-wire scan_owns_mem 1
 (define-fun |test_fsm_formal_n scan_owns_mem| ((state |test_fsm_formal_s|)) Bool (|test_fsm_formal#6| state))
-(define-fun |test_fsm_formal#8| ((state |test_fsm_formal_s|)) Bool (not (or  (= ((_ extract 0 0) (|test_fsm_formal#5| state)) #b1) (= ((_ extract 1 1) (|test_fsm_formal#5| state)) #b1)))) ; $eq$/foss/designs/pico_soc/verification/formal/test_fsm_formal.sv:23$15_Y
-(define-fun |test_fsm_formal#9| ((state |test_fsm_formal_s|)) Bool (= (ite (|test_fsm_formal#6| state) #b1 #b0) (ite (|test_fsm_formal#8| state) #b1 #b0))) ; $eq$/foss/designs/pico_soc/verification/formal/test_fsm_formal.sv:23$16_Y
-; yosys-smt2-assert 0 $assert$/foss/designs/pico_soc/verification/formal/test_fsm_formal.sv:23$14 /foss/designs/pico_soc/verification/formal/test_fsm_formal.sv:23.15-23.57
-(define-fun |test_fsm_formal_a 0| ((state |test_fsm_formal_s|)) Bool (or (|test_fsm_formal#9| state) (not true))) ; $assert$/foss/designs/pico_soc/verification/formal/test_fsm_formal.sv:23$14
+(define-fun |test_fsm_formal#8| ((state |test_fsm_formal_s|)) Bool (not (or  (= ((_ extract 0 0) (|test_fsm_formal#5| state)) #b1) (= ((_ extract 1 1) (|test_fsm_formal#5| state)) #b1)))) ; $eq$../../verification/formal/test_fsm_formal.sv:23$15_Y
+(define-fun |test_fsm_formal#9| ((state |test_fsm_formal_s|)) Bool (= (ite (|test_fsm_formal#6| state) #b1 #b0) (ite (|test_fsm_formal#8| state) #b1 #b0))) ; $eq$../../verification/formal/test_fsm_formal.sv:23$16_Y
+; yosys-smt2-assert 0 $assert$../../verification/formal/test_fsm_formal.sv:23$14 ../../verification/formal/test_fsm_formal.sv:23.15-23.57
+(define-fun |test_fsm_formal_a 0| ((state |test_fsm_formal_s|)) Bool (or (|test_fsm_formal#9| state) (not true))) ; $assert$../../verification/formal/test_fsm_formal.sv:23$14
 (define-fun |test_fsm_formal_a| ((state |test_fsm_formal_s|)) Bool (and
   (|test_fsm_formal_a 0| state)
   (|test_fsm_a| (|test_fsm_formal_h dut| state))

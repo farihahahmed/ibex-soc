@@ -3,7 +3,7 @@ TOPLEVEL_LANG = verilog
 TOPLEVEL = test_fsm
 COCOTB_TEST_MODULES ?= test_fsm_smoke
 
-VERILOG_SOURCES = /foss/designs/pico_soc/rtl/test_fsm.sv
+VERILOG_SOURCES = ../../../../rtl/test_fsm.sv
 COMPILE_ARGS += -g2012
 
 include $(shell cocotb-config --makefiles)/Makefile.sim

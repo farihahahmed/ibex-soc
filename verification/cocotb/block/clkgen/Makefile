@@ -2,10 +2,10 @@ SIM ?= icarus
 TOPLEVEL_LANG = verilog
 TOPLEVEL = clk_gen
 
-VERILOG_SOURCES = /foss/designs/pico_soc/rtl/clk_gen.sv
+VERILOG_SOURCES = ../../../../rtl/clk_gen.sv
 COMPILE_ARGS += -g2012
 
-export PYTHONPATH := /foss/designs/pico_soc/verification/cocotb:$(PYTHONPATH)
+export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
 COCOTB_TEST_MODULES ?= test_clkgen_smoke
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
