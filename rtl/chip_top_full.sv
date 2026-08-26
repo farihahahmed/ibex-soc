@@ -121,7 +121,7 @@ module chip_top_full #(
     logic        pcpi_valid, pcpi_wr, pcpi_wait, pcpi_ready;
     logic [31:0] pcpi_insn, pcpi_rs1, pcpi_rs2, pcpi_rd;
 
-    pcpi_crc32 u_pcpi_crc32 (
+    pcpi_custom u_pcpi (
         .clk(cpu_clk), .resetn(pico_resetn),
         .pcpi_valid(pcpi_valid), .pcpi_insn(pcpi_insn),
         .pcpi_rs1(pcpi_rs1), .pcpi_rs2(pcpi_rs2),
