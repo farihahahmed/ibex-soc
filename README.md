@@ -1,5 +1,7 @@
 ### PicoRV32 SoC on GF180MCU
 
+[![verify](https://github.com/farihahahmed/pico-soc/actions/workflows/verify.yml/badge.svg)](https://github.com/farihahahmed/pico-soc/actions/workflows/verify.yml)
+
 A compact RISC-V system-on-chip on the open **GlobalFoundries 180 nm (GF180MCU)**
 process, implemented entirely with open-source tools from RTL through
 place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
