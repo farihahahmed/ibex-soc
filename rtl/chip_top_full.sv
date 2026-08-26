@@ -110,9 +110,29 @@ module chip_top_full #(
     //   [31:4] reserved, reads 0
     assign status_word = {28'b0, scan_owns_mem, fsm_mode_o, trap_sticky};
 
+    // ---- PCPI co-processor: single-instruction CRC32 -------------------------
+    // Custom-0 instruction (opcode 0x0B, funct3 000, funct7 0000000) folds one
+    // byte into a running CRC32 in a single cycle, versus the ~20-30
+    // instructions the software loop needs. Used for integrity checking on the
+    // UART/SPI links: a table-driven CRC needs a 1 KB lookup table, which does
+    // not fit in this chip's 512 B data memory.
+    // The unit sits entirely inside the CPU boundary - it never touches the
+    // bus, memory or pins.
+    logic        pcpi_valid, pcpi_wr, pcpi_wait, pcpi_ready;
+    logic [31:0] pcpi_insn, pcpi_rs1, pcpi_rs2, pcpi_rd;
+
+    pcpi_crc32 u_pcpi_crc32 (
+        .clk(cpu_clk), .resetn(pico_resetn),
+        .pcpi_valid(pcpi_valid), .pcpi_insn(pcpi_insn),
+        .pcpi_rs1(pcpi_rs1), .pcpi_rs2(pcpi_rs2),
+        .pcpi_wr(pcpi_wr), .pcpi_rd(pcpi_rd),
+        .pcpi_wait(pcpi_wait), .pcpi_ready(pcpi_ready)
+    );
+
     picorv32 #(
         .ENABLE_MUL(1), .ENABLE_DIV(1), .COMPRESSED_ISA(1),
         .ENABLE_IRQ(0), .PROGADDR_RESET(32'h0), .STACKADDR(32'h200),
+        .ENABLE_PCPI(1),
         .BARREL_SHIFTER(0), .ENABLE_FAST_MUL(0),
         .ENABLE_COUNTERS(0), .ENABLE_COUNTERS64(0)
     ) u_cpu (
@@ -122,8 +142,10 @@ module chip_top_full #(
         .mem_rdata(p_mem_rdata),
         .mem_la_read(), .mem_la_write(), .mem_la_addr(),
         .mem_la_wdata(), .mem_la_wstrb(),
-        .pcpi_valid(), .pcpi_insn(), .pcpi_rs1(), .pcpi_rs2(),
-        .pcpi_wr(1'b0), .pcpi_rd(32'b0), .pcpi_wait(1'b0), .pcpi_ready(1'b0),
+        .pcpi_valid(pcpi_valid), .pcpi_insn(pcpi_insn),
+        .pcpi_rs1(pcpi_rs1), .pcpi_rs2(pcpi_rs2),
+        .pcpi_wr(pcpi_wr), .pcpi_rd(pcpi_rd),
+        .pcpi_wait(pcpi_wait), .pcpi_ready(pcpi_ready),
         .irq(32'b0), .eoi(), .trace_valid(), .trace_data()
     );
 

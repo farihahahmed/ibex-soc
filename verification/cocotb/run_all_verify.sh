@@ -18,6 +18,7 @@ run "chip random"  make COCOTB_TEST_MODULES=test_pyuvm_random
 run "chip primes"  make COCOTB_TEST_MODULES=test_pyuvm_primes
 run "chip piezo"   make COCOTB_TEST_MODULES=test_pyuvm_piezo
 run "chip game"    make COCOTB_TEST_MODULES=test_pyuvm_game
+run "chip crc32"   make COCOTB_TEST_MODULES=test_pyuvm_crc
 run "chip dmem"    make COCOTB_TEST_MODULES=test_pyuvm_dmem
 
 # Control / debug paths
