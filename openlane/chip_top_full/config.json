@@ -45,15 +45,15 @@
       "instances": {
         "u_mem.u_imem.u_mem.u_sram": {
           "location": [
-            120,
-            300
+            114,
+            294
           ],
           "orientation": "N"
         },
         "u_dmem_slave.u_dmem.u_mem.u_sram": {
           "location": [
-            560,
-            300
+            554,
+            294
           ],
           "orientation": "N"
         }
@@ -91,6 +91,6 @@
     "u_dmem_slave.u_dmem.u_mem.u_sram VDD VSS VDD VSS"
   ],
   "ERROR_ON_PDN_VIOLATIONS": false,
-  "GRT_ADJUSTMENT": 0.3,
+  "GRT_ADJUSTMENT": 0.15,
   "PL_TARGET_DENSITY_PCT": 60
 }

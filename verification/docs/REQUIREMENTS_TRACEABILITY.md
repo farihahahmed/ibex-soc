@@ -96,7 +96,7 @@
 |----|-------------|-------|-------|------|--------|
 | R-MEM-01 | Scan-loaded program is fetched and executes | smoke, primes, piezo, game | CHIP | DIR | Closed |
 | R-MEM-02 | DMEM SW then LW produces expected data path | `test_pyuvm_dmem` (`make dmem`) | CHIP | DIR | Closed |
-| R-MEM-03 | Stack fits in 64 B dmem for demos | FW sizes + dmem test; firmware README | CHIP | DIR | Closed |
+| R-MEM-03 | Stack fits in 512 B dmem (STACKADDR 0x200) | FW sizes + dmem test; firmware README | CHIP | DIR | Closed |
 | R-MEM-04 | Dense byte/half/word stress | `test_pyuvm_dmem_stress` *(if present)* | CHIP | CR | Open / partial |
 | R-MEM-05 | Glue RTL line coverage gate (~70% excl. CPU/SRAM) | Verilator `cov_sim` + docs | TOOL | — | Closed (narrative) |
 
@@ -109,7 +109,7 @@
 | R-FW-01 | primes: UART prints primes | `make primes` / `test_pyuvm_primes` | CHIP | DIR | Closed |
 | R-FW-02 | piezo: GPIO[0] toggles (tone) | `make piezo` / `test_pyuvm_piezo` | CHIP | DIR | Closed |
 | R-FW-03 | game: SPI activity | `make game` / `test_pyuvm_game` | CHIP | DIR | Closed |
-| R-FW-04 | Each binary ≤ 256 B IMEM | firmware README + build sizes | DOC | — | Closed |
+| R-FW-04 | Each binary ≤ 512 B IMEM | firmware README + build sizes | DOC | — | Closed |
 
 ---
 

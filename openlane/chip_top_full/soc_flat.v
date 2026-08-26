@@ -686,6 +686,26 @@ module chip_top_full (
 				trap_sticky <= 1'b1;
 		end
 	assign status_word = {28'b0000000000000000000000000000, scan_owns_mem, fsm_mode_o, trap_sticky};
+	wire pcpi_valid;
+	wire pcpi_wr;
+	wire pcpi_wait;
+	wire pcpi_ready;
+	wire [31:0] pcpi_insn;
+	wire [31:0] pcpi_rs1;
+	wire [31:0] pcpi_rs2;
+	wire [31:0] pcpi_rd;
+	pcpi_crc32 u_pcpi_crc32(
+		.clk(cpu_clk),
+		.resetn(pico_resetn),
+		.pcpi_valid(pcpi_valid),
+		.pcpi_insn(pcpi_insn),
+		.pcpi_rs1(pcpi_rs1),
+		.pcpi_rs2(pcpi_rs2),
+		.pcpi_wr(pcpi_wr),
+		.pcpi_rd(pcpi_rd),
+		.pcpi_wait(pcpi_wait),
+		.pcpi_ready(pcpi_ready)
+	);
 	picorv32 #(
 		.ENABLE_MUL(1),
 		.ENABLE_DIV(1),
@@ -693,6 +713,7 @@ module chip_top_full (
 		.ENABLE_IRQ(0),
 		.PROGADDR_RESET(32'h00000000),
 		.STACKADDR(32'h00000200),
+		.ENABLE_PCPI(1),
 		.BARREL_SHIFTER(0),
 		.ENABLE_FAST_MUL(0),
 		.ENABLE_COUNTERS(0),
@@ -713,14 +734,14 @@ module chip_top_full (
 		.mem_la_addr(),
 		.mem_la_wdata(),
 		.mem_la_wstrb(),
-		.pcpi_valid(),
-		.pcpi_insn(),
-		.pcpi_rs1(),
-		.pcpi_rs2(),
-		.pcpi_wr(1'b0),
-		.pcpi_rd(32'b00000000000000000000000000000000),
-		.pcpi_wait(1'b0),
-		.pcpi_ready(1'b0),
+		.pcpi_valid(pcpi_valid),
+		.pcpi_insn(pcpi_insn),
+		.pcpi_rs1(pcpi_rs1),
+		.pcpi_rs2(pcpi_rs2),
+		.pcpi_wr(pcpi_wr),
+		.pcpi_rd(pcpi_rd),
+		.pcpi_wait(pcpi_wait),
+		.pcpi_ready(pcpi_ready),
 		.irq(32'b00000000000000000000000000000000),
 		.eoi(),
 		.trace_valid(),
@@ -1809,6 +1830,66 @@ module mem_subsystem (
 		.rd_word_data(scan_rdata),
 		.rd_busy()
 	);
+endmodule
+module pcpi_crc32 (
+	clk,
+	resetn,
+	pcpi_valid,
+	pcpi_insn,
+	pcpi_rs1,
+	pcpi_rs2,
+	pcpi_wr,
+	pcpi_rd,
+	pcpi_wait,
+	pcpi_ready
+);
+	input wire clk;
+	input wire resetn;
+	input wire pcpi_valid;
+	input wire [31:0] pcpi_insn;
+	input wire [31:0] pcpi_rs1;
+	input wire [31:0] pcpi_rs2;
+	output reg pcpi_wr;
+	output reg [31:0] pcpi_rd;
+	output wire pcpi_wait;
+	output reg pcpi_ready;
+	localparam [31:0] POLY = 32'hedb88320;
+	wire is_crc32;
+	assign is_crc32 = ((pcpi_valid && (pcpi_insn[6:0] == 7'b0001011)) && (pcpi_insn[14:12] == 3'b000)) && (pcpi_insn[31:25] == 7'b0000000);
+	wire [31:0] c0;
+	wire [31:0] c1;
+	wire [31:0] c2;
+	wire [31:0] c3;
+	wire [31:0] c4;
+	wire [31:0] c5;
+	wire [31:0] c6;
+	wire [31:0] c7;
+	wire [31:0] c8;
+	assign c0 = pcpi_rs1 ^ {24'b000000000000000000000000, pcpi_rs2[7:0]};
+	assign c1 = (c0 >> 1) ^ (c0[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c2 = (c1 >> 1) ^ (c1[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c3 = (c2 >> 1) ^ (c2[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c4 = (c3 >> 1) ^ (c3[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c5 = (c4 >> 1) ^ (c4[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c6 = (c5 >> 1) ^ (c5[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c7 = (c6 >> 1) ^ (c6[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign c8 = (c7 >> 1) ^ (c7[0] ? POLY : 32'b00000000000000000000000000000000);
+	assign pcpi_wait = 1'b0;
+	always @(posedge clk)
+		if (!resetn) begin
+			pcpi_wr <= 1'b0;
+			pcpi_rd <= 32'b00000000000000000000000000000000;
+			pcpi_ready <= 1'b0;
+		end
+		else begin
+			pcpi_wr <= 1'b0;
+			pcpi_ready <= 1'b0;
+			if (is_crc32 && !pcpi_ready) begin
+				pcpi_rd <= c8;
+				pcpi_wr <= 1'b1;
+				pcpi_ready <= 1'b1;
+			end
+		end
 endmodule
 module pico_shim (
 	clk,
