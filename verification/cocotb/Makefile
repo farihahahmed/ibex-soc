@@ -106,7 +106,7 @@ fusesoc-sim:
 
 .PHONY: coverage-run
 coverage-run:
-	verilator --cc --coverage --exe --build \
+	verilator --cc --coverage --timing --exe --build \
 	  -Wno-fatal -Wno-TIMESCALEMOD -Wno-DECLFILENAME -Wno-WIDTHTRUNC -Wno-WIDTHEXPAND \
 	  -Wno-CASEINCOMPLETE -Wno-UNOPTFLAT \
 	  -CFLAGS "-std=c++17" \

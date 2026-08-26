@@ -22,5 +22,6 @@
 ../../rtl/spi.sv
 ../../rtl/test_fsm.sv
 ../../rtl/uart.sv
-models/gf180mcu_fd_ip_sram__sram256x8m8wm1.v
-models/gf180mcu_fd_ip_sram__sram64x8m8wm1.v
+coverage_rtl/sram512x8_cov.v
+models/gf180mcu_fd_sc_mcu7t5v0__icgtp_1.v
+../../rtl/pcpi_custom.sv

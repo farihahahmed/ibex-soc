@@ -565,7 +565,7 @@ module chip_top_full (
 );
 	parameter signed [31:0] NUM_OUT = 5;
 	parameter signed [31:0] NUM_IN = 2;
-	parameter signed [31:0] CLK_FREQ = 31250000;
+	parameter signed [31:0] CLK_FREQ = 33333333;
 	parameter signed [31:0] BAUD_RATE = 115200;
 	parameter signed [31:0] SPI_CLK_DIV = 2;
 	input wire clk;
@@ -694,7 +694,7 @@ module chip_top_full (
 	wire [31:0] pcpi_rs1;
 	wire [31:0] pcpi_rs2;
 	wire [31:0] pcpi_rd;
-	pcpi_crc32 u_pcpi_crc32(
+	pcpi_custom u_pcpi(
 		.clk(cpu_clk),
 		.resetn(pico_resetn),
 		.pcpi_valid(pcpi_valid),
@@ -1831,7 +1831,7 @@ module mem_subsystem (
 		.rd_busy()
 	);
 endmodule
-module pcpi_crc32 (
+module pcpi_custom (
 	clk,
 	resetn,
 	pcpi_valid,
@@ -1843,6 +1843,7 @@ module pcpi_crc32 (
 	pcpi_wait,
 	pcpi_ready
 );
+	reg _sv2v_0;
 	input wire clk;
 	input wire resetn;
 	input wire pcpi_valid;
@@ -1854,42 +1855,115 @@ module pcpi_crc32 (
 	output wire pcpi_wait;
 	output reg pcpi_ready;
 	localparam [31:0] POLY = 32'hedb88320;
-	wire is_crc32;
-	assign is_crc32 = ((pcpi_valid && (pcpi_insn[6:0] == 7'b0001011)) && (pcpi_insn[14:12] == 3'b000)) && (pcpi_insn[31:25] == 7'b0000000);
-	wire [31:0] c0;
-	wire [31:0] c1;
-	wire [31:0] c2;
-	wire [31:0] c3;
-	wire [31:0] c4;
-	wire [31:0] c5;
-	wire [31:0] c6;
-	wire [31:0] c7;
-	wire [31:0] c8;
-	assign c0 = pcpi_rs1 ^ {24'b000000000000000000000000, pcpi_rs2[7:0]};
-	assign c1 = (c0 >> 1) ^ (c0[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c2 = (c1 >> 1) ^ (c1[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c3 = (c2 >> 1) ^ (c2[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c4 = (c3 >> 1) ^ (c3[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c5 = (c4 >> 1) ^ (c4[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c6 = (c5 >> 1) ^ (c5[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c7 = (c6 >> 1) ^ (c6[0] ? POLY : 32'b00000000000000000000000000000000);
-	assign c8 = (c7 >> 1) ^ (c7[0] ? POLY : 32'b00000000000000000000000000000000);
+	localparam [2:0] F_CRC32B = 3'b000;
+	localparam [2:0] F_CRC32W = 3'b001;
+	localparam [2:0] F_POPCNT = 3'b010;
+	localparam [2:0] F_BREV = 3'b011;
+	localparam [2:0] F_MAC = 3'b100;
+	localparam [2:0] F_MACRD = 3'b101;
+	localparam [2:0] F_MACCLR = 3'b110;
+	wire [2:0] funct3;
+	wire is_custom;
+	assign funct3 = pcpi_insn[14:12];
+	assign is_custom = ((pcpi_valid && (pcpi_insn[6:0] == 7'b0001011)) && (pcpi_insn[31:25] == 7'b0000000)) && (funct3 != 3'b111);
+	function automatic [31:0] crc_round;
+		input reg [31:0] c;
+		crc_round = (c >> 1) ^ (c[0] ? POLY : 32'b00000000000000000000000000000000);
+	endfunction
+	function automatic [31:0] crc_byte;
+		input reg [31:0] c;
+		input reg [7:0] b;
+		reg [31:0] t;
+		begin
+			t = c ^ {24'b000000000000000000000000, b};
+			begin : sv2v_autoblock_1
+				reg signed [31:0] i;
+				for (i = 0; i < 8; i = i + 1)
+					t = crc_round(t);
+			end
+			crc_byte = t;
+		end
+	endfunction
+	wire [31:0] crc_b_res;
+	reg [31:0] crc_w_res;
+	assign crc_b_res = crc_byte(pcpi_rs1, pcpi_rs2[7:0]);
+	always @(*) begin : sv2v_autoblock_2
+		reg [31:0] t;
+		if (_sv2v_0)
+			;
+		t = crc_byte(pcpi_rs1, pcpi_rs2[7:0]);
+		t = crc_byte(t, pcpi_rs2[15:8]);
+		t = crc_byte(t, pcpi_rs2[23:16]);
+		t = crc_byte(t, pcpi_rs2[31:24]);
+		crc_w_res = t;
+	end
+	reg [31:0] popcnt_res;
+	reg [31:0] brev_res;
+	always @(*) begin
+		if (_sv2v_0)
+			;
+		popcnt_res = 32'b00000000000000000000000000000000;
+		begin : sv2v_autoblock_3
+			reg signed [31:0] i;
+			for (i = 0; i < 32; i = i + 1)
+				popcnt_res = popcnt_res + {31'b0000000000000000000000000000000, pcpi_rs1[i]};
+		end
+	end
+	always @(*) begin
+		if (_sv2v_0)
+			;
+		begin : sv2v_autoblock_4
+			reg signed [31:0] i;
+			for (i = 0; i < 32; i = i + 1)
+				brev_res[i] = pcpi_rs1[31 - i];
+		end
+	end
+	wire signed [15:0] mul_a;
+	wire signed [15:0] mul_b;
+	wire signed [31:0] product;
+	reg signed [31:0] acc;
+	wire signed [31:0] acc_next;
+	assign mul_a = pcpi_rs1[15:0];
+	assign mul_b = pcpi_rs2[15:0];
+	assign product = mul_a * mul_b;
+	assign acc_next = acc + product;
+	reg [31:0] result;
+	always @(*) begin
+		if (_sv2v_0)
+			;
+		case (funct3)
+			F_CRC32B: result = crc_b_res;
+			F_CRC32W: result = crc_w_res;
+			F_POPCNT: result = popcnt_res;
+			F_BREV: result = brev_res;
+			F_MAC: result = acc_next;
+			F_MACRD: result = acc;
+			F_MACCLR: result = 32'b00000000000000000000000000000000;
+			default: result = 32'b00000000000000000000000000000000;
+		endcase
+	end
 	assign pcpi_wait = 1'b0;
 	always @(posedge clk)
 		if (!resetn) begin
 			pcpi_wr <= 1'b0;
 			pcpi_rd <= 32'b00000000000000000000000000000000;
 			pcpi_ready <= 1'b0;
+			acc <= 32'sd0;
 		end
 		else begin
 			pcpi_wr <= 1'b0;
 			pcpi_ready <= 1'b0;
-			if (is_crc32 && !pcpi_ready) begin
-				pcpi_rd <= c8;
+			if (is_custom && !pcpi_ready) begin
+				pcpi_rd <= result;
 				pcpi_wr <= 1'b1;
 				pcpi_ready <= 1'b1;
+				if (funct3 == F_MAC)
+					acc <= acc_next;
+				else if (funct3 == F_MACCLR)
+					acc <= 32'sd0;
 			end
 		end
+	initial _sv2v_0 = 0;
 endmodule
 module pico_shim (
 	clk,
