@@ -5,8 +5,8 @@
 module chip_top_full #(
     parameter int NUM_OUT     = 5,
     parameter int NUM_IN      = 2,
-    parameter int CLK_FREQ    = 31_250_000,  // silicon: 32 ns clock = 31.25 MHz
-    parameter int BAUD_RATE   = 115_200,     // BAUD_DIV = 271 -> 115,313 baud (+0.1%)
+    parameter int CLK_FREQ    = 33_333_333,  // silicon: 30 ns clock = 33.33 MHz
+    parameter int BAUD_RATE   = 115_200,     // BAUD_DIV = 289 -> 115,340 baud (+0.12%)
     parameter int SPI_CLK_DIV = 2
 )(
     input  logic clk,
