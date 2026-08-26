@@ -27,5 +27,4 @@ verification/cocotb/coverage_rtl/annotate/
 verification/cocotb/coverage_rtl/annotate_src/
 verification/cocotb/coverage_merge.json
 verification/coverage_artifacts/
-.github/workflows/
 info.yaml.bak

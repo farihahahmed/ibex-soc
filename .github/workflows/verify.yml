@@ -1,0 +1,33 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Per-block lint
+        run: ./scripts/lint_blocks.sh
+
+  # Full cocotb gate. No allowed-to-fail legs: every test must pass.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Install python deps
+        run: pip install cocotb pyuvm
+      - name: Run exit gate
+        working-directory: verification/cocotb
+        run: |
+          export PYTHONPATH="$(pwd):${PYTHONPATH}"
+          ./run_all_verify.sh
