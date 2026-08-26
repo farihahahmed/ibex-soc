@@ -186,6 +186,12 @@ module chip_top_full #(
         .HRDATA(s0_HRDATA), .HREADY(s0_HREADY), .HRESP(s0_HRESP)
     );
 
+    // Tie MISO through a named net rather than a literal in the port map:
+    // a constant bound directly to an input port can produce a pin with no
+    // backing port object, which crashed OpenROAD CTS.
+    logic spi_miso_tied;
+    assign spi_miso_tied = 1'b0;
+
     logic        PSEL, PENABLE, PWRITE, PREADY;
     logic [31:0] PADDR, PWDATA, PRDATA;
 
@@ -231,7 +237,7 @@ module chip_top_full #(
         .PCLK(cpu_clk), .PRESETn(rst_n),
         .PSEL(spi_PSEL), .PENABLE(p_PENABLE), .PWRITE(p_PWRITE),
         .PADDR(p_PADDR), .PWDATA(p_PWDATA), .PRDATA(spi_PRDATA), .PREADY(spi_PREADY),
-        .sclk(spi_sclk), .mosi(spi_mosi), .miso(1'b0), .cs_n(spi_cs_n)
+        .sclk(spi_sclk), .mosi(spi_mosi), .miso(spi_miso_tied), .cs_n(spi_cs_n)
     );
 
 endmodule

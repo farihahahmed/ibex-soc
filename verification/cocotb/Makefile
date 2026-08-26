@@ -7,6 +7,9 @@ COCOTB_TEST_MODULES ?= test_chip_basic
 
 VERILOG_SOURCES = $(shell find ../../rtl -name "*.v" -o -name "*.sv" | sort)
 VERILOG_SOURCES += models/gf180mcu_fd_ip_sram__sram512x8m8wm1.v
+# Behavioural model of the PDK integrated clock gate used by clk_gen. The full
+# PDK cell library cannot be read by Icarus (ifnone in specify blocks).
+VERILOG_SOURCES += models/gf180mcu_fd_sc_mcu7t5v0__icgtp_1.v
 
 COMPILE_ARGS += -Pchip_top_full.NUM_OUT=5
 COMPILE_ARGS += -Pchip_top_full.NUM_IN=2

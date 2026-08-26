@@ -1,0 +1,17 @@
+# chip_top clocks — on-chip generated + gated (Columbia-style)
+create_clock -name clk -period 34.0 [get_ports clk]
+
+# clk_gen's internal divider output is a flop output used as a clock. Without
+# declaring it, CTS cannot build a tree for it: div_clk ends up driven by a bare
+# dffrnq_1 with ~3.5 ns slew, and CTS pads sys_clk with a long delaybuf chain to
+# compensate, adding several ns of insertion delay to every cpu_clk path.
+set div_drv [get_pins -of_objects [get_nets u_clkgen.div_clk] -filter {direction == output}]
+create_generated_clock -name div_clk -source [get_ports clk] -divide_by 2 $div_drv
+
+set sys_drv [get_pins -of_objects [get_nets sys_clk] -filter {direction == output}]
+create_generated_clock -name sys_clk -source [get_ports clk] -divide_by 2 $sys_drv
+
+set cpu_drv [get_pins -of_objects [get_nets cpu_clk] -filter {direction == output}]
+create_generated_clock -name cpu_clk -source $sys_drv -divide_by 1 $cpu_drv
+
+set_propagated_clock [all_clocks]

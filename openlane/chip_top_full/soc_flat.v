@@ -565,8 +565,8 @@ module chip_top_full (
 );
 	parameter signed [31:0] NUM_OUT = 5;
 	parameter signed [31:0] NUM_IN = 2;
-	parameter signed [31:0] CLK_FREQ = 8;
-	parameter signed [31:0] BAUD_RATE = 1;
+	parameter signed [31:0] CLK_FREQ = 31250000;
+	parameter signed [31:0] BAUD_RATE = 115200;
 	parameter signed [31:0] SPI_CLK_DIV = 2;
 	input wire clk;
 	input wire clk_int;
@@ -598,7 +598,9 @@ module chip_top_full (
 		.cfg_div_in(clkgen_div),
 		.clk_out(sys_clk)
 	);
+	wire [31:0] status_word;
 	wire scan_mem_we;
+	wire scan_mem_re;
 	wire [15:0] scan_mem_addr;
 	wire [31:0] scan_mem_wdata;
 	wire [31:0] scan_mem_rdata;
@@ -614,9 +616,11 @@ module chip_top_full (
 		.scan_i0o1(scan_i0o1),
 		.scan_out(scan_out),
 		.mem_we(scan_mem_we),
+		.mem_re(scan_mem_re),
 		.mem_addr(scan_mem_addr),
 		.mem_wdata(scan_mem_wdata),
-		.mem_rdata(32'b00000000000000000000000000000000),
+		.mem_rdata(scan_mem_rdata),
+		.status_in(status_word),
 		.fsm_cfg_load(fsm_cfg_load),
 		.fsm_mode(fsm_mode),
 		.fsm_count(fsm_count),
@@ -666,6 +670,22 @@ module chip_top_full (
 	wire [31:0] p_mem_rdata;
 	wire [3:0] p_mem_wstrb;
 	wire p_trap;
+	reg trap_sync1;
+	reg trap_sync2;
+	reg trap_sticky;
+	always @(posedge sys_clk or negedge rst_n)
+		if (!rst_n) begin
+			trap_sync1 <= 1'b0;
+			trap_sync2 <= 1'b0;
+			trap_sticky <= 1'b0;
+		end
+		else begin
+			trap_sync1 <= p_trap;
+			trap_sync2 <= trap_sync1;
+			if (trap_sync2)
+				trap_sticky <= 1'b1;
+		end
+	assign status_word = {28'b0000000000000000000000000000, scan_owns_mem, fsm_mode_o, trap_sticky};
 	picorv32 #(
 		.ENABLE_MUL(1),
 		.ENABLE_DIV(1),
@@ -742,7 +762,8 @@ module chip_top_full (
 		.scan_we(scan_mem_we),
 		.scan_addr(scan_mem_addr),
 		.scan_wdata(scan_mem_wdata),
-		.scan_sel_dmem(1'b0)
+		.scan_re(scan_mem_re),
+		.scan_rdata(scan_mem_rdata)
 	);
 	wire [31:0] HADDR;
 	wire [31:0] HWDATA;
@@ -824,6 +845,8 @@ module chip_top_full (
 		.HREADY(s0_HREADY),
 		.HRESP(s0_HRESP)
 	);
+	wire spi_miso_tied;
+	assign spi_miso_tied = 1'b0;
 	wire PSEL;
 	wire PENABLE;
 	wire PWRITE;
@@ -929,7 +952,7 @@ module chip_top_full (
 		.PREADY(spi_PREADY),
 		.sclk(spi_sclk),
 		.mosi(spi_mosi),
-		.miso(1'b0),
+		.miso(spi_miso_tied),
 		.cs_n(spi_cs_n)
 	);
 endmodule
@@ -968,7 +991,32 @@ module clk_gen (
 		end
 		else
 			cnt <= cnt + 8'd1;
-	assign clk_out = (clk_int ? div_clk : clk_ext);
+	reg int_req;
+	reg ext_req;
+	always @(posedge ref_clk or negedge rst_n)
+		if (!rst_n) begin
+			int_req <= 1'b0;
+			ext_req <= 1'b0;
+		end
+		else begin
+			int_req <= clk_int & ~ext_req;
+			ext_req <= ~clk_int & ~int_req;
+		end
+	wire int_gated;
+	wire ext_gated;
+	gf180mcu_fd_sc_mcu7t5v0__icgtp_1 u_icg_int(
+		.CLK(div_clk),
+		.E(int_req),
+		.TE(1'b0),
+		.Q(int_gated)
+	);
+	gf180mcu_fd_sc_mcu7t5v0__icgtp_1 u_icg_ext(
+		.CLK(clk_ext),
+		.E(ext_req),
+		.TE(1'b0),
+		.Q(ext_gated)
+	);
+	assign clk_out = int_gated | ext_gated;
 endmodule
 module dmem_narrow (
 	clk,
@@ -982,7 +1030,7 @@ module dmem_narrow (
 	b_rdata
 );
 	reg _sv2v_0;
-	parameter signed [31:0] ADDR_BITS = 6;
+	parameter signed [31:0] ADDR_BITS = 9;
 	input wire clk;
 	input wire rst_n;
 	input wire b_req;
@@ -1397,7 +1445,7 @@ module gpio (
 			sync1 <= gpio_in;
 			sync2 <= sync1;
 		end
-	assign rdata = {{32 - NUM_IN {1'b0}}, sync2};
+	assign rdata = {{(32 - NUM_IN) - NUM_OUT {1'b0}}, out_reg, sync2};
 endmodule
 module ibex_to_ahb (
 	clk,
@@ -1440,21 +1488,21 @@ module ibex_to_ahb (
 	localparam [1:0] TRANS_IDLE = 2'b00;
 	localparam [1:0] TRANS_NONSEQ = 2'b10;
 	assign HADDR = addr;
-	assign HTRANS = (req ? TRANS_NONSEQ : TRANS_IDLE);
 	assign HWRITE = we;
 	assign HWSTRB = be;
-	assign gnt = req & HREADY;
 	assign HWDATA = wdata;
-	reg access_inflight;
+	reg inflight;
+	assign gnt = (req & ~inflight) & HREADY;
+	assign HTRANS = (req & ~inflight ? TRANS_NONSEQ : TRANS_IDLE);
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n)
-			access_inflight <= 1'b0;
+			inflight <= 1'b0;
 		else if (gnt)
-			access_inflight <= 1'b1;
-		else if (HREADY)
-			access_inflight <= 1'b0;
+			inflight <= 1'b1;
+		else if (inflight && HREADY)
+			inflight <= 1'b0;
 	wire data_phase_done;
-	assign data_phase_done = access_inflight & HREADY;
+	assign data_phase_done = inflight & HREADY;
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n)
 			rvalid <= 1'b0;
@@ -1551,7 +1599,12 @@ module imem_narrow_top (
 	ld_word_en,
 	ld_word_addr,
 	ld_word_data,
-	ld_busy
+	ld_busy,
+	scan_owns,
+	rd_word_en,
+	rd_word_addr,
+	rd_word_data,
+	rd_busy
 );
 	reg _sv2v_0;
 	input wire clk;
@@ -1565,6 +1618,11 @@ module imem_narrow_top (
 	input wire [15:0] ld_word_addr;
 	input wire [31:0] ld_word_data;
 	output wire ld_busy;
+	input wire scan_owns;
+	input wire rd_word_en;
+	input wire [15:0] rd_word_addr;
+	output wire [31:0] rd_word_data;
+	output wire rd_busy;
 	wire g_m_req;
 	wire g_m_sel;
 	wire g_m_gnt;
@@ -1581,7 +1639,7 @@ module imem_narrow_top (
 		if (!rst_n) begin
 			sstate <= 3'd0;
 			word_lat <= 32'b00000000000000000000000000000000;
-			base_lat <= 8'b00000000;
+			base_lat <= 9'b000000000;
 		end
 		else
 			case (sstate)
@@ -1629,14 +1687,52 @@ module imem_narrow_top (
 		endcase
 	end
 	assign ld_busy = sstate != 3'd0;
+	wire g_c_req;
+	wire g_c_gnt;
+	wire g_c_rvalid;
+	wire [31:0] g_c_addr;
+	wire [31:0] g_c_rdata;
+	reg [1:0] rbstate;
+	reg [8:0] rb_addr;
+	reg [31:0] rb_data_q;
+	always @(posedge clk or negedge rst_n)
+		if (!rst_n) begin
+			rbstate <= 2'd0;
+			rb_addr <= 9'b000000000;
+			rb_data_q <= 32'b00000000000000000000000000000000;
+		end
+		else
+			case (rbstate)
+				2'd0:
+					if ((rd_word_en && !ld_busy) && scan_owns) begin
+						rb_addr <= {rd_word_addr[6:0], 2'b00};
+						rbstate <= 2'd1;
+					end
+				2'd1:
+					if (g_c_gnt)
+						rbstate <= 2'd2;
+				2'd2:
+					if (g_c_rvalid) begin
+						rb_data_q <= g_c_rdata;
+						rbstate <= 2'd0;
+					end
+				default: rbstate <= 2'd0;
+			endcase
+	assign rd_busy = rbstate != 2'd0;
+	assign rd_word_data = rb_data_q;
+	assign g_c_req = (scan_owns ? rbstate == 2'd1 : req);
+	assign g_c_addr = (scan_owns ? {23'b00000000000000000000000, rb_addr} : addr);
+	assign gnt = (scan_owns ? 1'b0 : g_c_gnt);
+	assign rvalid = (scan_owns ? 1'b0 : g_c_rvalid);
+	assign rdata = g_c_rdata;
 	fetch_gather u_gather(
 		.clk(clk),
 		.rst_n(rst_n),
-		.c_req(req),
-		.c_gnt(gnt),
-		.c_addr(addr),
-		.c_rvalid(rvalid),
-		.c_rdata(rdata),
+		.c_req(g_c_req),
+		.c_gnt(g_c_gnt),
+		.c_addr(g_c_addr),
+		.c_rvalid(g_c_rvalid),
+		.c_rdata(g_c_rdata),
 		.m_req(g_m_req),
 		.m_sel(g_m_sel),
 		.m_gnt(g_m_gnt),
@@ -1671,7 +1767,8 @@ module mem_subsystem (
 	scan_we,
 	scan_addr,
 	scan_wdata,
-	scan_sel_dmem
+	scan_re,
+	scan_rdata
 );
 	input wire clk;
 	input wire rst_n_in;
@@ -1684,7 +1781,8 @@ module mem_subsystem (
 	input wire scan_we;
 	input wire [15:0] scan_addr;
 	input wire [31:0] scan_wdata;
-	input wire scan_sel_dmem;
+	input wire scan_re;
+	output wire [31:0] scan_rdata;
 	wire rst_n;
 	rst_sync u_rst_sync(
 		.clk(clk),
@@ -1692,7 +1790,7 @@ module mem_subsystem (
 		.rst_n_out(rst_n)
 	);
 	wire imem_ld_en;
-	assign imem_ld_en = (scan_owns_mem & ~scan_sel_dmem) & scan_we;
+	assign imem_ld_en = scan_owns_mem & scan_we;
 	imem_narrow_top u_imem(
 		.clk(clk),
 		.rst_n(rst_n),
@@ -1704,7 +1802,12 @@ module mem_subsystem (
 		.ld_word_en(imem_ld_en),
 		.ld_word_addr(scan_addr),
 		.ld_word_data(scan_wdata),
-		.ld_busy()
+		.ld_busy(),
+		.scan_owns(scan_owns_mem),
+		.rd_word_en(scan_re),
+		.rd_word_addr(scan_addr),
+		.rd_word_data(scan_rdata),
+		.rd_busy()
 	);
 endmodule
 module pico_shim (
@@ -1812,9 +1915,11 @@ module scan_chain (
 	scan_i0o1,
 	scan_out,
 	mem_we,
+	mem_re,
 	mem_addr,
 	mem_wdata,
 	mem_rdata,
+	status_in,
 	fsm_cfg_load,
 	fsm_mode,
 	fsm_count,
@@ -1830,9 +1935,11 @@ module scan_chain (
 	input wire scan_i0o1;
 	output wire scan_out;
 	output wire mem_we;
+	output wire mem_re;
 	output wire [15:0] mem_addr;
 	output wire [31:0] mem_wdata;
 	input wire [31:0] mem_rdata;
+	input wire [31:0] status_in;
 	output wire fsm_cfg_load;
 	output wire [1:0] fsm_mode;
 	output wire [15:0] fsm_count;
@@ -1842,11 +1949,15 @@ module scan_chain (
 	localparam signed [31:0] FRAME_BITS = 48;
 	reg [47:0] shift_reg;
 	assign scan_out = shift_reg[0];
+	wire [1:0] tgt_pre;
+	assign tgt_pre = shift_reg[47:46];
+	wire status_sel;
+	assign status_sel = (tgt_pre == 2'd3) & shift_reg[45];
 	always @(posedge clk or negedge rst_n)
 		if (!rst_n)
 			shift_reg <= 1'sb0;
 		else if (scan_i0o1)
-			shift_reg[31:0] <= mem_rdata;
+			shift_reg[31:0] <= (status_sel ? status_in : mem_rdata);
 		else if (scan_shift)
 			shift_reg <= {scan_in, shift_reg[47:1]};
 	wire [1:0] tgt;
@@ -1854,6 +1965,7 @@ module scan_chain (
 	assign mem_addr = {2'b00, shift_reg[45:32]};
 	assign mem_wdata = shift_reg[31:0];
 	assign mem_we = scan_load & (tgt == 2'd0);
+	assign mem_re = (scan_load & (tgt == 2'd3)) & ~shift_reg[45];
 	assign fsm_cfg_load = scan_load & (tgt == 2'd1);
 	assign clk_cfg_load = scan_load & (tgt == 2'd2);
 	assign fsm_mode = shift_reg[17:16];
@@ -1941,19 +2053,20 @@ module spi (
 				1'd1:
 					if (tick) begin
 						sclk_int <= ~sclk_int;
-						if (~sclk_int)
+						if (~sclk_int) begin
 							rx_shift <= {rx_shift[6:0], miso};
-						else begin
+							if (bit_count == 4'd7) begin
+								state <= 1'd0;
+								busy <= 1'b0;
+								cs_n <= 1'b1;
+								sclk_int <= 1'b0;
+								rx_data <= {rx_shift[6:0], miso};
+							end
+							else
+								bit_count <= bit_count + 1'b1;
+						end
+						else
 							tx_shift <= {tx_shift[6:0], 1'b0};
-							bit_count <= bit_count + 1'b1;
-						end
-						if (bit_count == 4'd8) begin
-							state <= 1'd0;
-							busy <= 1'b0;
-							cs_n <= 1'b1;
-							sclk_int <= 1'b0;
-							rx_data <= rx_shift;
-						end
 					end
 			endcase
 	assign rdata = {16'b0000000000000000, rx_data, 7'b0000000, busy};

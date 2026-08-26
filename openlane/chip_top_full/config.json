@@ -5,7 +5,7 @@
     "dir::../../synthesis/sram_blackbox.v"
   ],
   "CLOCK_PORT": "clk",
-  "CLOCK_PERIOD": 32,
+  "CLOCK_PERIOD": 34,
   "PDK": "gf180mcuD",
   "STD_CELL_LIBRARY": "gf180mcu_fd_sc_mcu7t5v0",
   "PNR_SDC_FILE": "dir::chip_top.sdc",
