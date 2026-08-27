@@ -261,3 +261,59 @@ async def test_full_duplex_rx_during_tx(dut):
     await wait_not_busy(dut)          # TX must also have finished cleanly
     _scov.hit("uart","full_duplex")
     cocotb.log.info("*** UART full-duplex RX-during-TX PASS ***")
+
+
+@cocotb.test()
+async def test_status_peek_data_clear_semantics(dut):
+    """R-UART-07 as an explicit named assert: STATUS reads PEEK (rx_valid
+    survives any number of them); only a DATA read consumes/clears it."""
+    await reset(dut)
+    await drive_rx_frame(dut, 0x3D)
+    # five STATUS reads in a row -- rx_valid must survive every one
+    for n in range(5):
+        st = await apb_read(dut, uart.status.offset)
+        assert uart.status.field("rx_valid", st) == 1, \
+            f"STATUS read #{n+1} cleared rx_valid (must peek only)"
+    # one DATA read returns the byte AND clears
+    d = await apb_read(dut, uart.data.offset)
+    assert uart.data.field("rx", d) == 0x3D
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("rx_valid", st) == 0, \
+        "DATA read must clear rx_valid"
+    # and a second DATA read does not resurrect it
+    await apb_read(dut, uart.data.offset)
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("rx_valid", st) == 0
+    cocotb.log.info("*** UART STATUS-peek / DATA-clear semantics PASS ***")
+
+
+@cocotb.test()
+async def test_tx_bit_time_matches_params(dut):
+    """Compute expected bit time from the DUT's own parameters
+    (BAUD_DIV = CLK_FREQ / BAUD_RATE) and measure the actual TX start-bit
+    duration in clocks -- they must match exactly. Catches any future
+    CLK_FREQ/BAUD mismatch (the silicon 2x-baud bug class) at block level."""
+    await reset(dut)
+    clk_freq = int(dut.CLK_FREQ.value)
+    baud = int(dut.BAUD_RATE.value)
+    expected_div = clk_freq // baud
+    await apb_write(dut, uart.data.offset, uart.data.encode(tx=0xFF))
+    # 0xFF: only the start bit is low -> its low time = exactly one bit
+    for _ in range(expected_div * 4):
+        await RisingEdge(dut.PCLK)
+        if int(dut.tx.value) == 0:
+            break
+    assert int(dut.tx.value) == 0, "start bit never appeared"
+    low = 0
+    while int(dut.tx.value) == 0:
+        await RisingEdge(dut.PCLK)
+        low += 1
+        assert low < expected_div * 3, "start bit stuck low"
+    # +/-1 clk is sampling quantization of this measurement loop (we detect
+    # the falling edge one clock late); anything more means the divider does
+    # not equal CLK_FREQ/BAUD_RATE -- the 2x-baud bug class this test guards.
+    assert abs(low - expected_div) <= 1, \
+        f"bit time {low} clks != CLK_FREQ/BAUD_RATE = {expected_div} " \
+        f"(CLK_FREQ={clk_freq}, BAUD={baud})"
+    await wait_not_busy(dut)
+    cocotb.log.info(f"*** UART bit time == computed BAUD_DIV ({expected_div}) PASS ***")
