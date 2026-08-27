@@ -20,8 +20,10 @@ all 22 RTL modules.
 | Constrained-random | Multi-seed GPIO / UART / SPI; coverage merge | Green |
 | Firmware self-check | `primes`, `piezo_tune`, `game` via scan; pin-level checks | Green |
 | Negative tests | Scan lockout under RUN; FSM IDLE clock hold; AHB HREADY stall | Green |
-| Code coverage | Verilator line/toggle; glue-line gate (~70%, excluding CPU + SRAM models) | Documented |
-| Gate-level | Post-PnR netlist smoke | Smoke green |
+| Code coverage | Verilator line coverage: **88.8%** of our own RTL (890/1002 lines, picorv32 excluded) | Measured |
+| Gate-level | Post-PnR netlist smoke against `gds/chip_top_full.pnl.v` | Smoke green |
+| Formal | Bounded model checking of scan chain and clock-gating FSM | **PASSED**, in CI |
+| CI | GitHub Actions: per-block lint (22 modules) + full gate + formal | Green, no allowed-to-fail legs |
 | Packaging | FuseSoC targets; one-button freeze; requirements→tests table | Present |
 
 Chip and block verification share agents and scoreboarding. Constrained-random, firmware demos, and negative corners are part of the same official gate.
@@ -198,13 +200,13 @@ make -C block/spi  MODULE=test_spi_tx     COCOTB_TEST_MODULES=test_spi_tx
 | Harness | `coverage_rtl/sim_main.cpp` |
 | Data | `coverage_rtl/obj_dir/coverage.dat` |
 | Annotate | `verilator_coverage --annotate coverage_rtl/annotate …` |
-| Policy | `verification/docs/CODE_COVERAGE.md` |
+| Policy | Section 6 of this document |
 
-**Glue-line gate:** fabric + peripherals, excluding `picorv32` and GF180 SRAM models — target ~70% line. Overall toggle is secondary (wide buses). Single-word dmem does not saturate `dmem_narrow_top` line points; functional SW/LW is covered by `make dmem`.
+**Measured:** 88.8% line coverage of our own RTL (890/1002), excluding `picorv32` and the GF180 SRAM models. Artifact: `verification/coverage/coverage.info`. Per-module figures range from 100% (`imem_narrow`, `dmem_narrow`, `pico_shim`, `rst_sync`, `apb_uart`) to 74% (`dmem_narrow_top`, whose `L_B0..L_B3` load states are unreachable because `ahb_mem` ties `ld_word_en` low). Overall toggle is secondary (wide buses). Single-word dmem does not saturate `dmem_narrow_top` line points; functional SW/LW is covered by `make dmem`.
 
 ```bash
 cd verification/cocotb
-# see Makefile coverage-rtl / CODE_COVERAGE.md
+# see the coverage-rtl / coverage-run targets in the Makefile
 verilator_coverage --rank coverage_rtl/obj_dir/coverage.dat
 ```
 
@@ -218,7 +220,7 @@ verilator_coverage --rank coverage_rtl/obj_dir/coverage.dat
 | `piezo_tune` (172 B) | ≤ 512 B IMEM | GPIO[0] activity |
 | `game` (122 B) | ≤ 512 B IMEM | SPI sclk/mosi activity |
 
-Sources and link script: `firmware/` (`link.ld` places code at `0x0`; STACKADDR = 0x200, top of the 512 B dmem). Piezo rebuilt as RV32I where the core configuration required it (no C / no halfword loads).
+Sources and link script: `firmware/` (`link.ld` places code at `0x0`; STACKADDR = 0x200, top of the 512 B dmem).
 
 ---
 
@@ -235,12 +237,63 @@ Included in the official gate where implemented.
 
 ---
 
+## 8b. Custom instruction extension (PCPI)
+
+Seven instructions in the RISC-V custom-0 space (opcode 0x0B), selected by
+funct3: `crc32.b`, `crc32.w`, `popcnt`, `brev`, `mac`, `macrd`, `macclr`.
+
+Verified twice over:
+
+- **Standalone** (`pcpi_custom.sv` + Icarus bench): every instruction checked
+  against a Python model of the same algorithm, including a signed MAC with a
+  negative operand, plus a reject case proving an unclaimed funct3 falls
+  through to the CPU's illegal-instruction trap.
+- **End-to-end** (`test_pyuvm_pcpi`): `firmware/pcpi_demo.bin` executes all
+  seven through PicoRV32 and prints the results over UART. The CRC result is
+  `cbf43926`, the *published* CRC32 check constant, so that instruction is
+  checked against an independent reference rather than only our own model.
+
+The unit sits entirely inside the CPU boundary: it never touches the bus,
+memory or pins.
+
+---
+
+## 8c. Formal verification
+
+Bounded model checking with Yosys/SymbiYosys, run in CI.
+
+| Property set | Entry | Result |
+|---|---|---|
+| Scan chain | `verification/formal/run_scan_chain_formal.py` | PASSED |
+| Clock-gating FSM | `verification/formal/run_test_fsm_formal.py` | PASSED |
+
+Formal proves the properties hold for *all* input sequences up to the bound,
+rather than for the stimulus a testbench happens to apply.
+
+---
+
+## 8d. Continuous integration
+
+`.github/workflows/verify.yml` runs on every push and pull request:
+
+| Job | Scope |
+|---|---|
+| `lint` | Standalone elaboration of all 22 RTL blocks (`scripts/lint_blocks.sh`) |
+| `gate` | The full 30-test gate |
+| `formal` | Both property sets |
+
+No job is marked allowed-to-fail. CI caught two real problems during
+development: hardcoded absolute paths that made the repo build only on one
+machine, and a stale module name left behind after a rename.
+
+---
+
 ## 9. Gate-level
 
 | Item | Detail |
 |------|--------|
 | Scope | Post-PnR netlist smoke |
-| Entry | `make gl` / `verification/gl` |
+| Entry | `make -C verification/gl gl-smoke` |
 | Status | Smoke path green |
 | Open | Automated GL↔RTL compare; full firmware on GL |
 
@@ -294,7 +347,7 @@ Icarus + cocotb 2.x + pyuvm as installed for the project.
 
 ## 11. Requirements → tests
 
-Full matrix: `REQUIREMENTS_TRACEABILITY.md`.
+Full matrix: `verification/docs/REQUIREMENTS_TRACEABILITY.md`.
 
 | Domain | Examples | Evidence |
 |--------|----------|----------|
@@ -302,23 +355,35 @@ Full matrix: `REQUIREMENTS_TRACEABILITY.md`.
 | Map / fabric | GPIO/UART/SPI bases; AHB decode/mux/stall | chip + block AHB |
 | Peripherals | UART TX/RX, GPIO R/W, SPI transfer | block + chip |
 | Memory | IMEM execute; DMEM SW/LW | FW, `make dmem` |
-| Gate-level | Netlist smoke | `make gl` |
+| Gate-level | Netlist smoke | `make -C verification/gl gl-smoke` |
 | Process | One-button gate, FuseSoC, written exit criteria | scripts + docs |
 
-Not claimed closed (if still open on the tree): systematic illegal-address test in gate; dense concurrent multi-peripheral stress; dense narrow-mem FSM stress beyond single-word dmem; automated GL↔RTL; CI on real runners (skeleton only if present).
+**Still open, stated plainly:**
+
+- No firmware-on-gate-level run, and no automated GL vs RTL log comparison.
+- CPU trap read path is verified, but no test forces an actual trap event.
+- FSM state and arc coverage is not measured.
+- UART has no overrun flag: a second byte arriving before the first is read
+  overwrites it silently.
+- The AHB decode is 2 bits wide, so every address maps to a real slave. There
+  is no unmapped-address error response and `HRESP` is tied low.
+
+**Closed since the last revision:** illegal-address behaviour, concurrent
+multi-peripheral traffic, dense narrow-memory stress, and CI on real runners
+are all now in the gate.
 
 ---
 
 ## 12. Exit criteria
 
-Defined in `verification/docs/VERIFICATION_GATES.md`.
+The gate is `verification/cocotb/run_all_verify.sh`, which must exit 0.
 
 1. `./run_all_verify.sh` exits 0  
 2. Block UART / GPIO / SPI directed tests PASS  
 3. Multi-seed random GPIO meets bin-diversity target  
 4. Firmware demos PASS at pins  
 5. Negatives in gate PASS (lockout, IDLE hold, AHB stall as present)  
-6. Coverage policy documented; glue-line RTL results available  
+6. Line coverage of our own RTL measured and published (currently 88.8%)  
 7. Gate-level smoke PASS  
 8. No expected failures in the official gate  
 
@@ -350,7 +415,7 @@ python3 merge_coverage.py
 cd ../..
 fusesoc run --target sim --setup --build ::pico_soc:1.0.0
 bash scripts/run_honesty_freeze.sh
-make gl
+make -C verification/gl gl-smoke
 ```
 
 Per-run artifacts: cocotb `results.xml` in the active directory. Freeze logs via `tee` as needed.
@@ -362,11 +427,11 @@ Per-run artifacts: cocotb `results.xml` in the active directory. Freeze logs via
 | Artifact | Location |
 |----------|----------|
 | This report | `VERIFICATION.md` |
-| Exit criteria | `verification/docs/VERIFICATION_GATES.md` |
-| Code coverage policy | `verification/docs/CODE_COVERAGE.md` |
-| Block MDV notes | `verification/docs/BLOCK_MDV.md` (if present) |
-| pyuvm architecture | `verification/docs/PYUVM_ARCHITECTURE.md` (if present) |
-| Requirements traceability | `REQUIREMENTS_TRACEABILITY.md` |
+| Exit criteria | Section 12 of this document |
+| Coverage artifact | `verification/coverage/coverage.info` |
+| Block MDV notes | `verification/docs/BLOCK_MDV.md` |
+| pyuvm architecture | `verification/docs/PYUVM_ARCHITECTURE.md` |
+| Requirements traceability | `verification/docs/REQUIREMENTS_TRACEABILITY.md` |
 | Chip tests | `verification/cocotb/test_pyuvm_*.py` |
 | Block tests | `verification/cocotb/block/*/test_*.py` |
 | Agents / scoreboard | `verification/cocotb/tb/` |
@@ -381,4 +446,4 @@ Per-run artifacts: cocotb `results.xml` in the active directory. Freeze logs via
 
 ---
 
-*Related detail: `REQUIREMENTS_TRACEABILITY.md`, `verification/docs/VERIFICATION_GATES.md`.*
+*Requirement-to-test mapping: `verification/docs/REQUIREMENTS_TRACEABILITY.md`.*

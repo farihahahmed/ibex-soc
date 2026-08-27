@@ -1,8 +1,9 @@
 # Pico SoC — Requirements → Tests Traceability
 
-**Purpose:** Map each design requirement to the test(s) that prove it.  
-**Rule:** A requirement is *closed* only when at least one listed test is **PASS** in the official gate (`./run_all_verify.sh` or named block target).  
-**Last updated:** 2026-08-23
+**Purpose:** Map each design requirement to the test(s) that prove it.
+**Rule:** A requirement is *closed* only when at least one listed test is **PASS** in the official gate (`./run_all_verify.sh`).
+**Last updated:** 2026-08-27
+**Gate:** 30 tests, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
 
 ---
 
@@ -13,6 +14,7 @@
 | **CHIP** | Chip-level pyuvm / cocotb (`verification/cocotb`) |
 | **BLOCK** | Isolated block MDV (`verification/cocotb/block/...`) |
 | **GL** | Gate-level netlist sim |
+| **FORMAL** | Bounded model checking (`verification/formal`) |
 | **DIR** | Directed |
 | **CR** | Constrained-random |
 | **NEG** | Negative / illegal / lockout |
@@ -26,11 +28,17 @@
 | R-BOOT-01 | Scan can load IMEM words | `test_pyuvm_smoke`, `test_pyuvm_random`, block `scan` mem | CHIP / BLOCK | DIR | Closed |
 | R-BOOT-02 | FSM can enter RUN and ungates `cpu_clk` | `test_pyuvm_smoke`, block `fsm` run | CHIP / BLOCK | DIR | Closed |
 | R-BOOT-03 | In IDLE, `cpu_clk` stays gated | block `fsm` idle-hold | BLOCK | NEG | Closed |
-| R-BOOT-04 | COUNTDOWN mode runs then gates | block `fsm` countdown | BLOCK | DIR | Closed |
-| R-BOOT-05 | While RUN, scan cannot rewrite IMEM (lockout) | `test_pyuvm_scan_lockout` (`make scan-lockout`) | CHIP | NEG | Closed |
+| R-BOOT-04 | COUNTDOWN mode runs then gates | `test_pyuvm_countdown`, block `fsm` countdown | CHIP / BLOCK | DIR | Closed |
+| R-BOOT-05 | While RUN, scan cannot rewrite IMEM (lockout) | `test_pyuvm_scan_lockout` | CHIP | NEG | Closed |
 | R-BOOT-06 | CLKGEN / scan targets decode correctly | block `scan` clkgen / fsm | BLOCK | DIR | Closed |
+| R-BOOT-07 | Scan can read IMEM words back (tgt=3) | `test_scan_readback` — 4 addresses incl. the last word of imem | CHIP | DIR | Closed |
+| R-BOOT-08 | Status word readable via scan (tgt=3, addr[13]=1) | `test_scan_status` — FSM mode and memory ownership observed in IDLE and RUN | CHIP | DIR | Closed |
+| R-BOOT-09 | CPU trap is observable after the CPU halts | Status word bit 0: sticky, synchronised into `sys_clk`. Read path proven by `test_scan_status` | CHIP | DIR | **Partial** — path verified; a real trap event has not been forced |
+| R-BOOT-10 | Clock divider ratio and glitch-free source switch | `test_clkgen` — 10 / 80 / 10 ns, both switch directions, no clock stop | CHIP | DIR | Closed |
+| R-BOOT-11 | Scan chain formal properties hold | `verification/formal/run_scan_chain_formal.py` — bounded model check, PASSED | BLOCK | FORMAL | Closed |
+| R-BOOT-12 | Clock-gating FSM formal properties hold | `verification/formal/run_test_fsm_formal.py` — bounded model check, PASSED | BLOCK | FORMAL | Closed |
 
-**Make:** `make smoke`, `make scan-lockout`, `make -C block/fsm …`, `make -C block/scan …`
+**Known limitation:** scan addresses ≥ 0x80 alias to the low range (`ld_word_addr[6:0]`). Not currently guarded. See KNOWN_GAPS.
 
 ---
 
@@ -40,14 +48,15 @@
 |----|-------------|-------|-------|------|--------|
 | R-MAP-01 | GPIO base `0x0001_0000` is writable / readable | `test_pyuvm_smoke`, `test_pyuvm_random`, block gpio write/read | CHIP / BLOCK | DIR / CR | Closed |
 | R-MAP-02 | UART base `0x0002_0000` STATUS/DATA | primes, uart RX E2E, block uart tx/rx | CHIP / BLOCK | DIR | Closed |
-| R-MAP-03 | SPI base `0x0003_0000` drives serial | game, block spi tx/rx | CHIP / BLOCK | DIR | Closed |
+| R-MAP-03 | SPI base `0x0003_0000` drives serial | game, block spi tx | CHIP / BLOCK | DIR | Closed |
 | R-MAP-04 | AHB decode selects correct slave | block `ahb` decode | BLOCK | DIR | Closed |
 | R-MAP-05 | AHB mux returns correct slave HRDATA | block `ahb` mux | BLOCK | DIR | Closed |
 | R-MAP-06 | Slave HREADY low stalls master | block `ahb` hready-stall | BLOCK | NEG | Closed |
-| R-MAP-07 | Illegal / unmapped address behaviour | `test_pyuvm_illegal_addr` *(if present)* | CHIP | NEG | Open / partial |
-| R-MAP-08 | Concurrent multi-peripheral traffic | `test_pyuvm_concurrent` *(if present)* | CHIP | CR | Open / partial |
+| R-MAP-07 | Illegal / unmapped address behaviour | `test_pyuvm_illegal_addr` (in gate) | CHIP | NEG | Closed |
+| R-MAP-08 | Concurrent multi-peripheral traffic | `test_pyuvm_concurrent` (in gate) | CHIP | CR | Closed |
 
 **Memory map source of truth:** repo root `memory_map.md`
+**Known limitation:** `HADDR[17:16]` is a 2-bit decode, so every address maps to a real slave — there is no unmapped-address error response, and `HRESP` is tied low. See KNOWN_GAPS.
 
 ---
 
@@ -58,8 +67,11 @@
 | R-GPIO-01 | After reset, gpio_out is 0 | block gpio smoke | BLOCK | DIR | Closed |
 | R-GPIO-02 | APB write updates gpio_out | block gpio write; chip smoke (0x05) | BLOCK / CHIP | DIR | Closed |
 | R-GPIO-03 | gpio_in is readable via APB | block gpio read | BLOCK | DIR | Closed |
-| R-GPIO-04 | Random legal values observed | `test_pyuvm_random`, block gpio random; multi-seed | CHIP / BLOCK | CR | Closed |
+| R-GPIO-04 | Random legal values observed | `test_pyuvm_random`, block gpio random | CHIP / BLOCK | CR | Closed |
 | R-GPIO-05 | Tone / toggle activity (piezo-style) | `test_pyuvm_piezo` | CHIP | DIR | Closed |
+| R-GPIO-06 | Output register is readable back | `rdata[NUM_IN+NUM_OUT-1:NUM_IN]` returns `out_reg`; block gpio read | BLOCK | DIR | Closed |
+
+**Note:** write and read layouts differ — software writes outputs at bits `[NUM_OUT-1:0]` but reads them back at `[NUM_IN+NUM_OUT-1:NUM_IN]`. Deliberate, so inputs stay at `[1:0]` for backward compatibility.
 
 ---
 
@@ -69,12 +81,15 @@
 |----|-------------|-------|-------|------|--------|
 | R-UART-01 | TX idle high after reset | block uart smoke | BLOCK | DIR | Closed |
 | R-UART-02 | APB write to DATA transmits byte on TX | block uart tx / tx-sb / tx-byte | BLOCK | DIR | Closed |
-| R-UART-03 | Constrained-random TX bytes | block uart tx-random; chip random-uart | BLOCK / CHIP | CR | Closed |
-| R-UART-04 | RX bit-bang → DATA → software path | `test_pyuvm_uart_rx_e2e` | CHIP | DIR | Closed |
+| R-UART-03 | Constrained-random TX bytes | block uart tx-random; `test_pyuvm_random_uart` | BLOCK / CHIP | CR | Closed |
+| R-UART-04 | RX bit-bang → DATA → software path | `test_pyuvm_uart_rx_e2e`, `test_pyuvm_uart_rx` | CHIP | DIR | Closed |
 | R-UART-05 | Firmware streams characters (primes) | `test_pyuvm_primes` | CHIP | DIR | Closed |
 | R-UART-06 | Predictor/scoreboard matches TX byte | block uart tx-sb / regress | BLOCK | DIR | Closed |
+| R-UART-07 | A status read does NOT clear rx_valid; only a DATA read does | `uart.sv` splits STATUS/DATA on `addr[2]`; exercised by `test_pyuvm_uart_rx_e2e` | CHIP | DIR | **Partial** — behaviour exercised, not directly asserted |
+| R-UART-08 | Silicon baud rate is correct for the shipped clock | `CLK_FREQ`/`BAUD_RATE` give BAUD_DIV 289 → 115,340 baud, +0.12% error | DOC | — | Closed |
 
 **Registers:** STATUS `0x0002_0000` (bit0 tx_busy, bit1 rx_valid); DATA `0x0002_0004`
+**Known limitation:** no overrun flag — a second byte arriving before the first is read overwrites it silently. See KNOWN_GAPS.
 
 ---
 
@@ -84,9 +99,10 @@
 |----|-------------|-------|-------|------|--------|
 | R-SPI-01 | Idle: cs_n=1, sclk quiet | block spi smoke | BLOCK | DIR | Closed |
 | R-SPI-02 | APB write produces MOSI bit stream | block spi tx; chip game | BLOCK / CHIP | DIR | Closed |
-| R-SPI-03 | Constrained-random TX | block / chip random-spi | BLOCK / CHIP | CR | Closed |
-| R-SPI-04 | RX path (if implemented) | block spi rx | BLOCK | DIR | Closed |
+| R-SPI-03 | Constrained-random TX | `test_pyuvm_random_spi`, block spi | BLOCK / CHIP | CR | Closed |
+| R-SPI-04 | RX path | — | — | — | **N/A — not implemented.** There is no MISO package pin; `chip_top_full` ties the SPI `miso` input to `1'b0`. The interface is transmit-only by design (drives an LCD). Reads return 0 in `rdata[15:8]`. |
 | R-SPI-05 | Game firmware produces many SPI bytes | `test_pyuvm_game` | CHIP | DIR | Closed |
+| R-SPI-06 | Mode 0 framing: 8 SCLK edges per byte | `spi.sv` counts on the rising edge and finishes after the 8th sample; block spi tx checks `sclk_edges=16` | BLOCK | DIR | Closed |
 
 ---
 
@@ -94,11 +110,31 @@
 
 | ID | Requirement | Tests | Level | Type | Status |
 |----|-------------|-------|-------|------|--------|
-| R-MEM-01 | Scan-loaded program is fetched and executes | smoke, primes, piezo, game | CHIP | DIR | Closed |
-| R-MEM-02 | DMEM SW then LW produces expected data path | `test_pyuvm_dmem` (`make dmem`) | CHIP | DIR | Closed |
+| R-MEM-01 | Scan-loaded program is fetched and executes | smoke, primes, piezo, game, crc, pcpi | CHIP | DIR | Closed |
+| R-MEM-02 | DMEM SW then LW produces expected data path | `test_pyuvm_dmem` | CHIP | DIR | Closed |
 | R-MEM-03 | Stack fits in 512 B dmem (STACKADDR 0x200) | FW sizes + dmem test; firmware README | CHIP | DIR | Closed |
-| R-MEM-04 | Dense byte/half/word stress | `test_pyuvm_dmem_stress` *(if present)* | CHIP | CR | Open / partial |
-| R-MEM-05 | Glue RTL line coverage gate (~70% excl. CPU/SRAM) | Verilator `cov_sim` + docs | TOOL | — | Closed (narrative) |
+| R-MEM-04 | Dense byte/half/word stress | `test_pyuvm_dmem_stress` (in gate) | CHIP | CR | Closed |
+| R-MEM-05 | Line coverage of our own RTL | Verilator: **88.8%** (890/1002 lines), picorv32 excluded. Artifact: `verification/coverage/coverage.info` | TOOL | — | Closed |
+
+**Known limitation:** `.rodata` is not reachable by loads. The linker places read-only data in instruction memory, but `pico_shim` routes data accesses to the AHB data memory. Firmware must generate constants arithmetically. See KNOWN_GAPS.
+
+---
+
+## 6b. Custom instruction extension (PCPI)
+
+Seven instructions in the RISC-V custom-0 opcode space (0x0B), selected by funct3.
+Verified twice: standalone against a Python model, and end-to-end through the CPU.
+
+| ID | Requirement | Tests | Level | Type | Status |
+|----|-------------|-------|-------|------|--------|
+| R-PCPI-01 | `crc32.b` folds one byte, matches IEEE 802.3 | `test_pyuvm_pcpi` — result `cbf43926`, the **published** CRC32 check constant | CHIP | DIR | Closed |
+| R-PCPI-02 | `crc32.w` folds a 32-bit word | `test_pyuvm_pcpi` vs Python model | CHIP | DIR | Closed |
+| R-PCPI-03 | `popcnt` counts set bits | `test_pyuvm_pcpi` | CHIP | DIR | Closed |
+| R-PCPI-04 | `brev` reverses bit order | `test_pyuvm_pcpi` | CHIP | DIR | Closed |
+| R-PCPI-05 | `mac` accumulates a **signed** 16×16 product | `test_pyuvm_pcpi` — includes a negative operand (0xFFFF × 5 → −5) | CHIP | DIR | Closed |
+| R-PCPI-06 | `macrd` reads the accumulator without modifying it | `test_pyuvm_pcpi` | CHIP | DIR | Closed |
+| R-PCPI-07 | `macclr` zeroes the accumulator | `test_pyuvm_pcpi` | CHIP | DIR | Closed |
+| R-PCPI-08 | An unclaimed funct3 falls through to the CPU illegal trap | Standalone bench reject case: `pcpi_ready` stays low for funct3=111 | BLOCK | NEG | Closed |
 
 ---
 
@@ -106,10 +142,13 @@
 
 | ID | Requirement | Tests | Level | Type | Status |
 |----|-------------|-------|-------|------|--------|
-| R-FW-01 | primes: UART prints primes | `make primes` / `test_pyuvm_primes` | CHIP | DIR | Closed |
-| R-FW-02 | piezo: GPIO[0] toggles (tone) | `make piezo` / `test_pyuvm_piezo` | CHIP | DIR | Closed |
-| R-FW-03 | game: SPI activity | `make game` / `test_pyuvm_game` | CHIP | DIR | Closed |
-| R-FW-04 | Each binary ≤ 512 B IMEM | firmware README + build sizes | DOC | — | Closed |
+| R-FW-01 | primes: UART prints primes | `test_pyuvm_primes` | CHIP | DIR | Closed |
+| R-FW-02 | piezo: GPIO[0] toggles (tone) | `test_pyuvm_piezo` | CHIP | DIR | Closed |
+| R-FW-03 | game: SPI activity | `test_pyuvm_game` | CHIP | DIR | Closed |
+| R-FW-04 | Each binary ≤ 512 B IMEM | firmware README + build sizes (largest 190 B) | DOC | — | Closed |
+| R-FW-05 | crc_demo: CRC32 over the standard check vector | `test_pyuvm_crc` | CHIP | DIR | Closed |
+| R-FW-06 | pcpi_demo: all seven custom instructions | `test_pyuvm_pcpi` | CHIP | DIR | Closed |
+| R-FW-07 | Toolchain flags match the core configuration | `-march=rv32emc -mabi=ilp32e` + libgcc; wrong flags produce illegal instructions | DOC | — | Closed |
 
 ---
 
@@ -117,10 +156,12 @@
 
 | ID | Requirement | Tests | Level | Type | Status |
 |----|-------------|-------|-------|------|--------|
-| R-GL-01 | Post-PnR netlist smoke | `make gl` / `verification/gl` | GL | DIR | Closed |
-| R-GL-02 | GL vs RTL same smoke result | *(compare logs)* | GL | DIR | Open |
-| R-PD-01 | Timing report present | `TIMING_REPORT.md` | DOC | — | Closed / confirm |
-| R-PD-02 | Area / pinout documented | `AREA_REPORT.md`, `PINOUT.md` | DOC | — | Closed / confirm |
+| R-GL-01 | Post-PnR netlist boots and drives pins | `make -C verification/gl gl-smoke` against `gds/chip_top_full.pnl.v` | GL | DIR | Closed |
+| R-GL-02 | GL vs RTL produce the same result for the same program | — | GL | DIR | **Open** — no firmware-on-GL run and no log comparison yet |
+| R-PD-01 | Timing closed on all corners | `TIMING_REPORT.md` | DOC | — | Closed |
+| R-PD-02 | Area / pinout documented | `AREA_REPORT.md`, `PINOUT.md` | DOC | — | Closed |
+| R-PD-03 | Antenna and LVS clean on the signoff run | run metrics: `antenna__violating__nets` 0, netgen "match uniquely" | DOC | — | Closed |
+| R-PD-04 | DRC violations explained | 4 × M3.1, traced to a 0.110 µm Metal3 port on the **VSS** pin of the GF180 SRAM macro LEF, not to this design. `docs/A45_m3_drc_report.txt` | DOC | — | Closed (reported upstream) |
 
 ---
 
@@ -129,47 +170,52 @@
 | ID | Requirement | Evidence | Status |
 |----|-------------|----------|--------|
 | R-METH-01 | Block-level MDV for UART/GPIO/SPI | `docs/BLOCK_MDV.md`, `./run_block_regress.sh` | Closed |
-| R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md` (if present), smoke/random | Closed |
-| R-METH-03 | One-button official gate | `./run_all_verify.sh` EXIT=0 | Closed |
+| R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md`; coverage 88.8% line (own RTL) | Closed |
+| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 30 tests, EXIT=0 | Closed |
 | R-METH-04 | FuseSoC targets sim / pyuvm / block | `fusesoc core-info ::pico_soc:1.0.0` | Closed |
 | R-METH-05 | Exit criteria written | `docs/VERIFICATION_GATES.md` | Closed |
 | R-METH-06 | Requirements→tests table | **this document** | Closed |
-| R-METH-07 | Architecture diagram | *(next packaging item)* | Open |
-| R-METH-08 | CI matrix on real runners | `.github/workflows` skeleton only | Open |
+| R-METH-07 | Architecture diagram | — | **Open** |
+| R-METH-08 | CI on real runners | `.github/workflows/verify.yml` — lint + gate + formal, green on every push | Closed |
+| R-METH-09 | Formal property proofs | `verification/formal/` — scan chain and clock FSM, both PASSED, in CI | Closed |
+| R-METH-10 | Per-block lint of every RTL module | `scripts/lint_blocks.sh` — 22 blocks, in CI | Closed |
+| R-METH-11 | The scoreboard actually compares values | `test_pyuvm_neg_gpio` — `expect_fail`, passes only when a deliberately wrong expectation is caught | Closed |
+| R-METH-12 | Single gate, nothing excluded or masked | Root `run_all_verify.sh` delegates to the one gate; no `fail_ok`, no ignored exit codes | Closed |
+| R-METH-13 | Repository builds outside the author's machine | All paths relative; CI checks out to a clean runner | Closed |
+| R-METH-14 | FSM state and arc coverage | — | **Open** — not measured |
 
 ---
 
 ## Official gate mapping
 
-| Command | Covers (examples) |
-|---------|-------------------|
-| `./run_block_regress.sh` | R-UART-*, R-GPIO-*, R-SPI-*, R-BOOT-03/04/06, R-MAP-04..06 |
-| `./run_all_verify.sh` | Chip smoke/random/FW/dmem/scan-lockout + block + lint (+ gl if scripted) |
-| `make scan-lockout` | R-BOOT-05 |
-| `make dmem` | R-MEM-02 |
-| `make gl` | R-GL-01 |
-| `fusesoc run --target block …` | Same as block regress via FuseSoC |
+| Command | Covers |
+|---------|--------|
+| `./run_all_verify.sh` | The whole gate: 30 tests. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi + negative, corner and stress + block UART/GPIO/SPI |
+| `./run_block_regress.sh` | R-UART-\*, R-GPIO-\*, R-SPI-\*, R-BOOT-03/04/06, R-MAP-04..06 |
+| `scripts/lint_blocks.sh` | R-METH-10 — 22 blocks |
+| `verification/formal/run_*_formal.py` | R-BOOT-11, R-BOOT-12, R-METH-09 |
+| `make -C verification/gl gl-smoke` | R-GL-01 |
 
 ---
 
 ## Open items (do not claim closed)
 
-- R-MAP-07 illegal address (confirm test exists and is in gate)
-- R-MAP-08 concurrent peripherals
-- R-MEM-04 dense narrow-mem stress
-- R-GL-02 GL↔RTL compare
-- R-METH-07 architecture diagram
-- R-METH-08 real CI runners
+- **R-BOOT-09** — trap read path verified, but no test forces an actual trap
+- **R-UART-07** — STATUS/DATA rx_valid semantics exercised but not directly asserted
+- **R-GL-02** — no firmware-on-GL run, no RTL-vs-GL log comparison
+- **R-METH-07** — architecture diagram
+- **R-METH-14** — FSM state/arc coverage not measured
+
+See `verification/docs/KNOWN_GAPS.md` for design limitations that are deliberate
+or accepted, as distinct from verification gaps.
 
 ---
 
 ## How to maintain
 
-1. New requirement → add row with unique `R-…` ID.  
-2. New test → add to every requirement it proves.  
-3. Only flip **Status** to Closed when the test is green in the official gate.  
-4. Re-run `./run_all_verify.sh` before schematic / tapeout review.
-
----
-
-*Canonical: `verification/docs/REQUIREMENTS_TRACEABILITY.md` (copy from artifacts if needed).*
+1. New requirement → add a row with a unique `R-…` ID.
+2. New test → add it to every requirement it proves.
+3. Only flip **Status** to Closed when the test is green in the official gate.
+4. Prefer **Partial** or **N/A with a reason** over an optimistic Closed. A row
+   that overstates what was proven costs more credibility than an honest gap.
+5. Re-run `./run_all_verify.sh` before any review or tapeout submission.
