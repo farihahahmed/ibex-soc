@@ -21,7 +21,7 @@ all 22 RTL modules.
 | Firmware self-check | `primes`, `piezo_tune`, `game` via scan; pin-level checks | Green |
 | Negative tests | Scan lockout under RUN; FSM IDLE clock hold; AHB HREADY stall | Green |
 | Code coverage | Verilator line coverage: **88.8%** of our own RTL (890/1002 lines, picorv32 excluded) | Measured |
-| Gate-level | Post-PnR netlist smoke against `gds/chip_top_full.pnl.v` | Smoke green |
+| Gate-level | Post-PnR netlist **elaboration and reset smoke** against `gds/chip_top_full.pnl.v` — proves the netlist elaborates and drives its pins. Does not run firmware. | Smoke green |
 | Formal | Bounded model checking: **42 properties across 7 targets** | **PASSED**, in CI |
 | FSM coverage | State and arc coverage across all 10 state machines | **40/40 states (100%)** |
 | CI | GitHub Actions: per-block lint (22 modules), full gate, formal, gate-level | Green, no allowed-to-fail legs |
@@ -392,7 +392,7 @@ Full matrix: `verification/docs/REQUIREMENTS_TRACEABILITY.md`.
 | Map / fabric | GPIO/UART/SPI bases; AHB decode/mux/stall | chip + block AHB |
 | Peripherals | UART TX/RX, GPIO R/W, SPI transfer | block + chip |
 | Memory | IMEM execute; DMEM SW/LW | FW, `make dmem` |
-| Gate-level | Netlist smoke | `make -C verification/gl gl-smoke` |
+| Gate-level | Netlist elaboration + reset smoke (not functional) | `make -C verification/gl gl-smoke` |
 | Process | One-button gate, FuseSoC, written exit criteria | scripts + docs |
 
 **Still open, stated plainly:**

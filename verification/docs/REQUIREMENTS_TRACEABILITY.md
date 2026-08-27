@@ -182,7 +182,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 | R-METH-11 | The scoreboard actually compares values | `test_pyuvm_neg_gpio` — `expect_fail`, passes only when a deliberately wrong expectation is caught | Closed |
 | R-METH-12 | Single gate, nothing excluded or masked | Root `run_all_verify.sh` delegates to the one gate; no `fail_ok`, no ignored exit codes | Closed |
 | R-METH-13 | Repository builds outside the author's machine | All paths relative; CI checks out to a clean runner | Closed |
-| R-METH-14 | FSM state and arc coverage | — | **Open** — not measured |
+| R-METH-14 | FSM state and arc coverage | `tb/coverage/fsm_cov.py` — 40/40 reachable states (100%), 40 arcs, across 10 state machines. Four `dmem_narrow_top` load states declared unreachable with the reason. | Closed |
 
 ---
 
@@ -202,9 +202,10 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 
 - **R-BOOT-09** — trap read path verified, but no test forces an actual trap
 - **R-UART-07** — STATUS/DATA rx_valid semantics exercised but not directly asserted
-- **R-GL-02** — no firmware-on-GL run, no RTL-vs-GL log comparison
+- **R-GL-02** — gate-level is an elaboration and reset smoke only: it proves the
+  netlist elaborates and drives its pins after reset. It does NOT run firmware,
+  and there is no RTL-vs-GL output comparison.
 - **R-METH-07** — architecture diagram
-- **R-METH-14** — FSM state/arc coverage not measured
 
 See `verification/docs/KNOWN_GAPS.md` for design limitations that are deliberate
 or accepted, as distinct from verification gaps.

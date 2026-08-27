@@ -77,10 +77,6 @@ module ahb_interconnect (
     end
 
     always_comb begin
-        if (!active_q) begin
-            // no transfer in the prior address phase -> idle: always ready.
-            HRDATA = 32'h0; HREADY = 1'b1; HRESP = 1'b0;
-        end else
         case (region_q)
             2'b00: begin HRDATA = s0_HRDATA; HREADY = s0_HREADY; HRESP = s0_HRESP; end
             2'b01: begin HRDATA = s1_HRDATA; HREADY = s1_HREADY; HRESP = s1_HRESP; end
