@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 BLOCKS="uart spi gpio scan_chain test_fsm clk_gen apb_uart apb_spi apb_gpio
         ahb_interconnect ahb_to_apb apb_decoder ibex_to_ahb pico_shim
         fetch_gather imem_narrow_top dmem_narrow_top mem_subsystem
-        ahb_mem rst_sync pcpi_crc32 chip_top_full"
+        ahb_mem rst_sync pcpi_custom chip_top_full"
 FAIL=0
 for m in $BLOCKS; do
   out=$(iverilog -g2012 -o /dev/null -s "$m" \

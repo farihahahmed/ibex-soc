@@ -1,4 +1,9 @@
-"""B1: wrong expected GPIO must FAIL (proves scoreboard is not always-pass)."""
+"""Scoreboard self-check: a deliberately wrong GPIO expectation must be caught.
+
+This is a test of the testbench, not of the DUT. It answers the question a
+reviewer should ask - how do you know the scoreboard is not always green?
+Marked expect_fail, so it passes only when the checker correctly reports the
+mismatch."""
 import cocotb
 from cocotb.triggers import Timer
 from pyuvm import uvm_test, uvm_root
@@ -38,7 +43,12 @@ class PyuvmNegGpioTest(uvm_test):
         await Timer(30000, unit="ns")
         self.drop_objection()
 
-@cocotb.test()
+# expect_fail: this test SHOULD fail. It deliberately tells the scoreboard to
+# expect GPIO 0x1A when the DUT drives 0x05, so a failure proves the scoreboard
+# actually compares values rather than passing everything. cocotb inverts the
+# verdict, so the gate sees a pass when the checker correctly catches the
+# mismatch - and would see a FAILURE if the scoreboard ever went always-green.
+@cocotb.test(expect_fail=True)
 async def test_pyuvm_neg_gpio(dut):
     from common import init_dut
     from tb import dut_handle

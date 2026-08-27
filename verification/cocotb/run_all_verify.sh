@@ -34,6 +34,9 @@ run "sys corner"     make COCOTB_TEST_MODULES=test_pyuvm_sys_corner
 run "rerun"          make COCOTB_TEST_MODULES=test_pyuvm_rerun
 run "random uart"    make COCOTB_TEST_MODULES=test_pyuvm_random_uart
 run "random spi"     make COCOTB_TEST_MODULES=test_pyuvm_random_spi
+# Scoreboard self-check - expect_fail, so it passes only when the checker
+# catches a deliberately wrong expectation. Guards against an always-green SB.
+run "neg gpio"       make COCOTB_TEST_MODULES=test_pyuvm_neg_gpio
 run "chip dmem"    make COCOTB_TEST_MODULES=test_pyuvm_dmem
 
 # Control / debug paths
