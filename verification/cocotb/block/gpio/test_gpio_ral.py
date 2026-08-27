@@ -75,3 +75,18 @@ async def test_gpio_ral_out_readback_and_inputs(dut):
     gpio.io.check(rd, inputs=0b11, out_rdbk=0b1010)
 
     cocotb.log.info("*** GPIO RAL out/readback/inputs PASS ***")
+
+
+@cocotb.test()
+async def test_gpio_unused_bits_read_zero(dut):
+    """Bits above the defined fields must read as 0 (reserved-as-zero)."""
+    await reset(dut)
+    await apb_write(dut, gpio.io.offset, gpio.io.encode(out=0b1111))
+    dut.gpio_in.value = 0b11
+    for _ in range(4):
+        await RisingEdge(dut.PCLK)
+    rd = await apb_read(dut, gpio.io.offset)
+    used = gpio.io.rfields["inputs"].mask | gpio.io.rfields["out_rdbk"].mask
+    assert rd & ~used == 0, \
+        f"reserved bits nonzero: read=0x{rd:08x} used-mask=0x{used:08x}"
+    cocotb.log.info("*** GPIO unused-bits-read-zero PASS ***")

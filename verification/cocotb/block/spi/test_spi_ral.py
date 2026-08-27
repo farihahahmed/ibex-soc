@@ -138,3 +138,14 @@ async def test_spi_write_while_busy_ignored(dut):
     assert spi.ctrl.field("busy", st) == 0, "ignored write must not queue a transfer"
     _scov.hit("spi","write_while_busy")
     cocotb.log.info("*** SPI write-while-busy ignored (documented) PASS ***")
+
+
+@cocotb.test()
+async def test_spi_back_to_back_transfers(dut):
+    """Three transfers driven straight off the busy handshake with alternating
+    MISO levels: each must complete independently with the right RX byte."""
+    await reset(dut)
+    for tx, miso, exp in ((0x11, 1, 0xFF), (0x22, 0, 0x00), (0x33, 1, 0xFF)):
+        rx = await xfer(dut, tx, miso_level=miso)
+        assert rx == exp, f"b2b transfer tx=0x{tx:02x}: rx=0x{rx:02x}, want 0x{exp:02x}"
+    cocotb.log.info("*** SPI back-to-back transfers PASS ***")

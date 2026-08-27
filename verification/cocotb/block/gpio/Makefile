@@ -21,3 +21,7 @@ protocol:
 .PHONY: ral
 ral:
 	$(MAKE) MODULE=test_gpio_ral COCOTB_TEST_MODULES=test_gpio_ral
+
+.PHONY: inout
+inout:
+	$(MAKE) MODULE=test_gpio_inout COCOTB_TEST_MODULES=test_gpio_inout

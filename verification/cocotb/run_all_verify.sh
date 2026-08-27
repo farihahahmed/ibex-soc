@@ -68,6 +68,7 @@ run "uart ral"         bash -c 'cd block/uart && make ral'
 run "uart stress"      bash -c 'cd block/uart && make stress'
 run "spi ral"          bash -c 'cd block/spi && make ral'
 run "gpio ral"         bash -c 'cd block/gpio && make ral'
+run "gpio inout"       bash -c 'cd block/gpio && make inout'
 run "gpio protocol"    bash -c 'cd block/gpio && make protocol'
 run "spi protocol"     bash -c 'cd block/spi && make protocol'
 

@@ -93,3 +93,40 @@ async def test_ahb_decode_sweep(dut):
     cocotb.log.info(cov.report())
     cov.check_required()
     cocotb.log.info("*** ahb decode sweep + routing + coverage PASS ***")
+
+
+@cocotb.test()
+async def test_hresp_tied_zero(dut):
+    """KNOWN_GAPS: HRESP is tied low everywhere -- assert it explicitly across
+    every region and during idle, turning the limitation into a closed check."""
+    await _init(dut)
+    for rid, (_n, base, last) in REGIONS.items():
+        dut.HADDR.value = base + (last // 2)
+        dut.HTRANS.value = NONSEQ
+        await RisingEdge(dut.HCLK)
+        await RisingEdge(dut.HCLK)
+        assert int(dut.HRESP.value) == 0, f"HRESP nonzero in region {rid}"
+    dut.HTRANS.value = IDLE
+    await RisingEdge(dut.HCLK)
+    assert int(dut.HRESP.value) == 0, "HRESP nonzero at idle"
+    cocotb.log.info("*** HRESP tied-0 everywhere PASS ***")
+
+
+@cocotb.test()
+async def test_unmapped_addresses_alias_not_error(dut):
+    """KNOWN_GAPS: two decode bits -> no unmapped hole. Addresses past each
+    region's populated tail ALIAS into the same region (HSEL still one-hot,
+    HREADY=1, HRESP=0) rather than erroring. Named check for the doc claim."""
+    await _init(dut)
+    for rid, (_n, base, last) in REGIONS.items():
+        for gap in (base + last + 1, base + 0xFFFF):
+            dut.HADDR.value = gap
+            dut.HTRANS.value = NONSEQ
+            await RisingEdge(dut.HCLK)
+            hsel = int(dut.HSEL.value)
+            assert hsel == (1 << rid), \
+                f"gap 0x{gap:08x} must alias to region {rid}, HSEL=0b{hsel:04b}"
+            await RisingEdge(dut.HCLK)
+            assert int(dut.HREADY.value) == 1 and int(dut.HRESP.value) == 0, \
+                "aliased access must complete normally (no error response)"
+    cocotb.log.info("*** unmapped-alias (no error) named check PASS ***")
