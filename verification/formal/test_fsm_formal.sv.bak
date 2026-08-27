@@ -1,0 +1,76 @@
+// ============================================================================
+// test_fsm_formal.sv - formal properties for the clock-gating FSM.
+//
+// Proven by bounded model checking (Yosys + yosys-smtbmc). Unlike a testbench,
+// these hold for EVERY input sequence up to the bound, not just the stimulus
+// we happened to apply.
+//
+// Every property here can fail. Assertions that merely restate an assign
+// statement prove nothing and are deliberately excluded.
+// ============================================================================
+module test_fsm_formal (
+    input  logic        clk,
+    input  logic        rst_n,
+    input  logic        cfg_load,
+    input  logic [1:0]  cfg_mode_in,
+    input  logic [15:0] cfg_count_in
+);
+    localparam logic [1:0] IDLE = 2'd0, RUN = 2'd1, COUNTDOWN = 2'd2;
+
+    logic cpu_clk, scan_owns_mem;
+    logic [1:0] mode_o;
+
+    test_fsm dut (
+        .clk(clk), .rst_n(rst_n),
+        .cfg_load(cfg_load),
+        .cfg_mode_in(cfg_mode_in),
+        .cfg_count_in(cfg_count_in),
+        .cpu_clk(cpu_clk),
+        .scan_owns_mem(scan_owns_mem),
+        .mode_o(mode_o)
+    );
+
+    logic        past_valid;
+    logic [1:0]  mode_q;
+    logic [15:0] count_q;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) past_valid <= 1'b0;
+        else begin
+            past_valid <= 1'b1;
+            mode_q     <= mode_o;
+            count_q    <= dut.count;
+        end
+    end
+
+    // P1: the CPU clock is genuinely dead in IDLE. This is the property the
+    // whole clock-gating scheme exists to provide. It can fail: sample
+    // run_gate on the wrong edge, or gate combinationally, and cpu_clk can
+    // glitch high while mode is IDLE.
+    always @* if (rst_n && mode_o == IDLE) assert (cpu_clk == 1'b0);
+
+    // P2: COUNTDOWN cannot clock the CPU once the count is exhausted.
+    // Guards against an off-by-one that grants one extra cycle.
+    always @* if (rst_n && mode_o == COUNTDOWN && dut.count == 16'd0)
+        assert (cpu_clk == 1'b0);
+
+    // P3: the countdown is monotonic. A wrapping counter would run the CPU
+    // forever instead of stopping it.
+    always @(posedge clk)
+        if (past_valid && rst_n && mode_q == COUNTDOWN && mode_o == COUNTDOWN
+            && !cfg_load)
+            assert (dut.count <= count_q);
+
+    // P4: mode only ever changes on a scan write. Nothing else in the design
+    // may move the FSM between modes.
+    always @(posedge clk)
+        if (past_valid && rst_n && !cfg_load)
+            assert (mode_o == mode_q);
+
+    // P5: mode is always a legal encoding. 2'd3 is unassigned and would gate
+    // the clock off permanently.
+    always @* if (rst_n) assert (mode_o inside {IDLE, RUN, COUNTDOWN});
+
+    // P6: memory ownership and clock gating never disagree. If scan owned
+    // memory while the CPU was clocked, both could drive instruction memory.
+    always @* if (rst_n && scan_owns_mem) assert (cpu_clk == 1'b0);
+endmodule
