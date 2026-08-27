@@ -3,7 +3,7 @@ import os, random
 import cocotb
 from cocotb.triggers import Timer, RisingEdge
 from pyuvm import uvm_test, uvm_root
-from tb.env import IbexSocEnv
+from tb.env import PicoSocEnv
 from tb.agents.scan import ScanItem
 from tb.coverage import cov
 from tb import dut_handle
@@ -33,7 +33,7 @@ async def uart_send_byte(dut, byte, bit_cycles=8):
 
 class PyuvmUartRxTest(uvm_test):
     def build_phase(self):
-        self.env = IbexSocEnv.create("env", self)
+        self.env = PicoSocEnv.create("env", self)
 
     async def run_phase(self):
         self.raise_objection()

@@ -7,7 +7,7 @@ from tb.agents.apb import ApbMonitor
 from tb.scoreboard import Scoreboard
 
 
-class IbexSocEnv(uvm_env):
+class PicoSocEnv(uvm_env):
     def build_phase(self):
         self.scan_agent = ScanAgent.create("scan_agent", self)
         self.gpio_agent = GpioAgent.create("gpio_agent", self)

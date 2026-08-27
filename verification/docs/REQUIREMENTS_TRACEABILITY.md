@@ -3,7 +3,7 @@
 **Purpose:** Map each design requirement to the test(s) that prove it.
 **Rule:** A requirement is *closed* only when at least one listed test is **PASS** in the official gate (`./run_all_verify.sh`).
 **Last updated:** 2026-08-27
-**Gate:** 54 tests, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
+**Gate:** 68 tests, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
 
 ---
 
@@ -100,7 +100,7 @@
 | R-SPI-01 | Idle: cs_n=1, sclk quiet | block spi smoke | BLOCK | DIR | Closed |
 | R-SPI-02 | APB write produces MOSI bit stream | block spi tx; chip game | BLOCK / CHIP | DIR | Closed |
 | R-SPI-03 | Constrained-random TX | `test_pyuvm_random_spi`, block spi | BLOCK / CHIP | CR | Closed |
-| R-SPI-04 | RX path | — | — | — | **N/A — not implemented.** There is no MISO package pin; `chip_top_full` ties the SPI `miso` input to `1'b0`. The interface is transmit-only by design (drives an LCD). Reads return 0 in `rdata[15:8]`. |
+| R-SPI-04 | RX path receives a byte on MISO | `block/spi` rx tests; dedicated `spi_miso` pin added | BLOCK | DIR | Closed |
 | R-SPI-05 | Game firmware produces many SPI bytes | `test_pyuvm_game` | CHIP | DIR | Closed |
 | R-SPI-06 | Mode 0 framing: 8 SCLK edges per byte | `spi.sv` counts on the rising edge and finishes after the 8th sample; block spi tx checks `sclk_edges=16` | BLOCK | DIR | Closed |
 
@@ -171,9 +171,9 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 |----|-------------|----------|--------|
 | R-METH-01 | Block-level MDV for UART/GPIO/SPI | `docs/BLOCK_MDV.md`, `./run_block_regress.sh` | Closed |
 | R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md`; coverage 88.8% line (own RTL) | Closed |
-| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 54 tests, EXIT=0 | Closed |
+| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 68 tests, EXIT=0 | Closed |
 | R-METH-04 | FuseSoC targets sim / pyuvm / block | `fusesoc core-info ::pico_soc:1.0.0` | Closed |
-| R-METH-05 | Exit criteria written | `docs/VERIFICATION_GATES.md` | Closed |
+| R-METH-05 | Exit criteria written | Section 12 of `VERIFICATION.md` | Closed |
 | R-METH-06 | Requirements→tests table | **this document** | Closed |
 | R-METH-07 | Architecture diagram | — | **Open** |
 | R-METH-08 | CI on real runners | `.github/workflows/verify.yml` — lint + gate + formal, green on every push | Closed |
@@ -190,7 +190,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 
 | Command | Covers |
 |---------|--------|
-| `./run_all_verify.sh` | The whole gate: 54 tests. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi, negative/corner/stress, and all 11 block suites (uart, gpio, spi, mem, fsm, scan, scan_fsm, ahb, ahb_to_apb, apb_decoder, clkgen) |
+| `./run_all_verify.sh` | The whole gate: 68 tests. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi, negative/corner/stress, and all 11 block suites (uart, gpio, spi, mem, fsm, scan, scan_fsm, ahb, ahb_to_apb, apb_decoder, clkgen) |
 | `./run_block_regress.sh` | R-UART-\*, R-GPIO-\*, R-SPI-\*, R-BOOT-03/04/06, R-MAP-04..06 |
 | `scripts/lint_blocks.sh` | R-METH-10 — 22 blocks |
 | `verification/formal/run_*_formal.py` | R-BOOT-11, R-BOOT-12, R-METH-09 |

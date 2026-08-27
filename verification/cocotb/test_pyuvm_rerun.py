@@ -2,7 +2,7 @@
 import cocotb
 from cocotb.triggers import Timer, RisingEdge
 from pyuvm import uvm_test, uvm_root
-from tb.env import IbexSocEnv
+from tb.env import PicoSocEnv
 from tb.agents.scan import ScanItem
 from tb import dut_handle
 from common import init_dut
@@ -17,7 +17,7 @@ PROG = [
 
 class PyuvmRerunTest(uvm_test):
     def build_phase(self):
-        self.env = IbexSocEnv.create("env", self)
+        self.env = PicoSocEnv.create("env", self)
 
     async def _scan(self, tgt, addr, data):
         item = ScanItem(f"s{tgt}_{addr}", tgt=tgt, addr=addr, data=data)

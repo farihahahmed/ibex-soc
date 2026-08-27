@@ -69,7 +69,7 @@ export PYTHONPATH="$(pwd):${PYTHONPATH}"
 code 0. Detail in `VERIFICATION.md` and `verification/docs/`.
 
 **Current status:** the exit gate passes on the current design —
-54 tests, 0 failures, exit code 0 (2026-08-27). No excluded tests and no
+68 tests, 0 failures, exit code 0 (2026-08-27). No excluded tests and no
 allowed-to-fail legs; runs in CI on every push.
 
 ### **Tooling**

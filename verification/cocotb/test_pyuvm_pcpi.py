@@ -12,7 +12,7 @@ this proves the instructions decode and write back correctly through PicoRV32.
 import cocotb
 from cocotb.triggers import Timer
 from pyuvm import uvm_test, uvm_root
-from tb.env import IbexSocEnv
+from tb.env import PicoSocEnv
 from tb.sequences.firmware_seq import LoadFirmwareSeq
 from tb import dut_handle
 from common import init_dut
@@ -21,7 +21,7 @@ EXPECTED = ["cbf43926", "641c1f5c", "00000010", "f0000000", "0000006b", "0000006
 
 class PyuvmPcpiTest(uvm_test):
     def build_phase(self):
-        self.env = IbexSocEnv.create("env", self)
+        self.env = PicoSocEnv.create("env", self)
 
     async def run_phase(self):
         self.raise_objection()

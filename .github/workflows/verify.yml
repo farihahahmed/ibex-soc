@@ -44,3 +44,19 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y iverilog
       - name: Gate-level smoke
         run: make -C verification/gl gl-smoke
+
+  # Bounded model checking: 42 properties across 7 targets. Proves the
+  # properties hold for ALL input sequences up to the bound, not just the
+  # stimulus a testbench applies.
+  formal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Yosys and SMT solver
+        run: sudo apt-get update && sudo apt-get install -y yosys yosys-smtbmc yices2
+      - name: Formal suite
+        working-directory: verification/formal
+        run: SMT_SOLVER=yices python3 run_formal.py

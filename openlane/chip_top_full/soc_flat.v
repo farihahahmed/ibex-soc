@@ -566,7 +566,7 @@ module chip_top_full (
 );
 	parameter signed [31:0] NUM_OUT = 4;
 	parameter signed [31:0] NUM_IN = 2;
-	parameter signed [31:0] CLK_FREQ = 33333333;
+	parameter signed [31:0] CLK_FREQ = 25000000;
 	parameter signed [31:0] BAUD_RATE = 115200;
 	parameter signed [31:0] SPI_CLK_DIV = 2;
 	input wire clk;

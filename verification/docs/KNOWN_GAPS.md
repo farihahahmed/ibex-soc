@@ -32,9 +32,11 @@ the data memory. Firmware must generate constants arithmetically rather than
 using string literals or const arrays. This cost one debug cycle before it was
 understood.
 
-**No SPI MISO pin.** The 22-pin budget is fully allocated, so the SPI interface
-is transmit-only by design and `miso` is tied to `1'b0`. Consequences: reads
-return 0 in `rdata[15:8]`, and the SPI FSM's last receive bit is unobservable.
+**SPI receive is now a real pin.** One GPIO output pad was reassigned as a
+dedicated `spi_miso` input (`input_cmos`), so the fabricated chip can receive
+SPI data from a sensor or peripheral. GPIO dropped from 5 outputs to 4. This
+was a deliberate late change: without it the receive path would have been
+permanently unreachable in silicon.
 
 **No unmapped-address error response.** The AHB decode uses `HADDR[17:16]`, two
 bits, so all four encodings map to a real slave. A wild pointer silently reads

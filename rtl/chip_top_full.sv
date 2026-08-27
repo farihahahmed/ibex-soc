@@ -5,7 +5,7 @@
 module chip_top_full #(
     parameter int NUM_OUT     = 4,   // was 5; one pad reassigned to spi_miso
     parameter int NUM_IN      = 2,
-    parameter int CLK_FREQ    = 22_222_222,  // silicon: 45 ns clock = 22.22 MHz
+    parameter int CLK_FREQ    = 25_000_000,  // silicon: 40 ns clock = 25 MHz
     parameter int BAUD_RATE   = 115_200,     // BAUD_DIV = 192 -> 115,741 baud (+0.47%)
     parameter int SPI_CLK_DIV = 2
 )(

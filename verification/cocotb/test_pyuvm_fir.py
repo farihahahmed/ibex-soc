@@ -16,7 +16,7 @@ external data. The filter arithmetic is real; the stimulus is synthetic.
 import cocotb
 from cocotb.triggers import Timer
 from pyuvm import uvm_test, uvm_root
-from tb.env import IbexSocEnv
+from tb.env import PicoSocEnv
 from tb.sequences.firmware_seq import LoadFirmwareSeq
 from tb import dut_handle
 from common import init_dut
@@ -37,7 +37,7 @@ def expected(i):
 
 class PyuvmFirTest(uvm_test):
     def build_phase(self):
-        self.env = IbexSocEnv.create("env", self)
+        self.env = PicoSocEnv.create("env", self)
 
     async def run_phase(self):
         self.raise_objection()
