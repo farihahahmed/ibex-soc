@@ -15,6 +15,10 @@ smoke:
 	$(MAKE) COCOTB_TEST_MODULES=test_ahb_smoke
 decode:
 	$(MAKE) COCOTB_TEST_MODULES=test_ahb_decode
+routing-sb:
+	$(MAKE) MODULE=test_ahb_routing_sb COCOTB_TEST_MODULES=test_ahb_routing_sb
+
+.PHONY: decode-sweep
 decode-sweep:
 	$(MAKE) COCOTB_TEST_MODULES=test_ahb_decode_sweep
 mux:
@@ -29,6 +33,8 @@ block-regress:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_decode
 	@echo "=== ahb decode-sweep + coverage ==="
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_decode_sweep
+	@echo "=== ahb routing scoreboard ==="
+	$(MAKE) clean && $(MAKE) MODULE=test_ahb_routing_sb COCOTB_TEST_MODULES=test_ahb_routing_sb
 	@echo "=== ahb mux ==="
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_mux
 	@echo "=== ahb hready-stall ==="
