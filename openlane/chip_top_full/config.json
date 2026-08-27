@@ -5,7 +5,7 @@
     "dir::../../synthesis/sram_blackbox.v"
   ],
   "CLOCK_PORT": "clk",
-  "CLOCK_PERIOD": 40,
+  "CLOCK_PERIOD": 45,
   "PDK": "gf180mcuD",
   "STD_CELL_LIBRARY": "gf180mcu_fd_sc_mcu7t5v0",
   "PNR_SDC_FILE": "dir::chip_top.sdc",
@@ -85,13 +85,15 @@
   "DPL_CELL_PADDING": 2,
   "GPL_CELL_PADDING": 1,
   "GRT_OBS": null,
-  "DIODE_ON_PORTS": "in",
+  "DIODE_ON_PORTS": "both",
   "PDN_MACRO_CONNECTIONS": [
     "u_mem.u_imem.u_mem.u_sram VDD VSS VDD VSS",
     "u_dmem_slave.u_dmem.u_mem.u_sram VDD VSS VDD VSS"
   ],
   "ERROR_ON_PDN_VIOLATIONS": false,
   "GRT_ADJUSTMENT": 0.3,
-  "PL_TARGET_DENSITY_PCT": 52,
-  "MAX_TRANSITION_CONSTRAINT": 3
+  "PL_TARGET_DENSITY_PCT": 55,
+  "MAX_TRANSITION_CONSTRAINT": 3,
+  "GRT_ANTENNA_MARGIN": 25,
+  "DRT_ANTENNA_MARGIN": 25
 }
