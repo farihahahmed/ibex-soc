@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 export PYTHONPATH="${ROOT}:${PYTHONPATH:-}"
 cd "$ROOT"
+rm -f fsm_coverage.json   # FSM coverage accumulates across this run only
 
 PASSED=0
 run() {
@@ -69,6 +70,12 @@ run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke CO
 
 echo ""
 echo ""
+# FSM state and arc coverage, accumulated across every test that samples it.
+python3 -c "
+import sys; sys.path.insert(0,'.')
+from tb.coverage.fsm_cov import FsmCoverage
+print(FsmCoverage.load().report())" 2>/dev/null || true
+
 echo "=== HONESTY FREEZE: ALL PASSED ==="
 echo "SUMMARY: PASS ${NPASS:-see log} / FAIL 0 / SKIP 0 / FAIL_OK 0"
 echo "(count verdicts with: ./run_all_verify.sh | grep -c 'PASS=1 FAIL=0')"

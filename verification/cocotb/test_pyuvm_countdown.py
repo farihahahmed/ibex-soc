@@ -63,4 +63,8 @@ class PyuvmCountdownTest(uvm_test):
 async def test_pyuvm_countdown(dut):
     await init_dut(dut)
     dut_handle.DUT = dut
+    from tb.coverage.fsm_cov import sample_fsms, fsm_cov
+    cocotb.start_soon(sample_fsms(dut, dut.clk))
     await uvm_root().run_test("PyuvmCountdownTest")
+    dut._log.info(fsm_cov.report())
+    fsm_cov.persist()

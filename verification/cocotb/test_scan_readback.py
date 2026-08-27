@@ -78,6 +78,8 @@ async def capture_and_shift_out(dut):
 async def test_scan_readback(dut):
     """Write known words over scan, read them back, compare."""
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    from tb.coverage.fsm_cov import sample_fsms, fsm_cov
+    cocotb.start_soon(sample_fsms(dut, dut.clk))
     await reset(dut)
 
     patterns = {
@@ -116,3 +118,5 @@ async def test_scan_readback(dut):
     )
 
     dut._log.info("*** scan readback PASS ***")
+    dut._log.info(fsm_cov.report())
+    fsm_cov.persist()
