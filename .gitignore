@@ -29,3 +29,4 @@ verification/cocotb/coverage_merge.json
 verification/coverage_artifacts/
 info.yaml.bak
 build_*.smt2
+verification/cocotb/stress_coverage.json

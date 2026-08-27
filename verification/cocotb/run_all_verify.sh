@@ -25,6 +25,7 @@ run "chip crc32"   make COCOTB_TEST_MODULES=test_pyuvm_crc
 run "chip pcpi"    make COCOTB_TEST_MODULES=test_pyuvm_pcpi
 run "pcpi cycles"  make COCOTB_TEST_MODULES=test_pyuvm_cycles
 run "mac fir"      make COCOTB_TEST_MODULES=test_pyuvm_fir
+run "fw harness"   make COCOTB_TEST_MODULES=test_pyuvm_fw_harness
 
 # Negative, corner and stress tests. These were written earlier but were not
 # in the official gate; every one that passes is now included, so the gate
