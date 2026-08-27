@@ -14,14 +14,14 @@
   "DIE_AREA": [
     0,
     0,
-    1100,
-    1100
+    1110,
+    1110
   ],
   "CORE_AREA": [
     10,
     10,
-    1090,
-    1090
+    1100,
+    1100
   ],
   "PL_MAX_DISPLACEMENT_X": 1000,
   "PL_MAX_DISPLACEMENT_Y": 1000,
@@ -85,7 +85,7 @@
   "DPL_CELL_PADDING": 2,
   "GPL_CELL_PADDING": 1,
   "GRT_OBS": null,
-  "DIODE_ON_PORTS": "both",
+  "DIODE_ON_PORTS": "in",
   "PDN_MACRO_CONNECTIONS": [
     "u_mem.u_imem.u_mem.u_sram VDD VSS VDD VSS",
     "u_dmem_slave.u_dmem.u_mem.u_sram VDD VSS VDD VSS"

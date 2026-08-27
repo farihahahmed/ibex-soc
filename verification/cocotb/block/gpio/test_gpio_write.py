@@ -1,4 +1,4 @@
-"""Block GPIO directed: APB write 0x15, expect gpio_out==0x15."""
+"""Block GPIO directed: APB write 0x05, expect gpio_out==0x05."""
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
@@ -32,11 +32,11 @@ async def test_gpio_write(dut):
     for _ in range(5):
         await RisingEdge(dut.PCLK)
 
-    await apb_write(dut, 0x0, 0x15)
+    await apb_write(dut, 0x0, 0x05)
     for _ in range(3):
         await RisingEdge(dut.PCLK)
 
     out = int(dut.gpio_out.value) & 0x1F
     cocotb.log.info(f"gpio_out = 0x{out:02x}")
-    assert out == 0x15, f"expected 0x15 got 0x{out:02x}"
+    assert out == 0x05, f"expected 0x05 got 0x{out:02x}"
     cocotb.log.info("*** gpio directed write PASS ***")
