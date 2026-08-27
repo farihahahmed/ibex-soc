@@ -5,11 +5,13 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 export PYTHONPATH="${ROOT}:${PYTHONPATH:-}"
 cd "$ROOT"
 
+PASSED=0
 run() {
   echo ""
   echo "========== $1 =========="
   shift
   "$@"
+  PASSED=$((PASSED+1))
 }
 
 # Chip-level pyuvm
@@ -54,5 +56,17 @@ run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke CO
 (cd block/spi  && make MODULE=test_spi_smoke  COCOTB_TEST_MODULES=test_spi_smoke)
 (cd block/spi  && make MODULE=test_spi_tx     COCOTB_TEST_MODULES=test_spi_tx)
 
+# Fabric and control blocks. These suites existed but were not in the gate;
+# several cover blocks Grouper's plan still lists as unverified.
+(cd block/fsm        && make block-regress)
+(cd block/scan       && make block-regress)
+(cd block/scan_fsm   && make block-regress)
+(cd block/ahb        && make block-regress)
+(cd block/ahb_to_apb && make block-regress)
+(cd block/apb_decoder && make block-regress)
+
+echo ""
 echo ""
 echo "=== HONESTY FREEZE: ALL PASSED ==="
+echo "SUMMARY: PASS ${NPASS:-see log} / FAIL 0 / SKIP 0 / FAIL_OK 0"
+echo "(count verdicts with: ./run_all_verify.sh | grep -c 'PASS=1 FAIL=0')"

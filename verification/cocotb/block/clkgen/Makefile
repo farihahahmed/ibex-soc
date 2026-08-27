@@ -3,6 +3,7 @@ TOPLEVEL_LANG = verilog
 TOPLEVEL = clk_gen
 
 VERILOG_SOURCES = ../../../../rtl/clk_gen.sv
+VERILOG_SOURCES += ../../models/gf180mcu_fd_sc_mcu7t5v0__icgtp_1.v
 COMPILE_ARGS += -g2012
 
 export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
