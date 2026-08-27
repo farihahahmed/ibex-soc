@@ -64,6 +64,7 @@ run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke CO
 # output readback and input synchronisation, SPI Mode 0 polarity and
 # exactly eight clock edges per byte.
 (cd block/uart && make protocol)
+(cd block/uart && make ral)
 (cd block/gpio && make protocol)
 (cd block/spi  && make protocol)
 
