@@ -54,30 +54,30 @@ run "scan lockout"   make COCOTB_TEST_MODULES=test_pyuvm_scan_lockout
 
 # Block MDV
 run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke COCOTB_TEST_MODULES=test_uart_smoke'
-(cd block/gpio && make MODULE=test_gpio_smoke COCOTB_TEST_MODULES=test_gpio_smoke)
-(cd block/gpio && make MODULE=test_gpio_write COCOTB_TEST_MODULES=test_gpio_write)
-(cd block/spi  && make MODULE=test_spi_smoke  COCOTB_TEST_MODULES=test_spi_smoke)
-(cd block/spi  && make MODULE=test_spi_tx     COCOTB_TEST_MODULES=test_spi_tx)
+run "block gpio smoke" bash -c 'cd block/gpio && make MODULE=test_gpio_smoke COCOTB_TEST_MODULES=test_gpio_smoke'
+run "block gpio write" bash -c 'cd block/gpio && make MODULE=test_gpio_write COCOTB_TEST_MODULES=test_gpio_write'
+run "block spi smoke"  bash -c 'cd block/spi && make MODULE=test_spi_smoke COCOTB_TEST_MODULES=test_spi_smoke'
+run "block spi tx"     bash -c 'cd block/spi && make MODULE=test_spi_tx COCOTB_TEST_MODULES=test_spi_tx'
 
 # Protocol conformance suites. The tests above prove data moved; these
 # prove the protocol - UART framing and the STATUS/DATA split, GPIO
 # output readback and input synchronisation, SPI Mode 0 polarity and
 # exactly eight clock edges per byte.
-(cd block/uart && make protocol)
-(cd block/uart && make ral)
-(cd block/gpio && make protocol)
-(cd block/spi  && make protocol)
+run "uart protocol"    bash -c 'cd block/uart && make protocol'
+run "uart ral"         bash -c 'cd block/uart && make ral'
+run "gpio protocol"    bash -c 'cd block/gpio && make protocol'
+run "spi protocol"     bash -c 'cd block/spi && make protocol'
 
 # Fabric and control blocks. These suites existed but were not in the gate;
 # several cover blocks Grouper's plan still lists as unverified.
-(cd block/fsm        && make block-regress)
-(cd block/scan       && make block-regress)
-(cd block/scan_fsm   && make block-regress)
-(cd block/ahb        && make block-regress)
-(cd block/ahb_to_apb && make block-regress)
-(cd block/apb_decoder && make block-regress)
-(cd block/clkgen     && make block-regress)
-(cd block/mem        && make block-regress)
+run "fsm regress"        bash -c 'cd block/fsm && make block-regress'
+run "scan regress"       bash -c 'cd block/scan && make block-regress'
+run "scan_fsm regress"   bash -c 'cd block/scan_fsm && make block-regress'
+run "ahb regress"        bash -c 'cd block/ahb && make block-regress'
+run "ahb_to_apb regress" bash -c 'cd block/ahb_to_apb && make block-regress'
+run "apb_decoder regress" bash -c 'cd block/apb_decoder && make block-regress'
+run "clkgen regress"     bash -c 'cd block/clkgen && make block-regress'
+run "mem regress"        bash -c 'cd block/mem && make block-regress'
 
 echo ""
 echo ""
@@ -88,5 +88,5 @@ from tb.coverage.fsm_cov import FsmCoverage
 print(FsmCoverage.load().report())" 2>/dev/null || true
 
 echo "=== HONESTY FREEZE: ALL PASSED ==="
-echo "SUMMARY: PASS ${NPASS:-see log} / FAIL 0 / SKIP 0 / FAIL_OK 0"
-echo "(count verdicts with: ./run_all_verify.sh | grep -c 'PASS=1 FAIL=0')"
+echo "SUMMARY: SUITES PASS ${PASSED} / FAIL 0 / SKIP 0 / FAIL_OK 0"
+echo "(individual test verdicts: ./run_all_verify.sh | grep -c 'FAIL=0')"
