@@ -1,3 +1,5 @@
+from tb.coverage.stress_cov import StressCoverage
+_scov = StressCoverage()
 """AHB routing SCOREBOARD -- randomized traffic, every cycle checked.
 
 The sweep test proves directed decode at boundaries. This test proves there is
@@ -107,6 +109,7 @@ async def _routing_run(dut, seed, stall=False):
             getattr(dut, f"s{victim}_HREADY").value = 1
 
     cov.check_required()
+    _scov.hit("ahb","routing_random")
     cocotb.log.info(f"*** routing seed={hex(seed)} stall={stall}: {checked} "
                     f"txns, zero misroutes ***")
 
@@ -120,3 +123,4 @@ async def test_ahb_routing_scoreboard(dut):
 async def test_ahb_routing_multiseed_stall(dut):
     for seed in (0xBEEF01, 0xBEEF02, 0xBEEF03):
         await _routing_run(dut, seed, stall=True)
+    _scov.hit("ahb","routing_multiseed"); _scov.hit("ahb","hready_stall_mux")

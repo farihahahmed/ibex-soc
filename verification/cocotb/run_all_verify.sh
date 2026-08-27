@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 export PYTHONPATH="${ROOT}:${PYTHONPATH:-}"
 cd "$ROOT"
-rm -f fsm_coverage.json   # FSM coverage accumulates across this run only
+rm -f fsm_coverage.json stress_coverage.json   # coverage accumulates across this run only
 
 PASSED=0
 run() {
@@ -89,6 +89,11 @@ python3 -c "
 import sys; sys.path.insert(0,'.')
 from tb.coverage.fsm_cov import FsmCoverage
 print(FsmCoverage.load().report())" 2>/dev/null || true
+
+python3 -c "
+import sys; sys.path.insert(0,'.')
+from tb.coverage.stress_cov import StressCoverage
+StressCoverage.report_and_check()"
 
 echo "=== HONESTY FREEZE: ALL PASSED ==="
 echo "SUMMARY: SUITES PASS ${PASSED} / FAIL 0 / SKIP 0 / FAIL_OK 0"

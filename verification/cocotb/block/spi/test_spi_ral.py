@@ -10,6 +10,8 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 
+from tb.coverage.stress_cov import StressCoverage
+_scov = StressCoverage()
 from tb.reg_model.soc_regs import spi
 
 
@@ -80,6 +82,7 @@ async def test_spi_ral_busy_and_rx(dut):
     rx = await xfer(dut, 0x3C, miso_level=0)
     assert rx == 0x00, f"miso held low: rx=0x{rx:02x}, want 0x00"
 
+    _scov.hit("spi","busy_handshake"); _scov.hit("spi","rx_all_ones"); _scov.hit("spi","rx_all_zeros")
     cocotb.log.info("*** SPI RAL busy+rx PASS ***")
 
 
@@ -109,6 +112,7 @@ async def test_spi_ral_miso_pattern(dut):
             break
     rx = spi.ctrl.field("rx", st)
     assert rx == 0xA5, f"per-bit MISO: rx=0x{rx:02x}, want 0xA5"
+    _scov.hit("spi","rx_bit_pattern")
     cocotb.log.info("*** SPI per-bit MISO pattern PASS ***")
 
 
@@ -132,4 +136,5 @@ async def test_spi_write_while_busy_ignored(dut):
     # and no second transfer must have auto-started
     st = await apb_read(dut, spi.ctrl.offset)
     assert spi.ctrl.field("busy", st) == 0, "ignored write must not queue a transfer"
+    _scov.hit("spi","write_while_busy")
     cocotb.log.info("*** SPI write-while-busy ignored (documented) PASS ***")

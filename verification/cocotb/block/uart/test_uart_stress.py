@@ -16,6 +16,8 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 
+from tb.coverage.stress_cov import StressCoverage
+_scov = StressCoverage()
 from tb.reg_model.soc_regs import uart
 
 BIT = 8  # BAUD_DIV at the block-test parameters
@@ -108,6 +110,7 @@ async def test_tx_back_to_back(dut):
         st = await apb_read(dut, uart.status.offset)
         assert uart.status.field("tx_busy", st) == 1, "busy must assert per frame"
         await wait_not_busy(dut)
+    _scov.hit("uart","tx_back_to_back")
     cocotb.log.info("*** UART back-to-back TX PASS ***")
 
 
@@ -122,6 +125,7 @@ async def test_rx_overrun_overwrites(dut):
     assert got == 0x22, f"overrun should overwrite: got 0x{got:02x}, want 0x22"
     st = await apb_read(dut, uart.status.offset)
     assert uart.status.field("rx_valid", st) == 0, "read must consume the byte"
+    _scov.hit("uart","rx_overrun")
     cocotb.log.info("*** UART overrun-overwrite (documented) PASS ***")
 
 
@@ -139,6 +143,7 @@ async def test_rx_false_start_glitch(dut):
     st = await apb_read(dut, uart.status.offset)
     assert uart.status.field("rx_valid", st) == 0, \
         f"glitch produced a byte: {uart.status.decode(st)}"
+    _scov.hit("uart","rx_glitch_reject")
     cocotb.log.info("*** UART false-start rejection PASS ***")
 
 
@@ -151,6 +156,7 @@ async def test_rx_bad_stop_bit_accepted(dut):
     await drive_rx_frame(dut, 0x5A, stop_bit=0)
     got = await rx_byte_via_model(dut)
     assert got == 0x5A, f"byte with bad stop: got 0x{got:02x}, want 0x5A"
+    _scov.hit("uart","rx_bad_stop")
     cocotb.log.info("*** UART bad-stop accepted (documented, no framing check) PASS ***")
 
 
@@ -172,6 +178,7 @@ async def test_rx_midframe_reset_recovers(dut):
     await drive_rx_frame(dut, 0xC7)
     got = await rx_byte_via_model(dut)
     assert got == 0xC7, f"post-reset frame: got 0x{got:02x}, want 0xC7"
+    _scov.hit("uart","midframe_reset")
     cocotb.log.info("*** UART mid-frame reset recovery PASS ***")
 
 
@@ -211,6 +218,7 @@ async def test_tx_bitlevel_frames(dut):
             await RisingEdge(dut.PCLK)
         assert int(dut.tx.value) == 1, "stop bit not high"
         await wait_not_busy(dut)
+    _scov.hit("uart","tx_bitlevel")
     cocotb.log.info("*** UART TX bit-level (2 frames) PASS ***")
 
 
@@ -234,4 +242,22 @@ async def test_rx_status_poll_race(dut):
     assert got == 0x7E, f"poll race corrupted RX: got 0x{got:02x}"
     st = await apb_read(dut, uart.status.offset)
     assert uart.status.field("rx_valid", st) == 0
+    _scov.hit("uart","status_poll_race")
     cocotb.log.info("*** UART STATUS-poll race PASS ***")
+
+
+@cocotb.test()
+async def test_full_duplex_rx_during_tx(dut):
+    """Transmit and receive simultaneously: kick a TX byte, then drive an RX
+    frame while TX is still shifting. Both directions must complete intact."""
+    await reset(dut)
+    await apb_write(dut, uart.data.offset, uart.data.encode(tx=0x81))
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("tx_busy", st) == 1
+    # RX a byte while TX is mid-frame
+    await drive_rx_frame(dut, 0x4B)
+    got = await rx_byte_via_model(dut)
+    assert got == 0x4B, f"RX during TX: got 0x{got:02x}, want 0x4B"
+    await wait_not_busy(dut)          # TX must also have finished cleanly
+    _scov.hit("uart","full_duplex")
+    cocotb.log.info("*** UART full-duplex RX-during-TX PASS ***")
