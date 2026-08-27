@@ -10,11 +10,13 @@ COCOTB_TEST_MODULES ?= test_ahb_smoke
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-.PHONY: smoke decode mux hready-stall block-regress
+.PHONY: smoke decode decode-sweep mux hready-stall block-regress
 smoke:
 	$(MAKE) COCOTB_TEST_MODULES=test_ahb_smoke
 decode:
 	$(MAKE) COCOTB_TEST_MODULES=test_ahb_decode
+decode-sweep:
+	$(MAKE) COCOTB_TEST_MODULES=test_ahb_decode_sweep
 mux:
 	$(MAKE) COCOTB_TEST_MODULES=test_ahb_mux
 hready-stall:
@@ -25,6 +27,8 @@ block-regress:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_smoke
 	@echo "=== ahb decode ==="
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_decode
+	@echo "=== ahb decode-sweep + coverage ==="
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_decode_sweep
 	@echo "=== ahb mux ==="
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_ahb_mux
 	@echo "=== ahb hready-stall ==="
