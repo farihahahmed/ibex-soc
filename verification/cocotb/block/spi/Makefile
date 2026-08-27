@@ -14,3 +14,6 @@ include $(shell cocotb-config --makefiles)/Makefile.sim
 .PHONY: smoke
 smoke:
 	$(MAKE) MODULE=test_spi_smoke COCOTB_TEST_MODULES=test_spi_smoke
+
+protocol:
+	$(MAKE) MODULE=test_spi_protocol

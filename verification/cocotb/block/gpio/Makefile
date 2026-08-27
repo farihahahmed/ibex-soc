@@ -14,3 +14,6 @@ include $(shell cocotb-config --makefiles)/Makefile.sim
 .PHONY: smoke
 smoke:
 	$(MAKE) MODULE=test_gpio_smoke
+
+protocol:
+	$(MAKE) MODULE=test_gpio_protocol

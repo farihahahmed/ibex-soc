@@ -57,6 +57,14 @@ run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke CO
 (cd block/spi  && make MODULE=test_spi_smoke  COCOTB_TEST_MODULES=test_spi_smoke)
 (cd block/spi  && make MODULE=test_spi_tx     COCOTB_TEST_MODULES=test_spi_tx)
 
+# Protocol conformance suites. The tests above prove data moved; these
+# prove the protocol - UART framing and the STATUS/DATA split, GPIO
+# output readback and input synchronisation, SPI Mode 0 polarity and
+# exactly eight clock edges per byte.
+(cd block/uart && make protocol)
+(cd block/gpio && make protocol)
+(cd block/spi  && make protocol)
+
 # Fabric and control blocks. These suites existed but were not in the gate;
 # several cover blocks Grouper's plan still lists as unverified.
 (cd block/fsm        && make block-regress)
