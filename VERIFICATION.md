@@ -1,7 +1,7 @@
 # Pico SoC — Verification Report
 
 **Last updated:** 2026-08-27
-**Gate status:** PASSING — 30 tests, 0 failures, exit code 0.
+**Gate status:** PASSING — 54 tests, 0 failures, exit code 0.
 There is one gate, `verification/cocotb/run_all_verify.sh`. Every test that
 exists and passes is in it: no excluded tests, no allowed-to-fail legs, no
 masked exit codes. It runs in CI on every push alongside a per-block lint of

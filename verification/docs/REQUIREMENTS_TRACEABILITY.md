@@ -3,7 +3,7 @@
 **Purpose:** Map each design requirement to the test(s) that prove it.
 **Rule:** A requirement is *closed* only when at least one listed test is **PASS** in the official gate (`./run_all_verify.sh`).
 **Last updated:** 2026-08-27
-**Gate:** 30 tests, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
+**Gate:** 54 tests, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
 
 ---
 
@@ -171,7 +171,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 |----|-------------|----------|--------|
 | R-METH-01 | Block-level MDV for UART/GPIO/SPI | `docs/BLOCK_MDV.md`, `./run_block_regress.sh` | Closed |
 | R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md`; coverage 88.8% line (own RTL) | Closed |
-| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 30 tests, EXIT=0 | Closed |
+| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 54 tests, EXIT=0 | Closed |
 | R-METH-04 | FuseSoC targets sim / pyuvm / block | `fusesoc core-info ::pico_soc:1.0.0` | Closed |
 | R-METH-05 | Exit criteria written | `docs/VERIFICATION_GATES.md` | Closed |
 | R-METH-06 | Requirements→tests table | **this document** | Closed |
@@ -190,7 +190,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 
 | Command | Covers |
 |---------|--------|
-| `./run_all_verify.sh` | The whole gate: 30 tests. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi + negative, corner and stress + block UART/GPIO/SPI |
+| `./run_all_verify.sh` | The whole gate: 54 tests. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi, negative/corner/stress, and all 11 block suites (uart, gpio, spi, mem, fsm, scan, scan_fsm, ahb, ahb_to_apb, apb_decoder, clkgen) |
 | `./run_block_regress.sh` | R-UART-\*, R-GPIO-\*, R-SPI-\*, R-BOOT-03/04/06, R-MAP-04..06 |
 | `scripts/lint_blocks.sh` | R-METH-10 — 22 blocks |
 | `verification/formal/run_*_formal.py` | R-BOOT-11, R-BOOT-12, R-METH-09 |
