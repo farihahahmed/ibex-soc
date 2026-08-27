@@ -19,6 +19,21 @@ run "chip primes"  make COCOTB_TEST_MODULES=test_pyuvm_primes
 run "chip piezo"   make COCOTB_TEST_MODULES=test_pyuvm_piezo
 run "chip game"    make COCOTB_TEST_MODULES=test_pyuvm_game
 run "chip crc32"   make COCOTB_TEST_MODULES=test_pyuvm_crc
+
+# Negative, corner and stress tests. These were written earlier but were not
+# in the official gate; every one that passes is now included, so the gate
+# covers the hard cases rather than only the happy path.
+run "illegal addr"   make COCOTB_TEST_MODULES=test_pyuvm_illegal_addr
+run "concurrent"     make COCOTB_TEST_MODULES=test_pyuvm_concurrent
+run "dmem stress"    make COCOTB_TEST_MODULES=test_pyuvm_dmem_stress
+run "uart rx e2e"    make COCOTB_TEST_MODULES=test_pyuvm_uart_rx_e2e
+run "uart rx"        make COCOTB_TEST_MODULES=test_pyuvm_uart_rx
+run "scan corner"    make COCOTB_TEST_MODULES=test_pyuvm_scan_corner
+run "scan corners"   make COCOTB_TEST_MODULES=test_pyuvm_scan_corners
+run "sys corner"     make COCOTB_TEST_MODULES=test_pyuvm_sys_corner
+run "rerun"          make COCOTB_TEST_MODULES=test_pyuvm_rerun
+run "random uart"    make COCOTB_TEST_MODULES=test_pyuvm_random_uart
+run "random spi"     make COCOTB_TEST_MODULES=test_pyuvm_random_spi
 run "chip dmem"    make COCOTB_TEST_MODULES=test_pyuvm_dmem
 
 # Control / debug paths
