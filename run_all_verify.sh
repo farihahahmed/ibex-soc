@@ -1,15 +1,9 @@
 #!/usr/bin/env bash
+# Convenience wrapper. There is ONE official verification gate:
+#     verification/cocotb/run_all_verify.sh
+# This file used to run a smaller, separate test list and masked a dmem
+# failure by ignoring its exit status. Both are gone: it now delegates, so the
+# gate cannot diverge from itself and nothing is excluded or allowed to fail.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-cd "$ROOT/verification/cocotb"
-export PYTHONPATH="$(pwd):${PYTHONPATH:-}"
-echo "=== smoke ===" && make smoke
-echo "=== random ===" && RANDOM_SEED=42 make random
-echo "=== primes ===" && make primes
-echo "=== piezo ===" && make piezo
-echo "=== game ===" && make game
-echo "=== dmem ===" && make dmem || true
-echo "=== scan corner ===" && COCOTB_TEST_MODULES=test_pyuvm_scan_corner make
-echo "=== block uart smoke ===" && (cd block/uart && make smoke)
-echo "=== block uart tx sb ===" && (cd block/uart && COCOTB_TEST_MODULES=test_uart_tx_sb make)
-echo "=== ALL VERIFY PASS ==="
+exec "$ROOT/verification/cocotb/run_all_verify.sh"

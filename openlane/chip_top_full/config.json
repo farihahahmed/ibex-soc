@@ -27,7 +27,7 @@
   "PL_MAX_DISPLACEMENT_Y": 1000,
   "RUN_HEURISTIC_DIODE_INSERTION": true,
   "GRT_ALLOW_CONGESTION": true,
-  "DRT_ANTENNA_REPAIR_ITERS": 0,
+  "DRT_ANTENNA_REPAIR_ITERS": 1,
   "ERROR_ON_MAGIC_DRC": false,
   "MACROS": {
     "gf180mcu_fd_ip_sram__sram512x8m8wm1": {
@@ -91,6 +91,6 @@
     "u_dmem_slave.u_dmem.u_mem.u_sram VDD VSS VDD VSS"
   ],
   "ERROR_ON_PDN_VIOLATIONS": false,
-  "GRT_ADJUSTMENT": 0.15,
-  "PL_TARGET_DENSITY_PCT": 48
+  "GRT_ADJUSTMENT": 0.3,
+  "PL_TARGET_DENSITY_PCT": 52
 }
