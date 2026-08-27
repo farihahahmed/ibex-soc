@@ -2210,15 +2210,15 @@ module spi (
 						sclk_int <= ~sclk_int;
 						if (~sclk_int) begin
 							rx_shift <= {rx_shift[6:0], miso};
-							if (bit_count == 4'd7) begin
-								state <= 1'd0;
-								busy <= 1'b0;
-								cs_n <= 1'b1;
-								sclk_int <= 1'b0;
+							bit_count <= bit_count + 1'b1;
+							if (bit_count == 4'd7)
 								rx_data <= {rx_shift[6:0], miso};
-							end
-							else
-								bit_count <= bit_count + 1'b1;
+						end
+						else if (bit_count == 4'd8) begin
+							state <= 1'd0;
+							busy <= 1'b0;
+							cs_n <= 1'b1;
+							sclk_int <= 1'b0;
 						end
 						else
 							tx_shift <= {tx_shift[6:0], 1'b0};

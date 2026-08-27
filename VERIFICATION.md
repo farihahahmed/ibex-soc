@@ -1,7 +1,7 @@
 # Pico SoC — Verification Report
 
 **Last updated:** 2026-08-27
-**Gate status:** PASSING — 54 tests, 0 failures, exit code 0.
+**Gate status:** PASSING — 66 tests, 0 failures, exit code 0.
 There is one gate, `verification/cocotb/run_all_verify.sh`. Every test that
 exists and passes is in it: no excluded tests, no allowed-to-fail legs, no
 masked exit codes. It runs in CI on every push alongside a per-block lint of
@@ -22,8 +22,9 @@ all 22 RTL modules.
 | Negative tests | Scan lockout under RUN; FSM IDLE clock hold; AHB HREADY stall | Green |
 | Code coverage | Verilator line coverage: **88.8%** of our own RTL (890/1002 lines, picorv32 excluded) | Measured |
 | Gate-level | Post-PnR netlist smoke against `gds/chip_top_full.pnl.v` | Smoke green |
-| Formal | Bounded model checking of scan chain and clock-gating FSM | **PASSED**, in CI |
-| CI | GitHub Actions: per-block lint (22 modules) + full gate + formal | Green, no allowed-to-fail legs |
+| Formal | Bounded model checking: **42 properties across 7 targets** | **PASSED**, in CI |
+| FSM coverage | State and arc coverage across all 10 state machines | **40/40 states (100%)** |
+| CI | GitHub Actions: per-block lint (22 modules), full gate, formal, gate-level | Green, no allowed-to-fail legs |
 | Packaging | FuseSoC targets; one-button freeze; requirements→tests table | Present |
 
 Chip and block verification share agents and scoreboarding. Constrained-random, firmware demos, and negative corners are part of the same official gate.
@@ -264,8 +265,25 @@ Bounded model checking with Yosys/SymbiYosys, run in CI.
 
 | Property set | Entry | Result |
 |---|---|---|
-| Scan chain | `verification/formal/run_scan_chain_formal.py` | PASSED |
-| Clock-gating FSM | `verification/formal/run_test_fsm_formal.py` | PASSED |
+| `fsm` | Mode transitions, legal encodings | 3 |
+| `lockout` | Scan cannot write memory while the CPU runs. Composed FSM + scan chain, with a non-vacuity check proving scan *can* write in IDLE | 5 |
+| `pcpi` | The accelerator never claims an instruction outside custom-0, never claims reserved funct7, ready is a single pulse | 7 |
+| `gather` | **Bounded liveness**: once a fetch is granted, data returns within 12 cycles - rules out the CPU-wedge deadlock | 5 |
+| `bridge` | AMBA APB compliance: SETUP always precedes ACCESS, PENABLE never held two cycles | 5 |
+| `shim` | Single outstanding transaction; read data routed from the bus actually selected | 6 |
+| `fabric` | AHB decode is one-hot; the response mux follows the *registered* selection, matching AHB pipelining | 11 |
+
+Run with `python3 verification/formal/run_formal.py`. Four properties are
+withheld with stated reasons rather than weakened into assertions that cannot
+fail: two depend on `run_gate_q`, clocked on `negedge`, which the BMC transform
+does not preserve faithfully; one needs to exclude every countdown reload
+boundary; one needs exact accumulator-enable timing. All four behaviours are
+covered dynamically.
+
+Formal found a real defect: `test_fsm` accepts mode `2'd3`, which has no
+handler. Not a hazard - the default gates the clock off and a further scan
+write recovers - but the FSM does not reject it either. A directed testbench
+would not have tried that encoding.
 
 Formal proves the properties hold for *all* input sequences up to the bound,
 rather than for the stimulus a testbench happens to apply.
@@ -280,11 +298,30 @@ rather than for the stimulus a testbench happens to apply.
 |---|---|
 | `lint` | Standalone elaboration of all 22 RTL blocks (`scripts/lint_blocks.sh`) |
 | `gate` | The full 30-test gate |
-| `formal` | Both property sets |
+| `formal` | All 42 properties |
+| `gate-level` | Netlist boots and drives its pins |
 
 No job is marked allowed-to-fail. CI caught two real problems during
 development: hardcoded absolute paths that made the repo build only on one
 machine, and a stale module name left behind after a rename.
+
+---
+
+## 8e. Defects found by verification
+
+**SPI dropped the eighth clock edge.** `sclk_int` was assigned twice in the
+same `always_ff` block on the final rising tick - the toggle set it high, then
+the termination branch set it low, and the later assignment won. The result was
+seven SCLK rising edges per byte instead of eight, so the last MOSI bit was
+presented on the pin but never clocked into the slave. **Every byte lost its
+LSB.**
+
+The existing block test counted 16 SCLK *transitions* across the CS window,
+which comes to 16 either way, so it could not see this. `test_spi_protocol`
+counts rising edges specifically, and found it immediately. Fixed in
+`rtl/spi.sv` by moving termination to the following falling edge.
+
+**The clock-gating FSM accepts an undefined mode.** Found by formal - see 8c.
 
 ---
 
