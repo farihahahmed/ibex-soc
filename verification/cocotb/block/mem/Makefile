@@ -14,30 +14,32 @@ COCOTB_TEST_MODULES ?= test_dmem_smoke
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-.PHONY: smoke word be block-regress
-smoke:
-	$(MAKE) COCOTB_TEST_MODULES=test_dmem_smoke
-word:
-	$(MAKE) COCOTB_TEST_MODULES=test_dmem_word
-be:
-	$(MAKE) COCOTB_TEST_MODULES=test_dmem_be
-block-regress:
-	@echo "=== dmem smoke ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_dmem_smoke
-	@echo "=== dmem word ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_dmem_word
-	@echo "=== dmem be ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_dmem_be
-	@echo "=== MEM block regress DONE ==="
+.PHONY: smoke word be imem-load block-regress
 
-# --- imem (separate toplevel) ---
-.PHONY: imem-smoke imem-load
-imem-smoke:
-	$(MAKE) TOPLEVEL=imem_narrow_top \
+smoke:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_dmem_smoke
+
+word:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_dmem_word
+
+be:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_dmem_be
+
+imem-load:
+	$(MAKE) clean && $(MAKE) TOPLEVEL=imem_narrow_top \
 	  VERILOG_SOURCES="../../../../rtl/imem_narrow_top.sv \
 	    ../../../../rtl/imem_narrow.sv \
 	    ../../../../rtl/fetch_gather.sv \
 	    ../../../../verification/cocotb/models/gf180mcu_fd_ip_sram__sram512x8m8wm1.v" \
 	  COCOTB_TEST_MODULES=test_imem_load
 
-imem-load: imem-smoke
+block-regress:
+	@echo "=== dmem smoke ==="
+	$(MAKE) smoke
+	@echo "=== dmem word ==="
+	$(MAKE) word
+	@echo "=== dmem be ==="
+	$(MAKE) be
+	@echo "=== imem load ==="
+	$(MAKE) imem-load
+	@echo "=== MEM block regress DONE ==="

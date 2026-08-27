@@ -1,4 +1,3 @@
-
 SIM ?= icarus
 TOPLEVEL_LANG = verilog
 TOPLEVEL = apb_gpio
@@ -11,17 +10,47 @@ export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-.PHONY: smoke
+.PHONY: smoke write read out random protocol ral inout block-regress
+
 smoke:
-	$(MAKE) MODULE=test_gpio_smoke
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_smoke COCOTB_TEST_MODULES=test_gpio_smoke
+
+write:
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_write COCOTB_TEST_MODULES=test_gpio_write
+
+read:
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_read COCOTB_TEST_MODULES=test_gpio_read
+
+out:
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_out COCOTB_TEST_MODULES=test_gpio_out
+
+random:
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_random COCOTB_TEST_MODULES=test_gpio_random
 
 protocol:
-	$(MAKE) MODULE=test_gpio_protocol
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_protocol COCOTB_TEST_MODULES=test_gpio_protocol
 
-.PHONY: ral
 ral:
-	$(MAKE) MODULE=test_gpio_ral COCOTB_TEST_MODULES=test_gpio_ral
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_ral COCOTB_TEST_MODULES=test_gpio_ral
 
-.PHONY: inout
 inout:
-	$(MAKE) MODULE=test_gpio_inout COCOTB_TEST_MODULES=test_gpio_inout
+	$(MAKE) clean && $(MAKE) MODULE=test_gpio_inout COCOTB_TEST_MODULES=test_gpio_inout
+
+block-regress:
+	@echo "=== gpio smoke ==="
+	$(MAKE) smoke
+	@echo "=== gpio write ==="
+	$(MAKE) write
+	@echo "=== gpio read ==="
+	$(MAKE) read
+	@echo "=== gpio out ==="
+	$(MAKE) out
+	@echo "=== gpio random ==="
+	$(MAKE) random
+	@echo "=== gpio protocol ==="
+	$(MAKE) protocol
+	@echo "=== gpio ral ==="
+	$(MAKE) ral
+	@echo "=== gpio inout ==="
+	$(MAKE) inout
+	@echo "=== GPIO block regress DONE ==="

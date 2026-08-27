@@ -8,7 +8,7 @@ COMPILE_ARGS += -g2012
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-.PHONY: smoke run countdown block-regress
+.PHONY: smoke run countdown idle-hold block-regress
 
 smoke:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_fsm_smoke
@@ -19,6 +19,9 @@ run:
 countdown:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_fsm_countdown
 
+idle-hold:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_fsm_idle_hold
+
 block-regress:
 	@echo "=== fsm smoke ==="
 	$(MAKE) smoke
@@ -26,4 +29,6 @@ block-regress:
 	$(MAKE) run
 	@echo "=== fsm countdown ==="
 	$(MAKE) countdown
+	@echo "=== fsm idle-hold ==="
+	$(MAKE) idle-hold
 	@echo "=== FSM block regress DONE ==="

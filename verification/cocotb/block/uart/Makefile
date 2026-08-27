@@ -13,78 +13,75 @@ export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-.PHONY: smoke
+.PHONY: smoke tx tx-byte tx-random tx-neg tx-sb tx-sb-scoreboard tx-sb-multi rx rx-sb protocol ral stress block-regress coverage
+
 smoke:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_smoke
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_smoke
 
-.PHONY: tx
 tx:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx
 
-.PHONY: tx-random
-tx-random:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_random
-
-.PHONY: rx
-rx:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_rx
-
-.PHONY: uart-block
-uart-block:
-	@echo "=== UART block smoke ==="
-	$(MAKE) clean
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_smoke
-	@echo "=== UART block TX ==="
-	$(MAKE) clean
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx
-	@echo "=== UART block TX random ==="
-	$(MAKE) clean
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_random
-	@echo "=== UART block RX ==="
-	$(MAKE) clean
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_rx
-	@echo "=== UART block MDV finished ==="
-
-.PHONY: tx-byte
 tx-byte:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_byte
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_byte
 
-.PHONY: tx-sb
+tx-random:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_random
+
+tx-neg:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_neg
+
 tx-sb:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_scoreboard
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_sb
 
-.PHONY: ral stress
-ral:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_ral
-stress:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_stress
+tx-sb-scoreboard:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_scoreboard
 
-.PHONY: block-regress
+tx-sb-multi:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_sb_multi
+
+rx:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx
+
+rx-sb:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx_scoreboard
+
 protocol:
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
+
+ral:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_ral
+
+stress:
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_stress
 
 block-regress:
 	@echo "=== uart smoke ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_smoke
+	$(MAKE) smoke
 	@echo "=== uart tx ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx
+	$(MAKE) tx
 	@echo "=== uart tx-byte ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_byte
+	$(MAKE) tx-byte
 	@echo "=== uart tx-random ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_random
+	$(MAKE) tx-random
+	@echo "=== uart tx-neg ==="
+	$(MAKE) tx-neg
+	@echo "=== uart tx-sb (pyuvm) ==="
+	$(MAKE) tx-sb
+	@echo "=== uart tx-sb-scoreboard ==="
+	$(MAKE) tx-sb-scoreboard
+	@echo "=== uart tx-sb-multi ==="
+	$(MAKE) tx-sb-multi
 	@echo "=== uart rx ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx
-	@echo "=== uart tx-sb ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_scoreboard
-	@echo === multi scoreboard ===
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_sb_multi
-	@echo === uart rx-sb ===
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx_scoreboard
-	@echo "=== uart RAL (register model) ==="
-	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_ral
+	$(MAKE) rx
+	@echo "=== uart rx-sb ==="
+	$(MAKE) rx-sb
+	@echo "=== uart protocol ==="
+	$(MAKE) protocol
+	@echo "=== uart ral ==="
+	$(MAKE) ral
+	@echo "=== uart stress ==="
+	$(MAKE) stress
 	@echo "=== UART block regress DONE ==="
-	$(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
 
-.PHONY: coverage
 coverage:
 	./run_with_coverage.sh
