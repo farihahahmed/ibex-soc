@@ -44,6 +44,22 @@ module spi #(
 );
 
     // --------------------------------------------------------------------
+    // MISO synchronizer: miso is an asynchronous chip input crossing into the
+    // clk domain. Sampling the pad directly (as before) risks metastability and
+    // flaky received bytes. Double-flop it and use miso_s everywhere.
+    // --------------------------------------------------------------------
+    logic miso_meta, miso_s;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            miso_meta <= 1'b0;
+            miso_s    <= 1'b0;
+        end else begin
+            miso_meta <= miso;
+            miso_s    <= miso_meta;
+        end
+    end
+
+    // --------------------------------------------------------------------
     // Clock divider: SCLK toggles every CLK_DIV system-clock cycles (while busy).
     // --------------------------------------------------------------------
     logic [$clog2(CLK_DIV)-1:0] div_cnt;
@@ -120,10 +136,10 @@ module spi #(
                             // the sclk_int <= 1'b0 below override the toggle
                             // above, so the last MOSI bit would be presented
                             // but never clocked into the slave.
-                            rx_shift  <= {rx_shift[6:0], miso};
+                            rx_shift  <= {rx_shift[6:0], miso_s};
                             bit_count <= bit_count + 1'b1;
                             if (bit_count == 4'd7)
-                                rx_data <= {rx_shift[6:0], miso};
+                                rx_data <= {rx_shift[6:0], miso_s};
                         end else begin
                             // Falling edge: shift the next MOSI bit, or finish
                             // if all eight rises have been delivered.
