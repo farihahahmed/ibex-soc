@@ -45,8 +45,6 @@ pins:
     io_type: bidirectional
   - name: "gpio_out[3]"
     io_type: bidirectional
-  - name: "gpio_out[4]"
-    io_type: bidirectional
   - name: "gpio_in[0]"
     io_type: input_cmos
   - name: "gpio_in[1]"
@@ -59,6 +57,8 @@ pins:
     io_type: bidirectional
   - name: spi_mosi
     io_type: bidirectional
+  - name: spi_miso
+    io_type: input_cmos
   - name: spi_cs_n
     io_type: bidirectional
   - name: VDD

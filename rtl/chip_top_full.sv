@@ -3,7 +3,7 @@
 // on-chip clock generator. 22-pin target (20 signal + 2 power).
 // ============================================================================
 module chip_top_full #(
-    parameter int NUM_OUT     = 5,
+    parameter int NUM_OUT     = 4,   // was 5; one pad reassigned to spi_miso
     parameter int NUM_IN      = 2,
     parameter int CLK_FREQ    = 33_333_333,  // silicon: 30 ns clock = 33.33 MHz
     parameter int BAUD_RATE   = 115_200,     // BAUD_DIV = 289 -> 115,340 baud (+0.12%)
@@ -21,6 +21,7 @@ module chip_top_full #(
     input  logic [NUM_IN-1:0]  gpio_in,
     output logic uart_tx,
     input  logic uart_rx,
+    input  logic spi_miso,           // dedicated SPI data input
     output logic spi_sclk,
     output logic spi_mosi,
     output logic spi_cs_n
@@ -211,9 +212,6 @@ module chip_top_full #(
     // Tie MISO through a named net rather than a literal in the port map:
     // a constant bound directly to an input port can produce a pin with no
     // backing port object, which crashed OpenROAD CTS.
-    logic spi_miso_tied;
-    assign spi_miso_tied = 1'b0;
-
     logic        PSEL, PENABLE, PWRITE, PREADY;
     logic [31:0] PADDR, PWDATA, PRDATA;
 
@@ -259,7 +257,7 @@ module chip_top_full #(
         .PCLK(cpu_clk), .PRESETn(rst_n),
         .PSEL(spi_PSEL), .PENABLE(p_PENABLE), .PWRITE(p_PWRITE),
         .PADDR(p_PADDR), .PWDATA(p_PWDATA), .PRDATA(spi_PRDATA), .PREADY(spi_PREADY),
-        .sclk(spi_sclk), .mosi(spi_mosi), .miso(spi_miso_tied), .cs_n(spi_cs_n)
+        .sclk(spi_sclk), .mosi(spi_mosi), .miso(spi_miso), .cs_n(spi_cs_n)
     );
 
 endmodule
