@@ -1,0 +1,246 @@
+{
+ "states": {
+  "test_fsm": [
+   "COUNTDOWN",
+   "IDLE",
+   "RUN"
+  ],
+  "fetch_gather": [
+   "DRAIN",
+   "IDLE",
+   "PRESENT",
+   "STREAM"
+  ],
+  "imem_readback": [
+   "RB_IDLE",
+   "RB_REQ",
+   "RB_WAIT"
+  ],
+  "imem_load": [
+   "S_B0",
+   "S_B1",
+   "S_B2",
+   "S_B3",
+   "S_IDLE"
+  ],
+  "dmem_narrow_top": [
+   "D_IDLE",
+   "R_DRAIN",
+   "R_PRESENT",
+   "R_STREAM",
+   "W_B0",
+   "W_B1",
+   "W_B2",
+   "W_B3",
+   "W_DONE"
+  ],
+  "ahb_mem": [
+   "A_BUSY",
+   "A_DONE",
+   "A_IDLE"
+  ],
+  "ahb_to_apb": [
+   "ACCESS",
+   "IDLE",
+   "SETUP"
+  ],
+  "spi": [
+   "IDLE",
+   "TRANSFER"
+  ],
+  "uart_tx": [
+   "T_DATA",
+   "T_IDLE",
+   "T_START",
+   "T_STOP"
+  ],
+  "uart_rx": [
+   "R_DATA",
+   "R_IDLE",
+   "R_START",
+   "R_STOP"
+  ]
+ },
+ "arcs": {
+  "imem_load": [
+   [
+    "S_B0",
+    "S_B1"
+   ],
+   [
+    "S_B1",
+    "S_B2"
+   ],
+   [
+    "S_B2",
+    "S_B3"
+   ],
+   [
+    "S_B3",
+    "S_IDLE"
+   ],
+   [
+    "S_IDLE",
+    "S_B0"
+   ]
+  ],
+  "test_fsm": [
+   [
+    "IDLE",
+    "COUNTDOWN"
+   ],
+   [
+    "IDLE",
+    "RUN"
+   ]
+  ],
+  "fetch_gather": [
+   [
+    "DRAIN",
+    "PRESENT"
+   ],
+   [
+    "IDLE",
+    "STREAM"
+   ],
+   [
+    "PRESENT",
+    "IDLE"
+   ],
+   [
+    "STREAM",
+    "DRAIN"
+   ]
+  ],
+  "ahb_mem": [
+   [
+    "A_BUSY",
+    "A_DONE"
+   ],
+   [
+    "A_DONE",
+    "A_IDLE"
+   ],
+   [
+    "A_IDLE",
+    "A_BUSY"
+   ]
+  ],
+  "dmem_narrow_top": [
+   [
+    "D_IDLE",
+    "R_STREAM"
+   ],
+   [
+    "D_IDLE",
+    "W_B0"
+   ],
+   [
+    "R_DRAIN",
+    "R_PRESENT"
+   ],
+   [
+    "R_PRESENT",
+    "D_IDLE"
+   ],
+   [
+    "R_STREAM",
+    "R_DRAIN"
+   ],
+   [
+    "W_B0",
+    "W_B1"
+   ],
+   [
+    "W_B1",
+    "W_B2"
+   ],
+   [
+    "W_B2",
+    "W_B3"
+   ],
+   [
+    "W_B3",
+    "W_DONE"
+   ],
+   [
+    "W_DONE",
+    "D_IDLE"
+   ]
+  ],
+  "ahb_to_apb": [
+   [
+    "ACCESS",
+    "IDLE"
+   ],
+   [
+    "IDLE",
+    "SETUP"
+   ],
+   [
+    "SETUP",
+    "ACCESS"
+   ]
+  ],
+  "uart_tx": [
+   [
+    "T_DATA",
+    "T_STOP"
+   ],
+   [
+    "T_IDLE",
+    "T_START"
+   ],
+   [
+    "T_START",
+    "T_DATA"
+   ],
+   [
+    "T_STOP",
+    "T_IDLE"
+   ]
+  ],
+  "spi": [
+   [
+    "IDLE",
+    "TRANSFER"
+   ],
+   [
+    "TRANSFER",
+    "IDLE"
+   ]
+  ],
+  "uart_rx": [
+   [
+    "R_DATA",
+    "R_STOP"
+   ],
+   [
+    "R_IDLE",
+    "R_START"
+   ],
+   [
+    "R_START",
+    "R_DATA"
+   ],
+   [
+    "R_STOP",
+    "R_IDLE"
+   ]
+  ],
+  "imem_readback": [
+   [
+    "RB_IDLE",
+    "RB_REQ"
+   ],
+   [
+    "RB_REQ",
+    "RB_WAIT"
+   ],
+   [
+    "RB_WAIT",
+    "RB_IDLE"
+   ]
+  ]
+ }
+}

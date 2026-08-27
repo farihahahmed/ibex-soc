@@ -1,0 +1,1 @@
+{"uart": ["tx_back_to_back", "rx_overrun", "rx_glitch_reject", "rx_bad_stop", "midframe_reset", "tx_bitlevel", "status_poll_race", "full_duplex"], "spi": ["busy_handshake", "rx_all_ones", "rx_all_zeros", "rx_bit_pattern", "write_while_busy"], "ahb": ["routing_random", "routing_multiseed", "hready_stall_mux"]}
