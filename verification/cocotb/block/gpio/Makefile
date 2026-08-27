@@ -17,3 +17,7 @@ smoke:
 
 protocol:
 	$(MAKE) MODULE=test_gpio_protocol
+
+.PHONY: ral
+ral:
+	$(MAKE) MODULE=test_gpio_ral COCOTB_TEST_MODULES=test_gpio_ral

@@ -66,6 +66,8 @@ run "block spi tx"     bash -c 'cd block/spi && make MODULE=test_spi_tx COCOTB_T
 run "uart protocol"    bash -c 'cd block/uart && make protocol'
 run "uart ral"         bash -c 'cd block/uart && make ral'
 run "uart stress"      bash -c 'cd block/uart && make stress'
+run "spi ral"          bash -c 'cd block/spi && make ral'
+run "gpio ral"         bash -c 'cd block/gpio && make ral'
 run "gpio protocol"    bash -c 'cd block/gpio && make protocol'
 run "spi protocol"     bash -c 'cd block/spi && make protocol'
 
