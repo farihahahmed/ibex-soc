@@ -46,9 +46,8 @@ def rand_addr(rng):
     return base + off, rid
 
 
-@cocotb.test()
-async def test_ahb_routing_scoreboard(dut):
-    rng = random.Random(0xC0FFEE)
+async def _routing_run(dut, seed, stall=False):
+    rng = random.Random(seed)
     await init(dut)
     cov = MemoryMapCoverage()
     checked = 0
@@ -92,7 +91,32 @@ async def test_ahb_routing_scoreboard(dut):
                 f"IDLE mux drift: HRDATA=0x{rdata:08x}, expected region_q " \
                 f"{model_region_q}"
 
-    cocotb.log.info(cov.report())
+        # optional random slave stalls: drop a random slave's HREADY for a
+        # few cycles; muxed HREADY must mirror region_q's slave exactly
+        if stall and rng.random() < 0.3:
+            victim = rng.randrange(4)
+            getattr(dut, f"s{victim}_HREADY").value = 0
+            dut.HTRANS.value = IDLE
+            for _ in range(rng.randrange(1, 4)):
+                await RisingEdge(dut.HCLK)
+                exp = 0 if model_region_q == victim else 1
+                got = int(dut.HREADY.value)
+                assert got == exp, \
+                    f"HREADY mux: region_q={model_region_q} victim={victim} " \
+                    f"got {got} exp {exp}"
+            getattr(dut, f"s{victim}_HREADY").value = 1
+
     cov.check_required()
-    cocotb.log.info(f"*** AHB routing scoreboard PASS: {checked} random "
-                    f"transactions, zero misroutes ***")
+    cocotb.log.info(f"*** routing seed={hex(seed)} stall={stall}: {checked} "
+                    f"txns, zero misroutes ***")
+
+
+@cocotb.test()
+async def test_ahb_routing_scoreboard(dut):
+    await _routing_run(dut, 0xC0FFEE)
+
+
+@cocotb.test()
+async def test_ahb_routing_multiseed_stall(dut):
+    for seed in (0xBEEF01, 0xBEEF02, 0xBEEF03):
+        await _routing_run(dut, seed, stall=True)

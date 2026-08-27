@@ -81,3 +81,55 @@ async def test_spi_ral_busy_and_rx(dut):
     assert rx == 0x00, f"miso held low: rx=0x{rx:02x}, want 0x00"
 
     cocotb.log.info("*** SPI RAL busy+rx PASS ***")
+
+
+async def drive_miso_pattern(dut, byte):
+    """Follow SCLK and present MISO MSB-first so the master samples `byte`.
+    Mode 0: master samples on SCLK rising edge; present each bit while SCLK low."""
+    for i in range(7, -1, -1):
+        # wait for SCLK low (setup window), drive the bit
+        while int(dut.sclk.value) != 0:
+            await RisingEdge(dut.PCLK)
+        dut.miso.value = (byte >> i) & 1
+        # wait for the rising edge (master samples), then for it to pass
+        while int(dut.sclk.value) != 1:
+            await RisingEdge(dut.PCLK)
+
+
+@cocotb.test()
+async def test_spi_ral_miso_pattern(dut):
+    """Real per-bit RX: a slave model drives 0xA5 MSB-first against SCLK;
+    the RAL rx field must read back exactly 0xA5."""
+    await reset(dut)
+    slave = cocotb.start_soon(drive_miso_pattern(dut, 0xA5))
+    await apb_write(dut, spi.ctrl.offset, spi.ctrl.encode(tx=0x00))
+    for _ in range(400):
+        st = await apb_read(dut, spi.ctrl.offset)
+        if spi.ctrl.field("busy", st) == 0:
+            break
+    rx = spi.ctrl.field("rx", st)
+    assert rx == 0xA5, f"per-bit MISO: rx=0x{rx:02x}, want 0xA5"
+    cocotb.log.info("*** SPI per-bit MISO pattern PASS ***")
+
+
+@cocotb.test()
+async def test_spi_write_while_busy_ignored(dut):
+    """A write during an active transfer must not corrupt it: RTL ignores
+    writes while state != IDLE (documents as-built behavior)."""
+    await reset(dut)
+    dut.miso.value = 1
+    await apb_write(dut, spi.ctrl.offset, spi.ctrl.encode(tx=0x55))
+    st = await apb_read(dut, spi.ctrl.offset)
+    assert spi.ctrl.field("busy", st) == 1
+    # mid-transfer write attempt
+    await apb_write(dut, spi.ctrl.offset, spi.ctrl.encode(tx=0xFF))
+    for _ in range(400):
+        st = await apb_read(dut, spi.ctrl.offset)
+        if spi.ctrl.field("busy", st) == 0:
+            break
+    assert spi.ctrl.field("busy", st) == 0, "transfer must still complete"
+    assert spi.ctrl.field("rx", st) == 0xFF, "miso high -> rx 0xFF (transfer intact)"
+    # and no second transfer must have auto-started
+    st = await apb_read(dut, spi.ctrl.offset)
+    assert spi.ctrl.field("busy", st) == 0, "ignored write must not queue a transfer"
+    cocotb.log.info("*** SPI write-while-busy ignored (documented) PASS ***")

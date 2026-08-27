@@ -173,3 +173,65 @@ async def test_rx_midframe_reset_recovers(dut):
     got = await rx_byte_via_model(dut)
     assert got == 0xC7, f"post-reset frame: got 0x{got:02x}, want 0xC7"
     cocotb.log.info("*** UART mid-frame reset recovery PASS ***")
+
+
+# NOTE: baud-rate tolerance is NOT testable at these block parameters.
+# BAUD_DIV=8 means one clock = 12.5% of a bit, and the receiver's real margin
+# is <0.5 clk/bit (~6%), so the smallest expressible offset (+/-1 clk/bit)
+# already exceeds it in both directions. Tolerance is a property of the
+# silicon divider (BAUD_DIV=108 at 12.5 MHz -> ~+/-4% margin) and belongs to
+# chip-level/silicon validation, not this testbench.
+
+
+@cocotb.test()
+async def test_tx_bitlevel_frames(dut):
+    """Bit-level check of two back-to-back TX frames: sample the tx pin at
+    every mid-bit and reconstruct start/data/stop exactly."""
+    await reset(dut)
+    for byte in (0xA5, 0x3C):
+        await apb_write(dut, uart.data.offset, uart.data.encode(tx=byte))
+        # wait for start edge
+        for _ in range(BIT * 4):
+            await RisingEdge(dut.PCLK)
+            if int(dut.tx.value) == 0:
+                break
+        assert int(dut.tx.value) == 0, "start bit never appeared"
+        # move to middle of start bit
+        for _ in range(BIT // 2):
+            await RisingEdge(dut.PCLK)
+        assert int(dut.tx.value) == 0, "start bit not low at mid-bit"
+        bits = []
+        for _ in range(8):
+            for _ in range(BIT):
+                await RisingEdge(dut.PCLK)
+            bits.append(int(dut.tx.value))
+        got = sum(b << i for i, b in enumerate(bits))
+        assert got == byte, f"TX data: got 0x{got:02x}, want 0x{byte:02x}"
+        for _ in range(BIT):
+            await RisingEdge(dut.PCLK)
+        assert int(dut.tx.value) == 1, "stop bit not high"
+        await wait_not_busy(dut)
+    cocotb.log.info("*** UART TX bit-level (2 frames) PASS ***")
+
+
+@cocotb.test()
+async def test_rx_status_poll_race(dut):
+    """Hammer STATUS reads for the entire duration of an incoming frame:
+    polling must never corrupt reception, and rx_valid must appear exactly
+    once with the right byte."""
+    await reset(dut)
+    poll_done = False
+
+    async def hammer():
+        while not poll_done:
+            await apb_read(dut, uart.status.offset)
+
+    task = cocotb.start_soon(hammer())
+    await drive_rx_frame(dut, 0x7E)
+    poll_done = True
+    await RisingEdge(dut.PCLK)
+    got = await rx_byte_via_model(dut)
+    assert got == 0x7E, f"poll race corrupted RX: got 0x{got:02x}"
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("rx_valid", st) == 0
+    cocotb.log.info("*** UART STATUS-poll race PASS ***")
