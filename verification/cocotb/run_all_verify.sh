@@ -19,6 +19,7 @@ run "chip primes"  make COCOTB_TEST_MODULES=test_pyuvm_primes
 run "chip piezo"   make COCOTB_TEST_MODULES=test_pyuvm_piezo
 run "chip game"    make COCOTB_TEST_MODULES=test_pyuvm_game
 run "chip crc32"   make COCOTB_TEST_MODULES=test_pyuvm_crc
+run "chip pcpi"    make COCOTB_TEST_MODULES=test_pyuvm_pcpi
 
 # Negative, corner and stress tests. These were written earlier but were not
 # in the official gate; every one that passes is now included, so the gate
