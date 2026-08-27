@@ -53,9 +53,11 @@ tx-byte:
 tx-sb:
 	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_scoreboard
 
-.PHONY: ral
+.PHONY: ral stress
 ral:
 	$(MAKE) COCOTB_TEST_MODULES=test_uart_ral
+stress:
+	$(MAKE) COCOTB_TEST_MODULES=test_uart_stress
 
 .PHONY: block-regress
 protocol:

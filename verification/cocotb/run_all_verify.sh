@@ -65,6 +65,7 @@ run "block spi tx"     bash -c 'cd block/spi && make MODULE=test_spi_tx COCOTB_T
 # exactly eight clock edges per byte.
 run "uart protocol"    bash -c 'cd block/uart && make protocol'
 run "uart ral"         bash -c 'cd block/uart && make ral'
+run "uart stress"      bash -c 'cd block/uart && make stress'
 run "gpio protocol"    bash -c 'cd block/gpio && make protocol'
 run "spi protocol"     bash -c 'cd block/spi && make protocol'
 
