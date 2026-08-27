@@ -409,7 +409,7 @@ module apb_gpio (
 	gpio_out,
 	gpio_in
 );
-	parameter signed [31:0] NUM_OUT = 5;
+	parameter signed [31:0] NUM_OUT = 4;
 	parameter signed [31:0] NUM_IN = 2;
 	input wire PCLK;
 	input wire PRESETn;
@@ -559,11 +559,12 @@ module chip_top_full (
 	gpio_in,
 	uart_tx,
 	uart_rx,
+	spi_miso,
 	spi_sclk,
 	spi_mosi,
 	spi_cs_n
 );
-	parameter signed [31:0] NUM_OUT = 5;
+	parameter signed [31:0] NUM_OUT = 4;
 	parameter signed [31:0] NUM_IN = 2;
 	parameter signed [31:0] CLK_FREQ = 33333333;
 	parameter signed [31:0] BAUD_RATE = 115200;
@@ -580,6 +581,7 @@ module chip_top_full (
 	input wire [NUM_IN - 1:0] gpio_in;
 	output wire uart_tx;
 	input wire uart_rx;
+	input wire spi_miso;
 	output wire spi_sclk;
 	output wire spi_mosi;
 	output wire spi_cs_n;
@@ -866,8 +868,6 @@ module chip_top_full (
 		.HREADY(s0_HREADY),
 		.HRESP(s0_HRESP)
 	);
-	wire spi_miso_tied;
-	assign spi_miso_tied = 1'b0;
 	wire PSEL;
 	wire PENABLE;
 	wire PWRITE;
@@ -973,7 +973,7 @@ module chip_top_full (
 		.PREADY(spi_PREADY),
 		.sclk(spi_sclk),
 		.mosi(spi_mosi),
-		.miso(spi_miso_tied),
+		.miso(spi_miso),
 		.cs_n(spi_cs_n)
 	);
 endmodule
@@ -1438,7 +1438,7 @@ module gpio (
 	gpio_out,
 	gpio_in
 );
-	parameter signed [31:0] NUM_OUT = 5;
+	parameter signed [31:0] NUM_OUT = 4;
 	parameter signed [31:0] NUM_IN = 2;
 	input wire clk;
 	input wire rst_n;

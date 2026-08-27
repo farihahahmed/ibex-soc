@@ -14,7 +14,7 @@
 // ============================================================================
 
 module apb_gpio #(
-    parameter int NUM_OUT = 5,
+    parameter int NUM_OUT = 4,
     parameter int NUM_IN  = 2
 )(
     input  logic        PCLK,          // APB clock (same system clock).

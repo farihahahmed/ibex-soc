@@ -8,7 +8,7 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, Timer
 
-NUM_OUT, NUM_IN = 5, 2
+NUM_OUT, NUM_IN = 4, 2
 
 
 async def reset(dut):
@@ -52,7 +52,7 @@ async def test_output_readback(dut):
     firmware is unaffected by the addition of readback.
     """
     await reset(dut)
-    for val in (0x15, 0x0A, 0x1F, 0x00):
+    for val in (0x05, 0x0A, 0x0F, 0x00):
         await apb_write(dut, val)
         await RisingEdge(dut.PCLK)
         assert int(dut.gpio_out.value) == val, \

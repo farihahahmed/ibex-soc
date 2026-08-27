@@ -1,6 +1,6 @@
 // gpio.sv - GPIO peripheral, asymmetric (Columbia-style: few in, more out).
 module gpio #(
-    parameter int NUM_OUT = 5,
+    parameter int NUM_OUT = 4,
     parameter int NUM_IN  = 2
 )(
     input  logic               clk,
