@@ -54,6 +54,9 @@ tx-sb:
 	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_scoreboard
 
 .PHONY: block-regress
+protocol:
+	$(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
+
 block-regress:
 	@echo "=== uart smoke ==="
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_smoke
@@ -72,6 +75,7 @@ block-regress:
 	@echo === uart rx-sb ===
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx_scoreboard
 	@echo "=== UART block regress DONE ==="
+	$(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
 
 .PHONY: coverage
 coverage:
