@@ -1,6 +1,6 @@
-PDK = /foss/pdks/gf180mcuD
-SC   = $(PDK)/libs.ref/gf180mcu_fd_sc_mcu7t5v0/verilog
-SRAM = $(PDK)/libs.ref/gf180mcu_fd_ip_sram/verilog
+PDK = pdk_models
+SC   = $(PDK)
+SRAM = $(PDK)
 # Current signoff netlist, kept in gds/ alongside the GDS it matches.
 NETLIST = ../../gds/chip_top_full.pnl.v
 

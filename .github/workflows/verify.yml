@@ -31,3 +31,16 @@ jobs:
         run: |
           export PYTHONPATH="$(pwd):${PYTHONPATH}"
           ./run_all_verify.sh
+
+  # Gate-level simulation of the signoff netlist. Proves the netlist that
+  # becomes silicon actually boots and drives its pins - not just the RTL.
+  # PDK cell models are vendored under verification/gl/pdk_models so this
+  # runs without a PDK install.
+  gate-level:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Gate-level smoke
+        run: make -C verification/gl gl-smoke
