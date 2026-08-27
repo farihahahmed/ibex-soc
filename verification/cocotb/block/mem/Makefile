@@ -5,7 +5,7 @@ TOPLEVEL = dmem_narrow_top
 VERILOG_SOURCES = \
   ../../../../rtl/dmem_narrow_top.sv \
   ../../../../rtl/dmem_narrow.sv \
-  ../../../../verification/cocotb/models/gf180mcu_fd_ip_sram__sram64x8m8wm1.v
+  ../../../../verification/cocotb/models/gf180mcu_fd_ip_sram__sram512x8m8wm1.v
 
 COMPILE_ARGS += -g2012
 
@@ -37,7 +37,7 @@ imem-smoke:
 	  VERILOG_SOURCES="../../../../rtl/imem_narrow_top.sv \
 	    ../../../../rtl/imem_narrow.sv \
 	    ../../../../rtl/fetch_gather.sv \
-	    ../../../../verification/cocotb/models/gf180mcu_fd_ip_sram__sram256x8m8wm1.v" \
+	    ../../../../verification/cocotb/models/gf180mcu_fd_ip_sram__sram512x8m8wm1.v" \
 	  COCOTB_TEST_MODULES=test_imem_load
 
 imem-load: imem-smoke

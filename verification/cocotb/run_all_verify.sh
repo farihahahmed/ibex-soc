@@ -64,6 +64,8 @@ run "block uart smoke"  bash -c 'cd block/uart && make MODULE=test_uart_smoke CO
 (cd block/ahb        && make block-regress)
 (cd block/ahb_to_apb && make block-regress)
 (cd block/apb_decoder && make block-regress)
+(cd block/clkgen     && make block-regress)
+(cd block/mem        && make block-regress)
 
 echo ""
 echo ""
