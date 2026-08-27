@@ -30,3 +30,4 @@ verification/coverage_artifacts/
 info.yaml.bak
 build_*.smt2
 verification/cocotb/stress_coverage.json
+verification/cocotb/fsm_coverage.json
