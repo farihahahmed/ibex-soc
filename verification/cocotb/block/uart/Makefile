@@ -53,6 +53,10 @@ tx-byte:
 tx-sb:
 	$(MAKE) COCOTB_TEST_MODULES=test_uart_tx_scoreboard
 
+.PHONY: ral
+ral:
+	$(MAKE) COCOTB_TEST_MODULES=test_uart_ral
+
 .PHONY: block-regress
 protocol:
 	$(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
@@ -74,6 +78,8 @@ block-regress:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_tx_sb_multi
 	@echo === uart rx-sb ===
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx_scoreboard
+	@echo "=== uart RAL (register model) ==="
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_ral
 	@echo "=== UART block regress DONE ==="
 	$(MAKE) COCOTB_TEST_MODULES=test_uart_protocol
 
