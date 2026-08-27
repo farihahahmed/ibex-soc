@@ -115,22 +115,26 @@ module spi #(
                         sclk_int <= ~sclk_int;
 
                         if (~sclk_int) begin
-                            // Rising edge → sample MISO
-                            rx_shift <= {rx_shift[6:0], miso};
-
-                            if (bit_count == 4'd7) begin
-                                // 8th sample just captured → done
+                            // Rising edge: sample MISO. The 8th rise must be
+                            // ALLOWED TO HAPPEN - terminating here would let
+                            // the sclk_int <= 1'b0 below override the toggle
+                            // above, so the last MOSI bit would be presented
+                            // but never clocked into the slave.
+                            rx_shift  <= {rx_shift[6:0], miso};
+                            bit_count <= bit_count + 1'b1;
+                            if (bit_count == 4'd7)
+                                rx_data <= {rx_shift[6:0], miso};
+                        end else begin
+                            // Falling edge: shift the next MOSI bit, or finish
+                            // if all eight rises have been delivered.
+                            if (bit_count == 4'd8) begin
                                 state    <= IDLE;
                                 busy     <= 1'b0;
                                 cs_n     <= 1'b1;
                                 sclk_int <= 1'b0;
-                                rx_data  <= {rx_shift[6:0], miso};
                             end else begin
-                                bit_count <= bit_count + 1'b1;
+                                tx_shift <= {tx_shift[6:0], 1'b0};
                             end
-                        end else begin
-                            // Falling edge → shift next MOSI bit
-                            tx_shift <= {tx_shift[6:0], 1'b0};
                         end
                     end
                 end

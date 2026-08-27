@@ -1,7 +1,6 @@
 {
  "states": {
   "test_fsm": [
-   "COUNTDOWN",
    "IDLE",
    "RUN"
   ],
@@ -12,9 +11,7 @@
    "STREAM"
   ],
   "imem_readback": [
-   "RB_IDLE",
-   "RB_REQ",
-   "RB_WAIT"
+   "RB_IDLE"
   ],
   "imem_load": [
    "S_B0",
@@ -55,10 +52,7 @@
    "T_STOP"
   ],
   "uart_rx": [
-   "R_DATA",
-   "R_IDLE",
-   "R_START",
-   "R_STOP"
+   "R_IDLE"
   ]
  },
  "arcs": {
@@ -85,10 +79,6 @@
    ]
   ],
   "test_fsm": [
-   [
-    "IDLE",
-    "COUNTDOWN"
-   ],
    [
     "IDLE",
     "RUN"
@@ -208,38 +198,6 @@
    [
     "TRANSFER",
     "IDLE"
-   ]
-  ],
-  "uart_rx": [
-   [
-    "R_DATA",
-    "R_STOP"
-   ],
-   [
-    "R_IDLE",
-    "R_START"
-   ],
-   [
-    "R_START",
-    "R_DATA"
-   ],
-   [
-    "R_STOP",
-    "R_IDLE"
-   ]
-  ],
-  "imem_readback": [
-   [
-    "RB_IDLE",
-    "RB_REQ"
-   ],
-   [
-    "RB_REQ",
-    "RB_WAIT"
-   ],
-   [
-    "RB_WAIT",
-    "RB_IDLE"
    ]
   ]
  }
