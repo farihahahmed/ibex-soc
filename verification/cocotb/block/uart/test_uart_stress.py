@@ -284,6 +284,7 @@ async def test_status_peek_data_clear_semantics(dut):
     await apb_read(dut, uart.data.offset)
     st = await apb_read(dut, uart.status.offset)
     assert uart.status.field("rx_valid", st) == 0
+    _scov.hit("uart","status_peek_semantics")
     cocotb.log.info("*** UART STATUS-peek / DATA-clear semantics PASS ***")
 
 
@@ -316,4 +317,116 @@ async def test_tx_bit_time_matches_params(dut):
         f"bit time {low} clks != CLK_FREQ/BAUD_RATE = {expected_div} " \
         f"(CLK_FREQ={clk_freq}, BAUD={baud})"
     await wait_not_busy(dut)
+    _scov.hit("uart","bit_time_param")
     cocotb.log.info(f"*** UART bit time == computed BAUD_DIV ({expected_div}) PASS ***")
+
+
+@cocotb.test()
+async def test_tx_write_while_busy_ignored(dut):
+    """A DATA write during an active transmit must not corrupt the frame in
+    flight: the TX FSM only accepts a byte in T_IDLE, so the second write is
+    dropped (documents as-built behavior -- no TX queue/FIFO). The first
+    byte's frame is verified BIT-LEVEL to prove zero corruption, and no
+    second frame may follow."""
+    await reset(dut)
+    first = 0x2D
+    await apb_write(dut, uart.data.offset, uart.data.encode(tx=first))
+    # wait for start edge, then land mid-start-bit
+    for _ in range(BIT * 4):
+        await RisingEdge(dut.PCLK)
+        if int(dut.tx.value) == 0:
+            break
+    assert int(dut.tx.value) == 0, "start bit never appeared"
+    for _ in range(BIT // 2):
+        await RisingEdge(dut.PCLK)
+    # mid-frame: attempt a second write -- must be ignored
+    await apb_write(dut, uart.data.offset, uart.data.encode(tx=0xEE))
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("tx_busy", st) == 1, "first frame must continue"
+    # reconstruct the remaining data bits of the FIRST frame bit-level.
+    # The two APB accesses above consumed ~8 clks = one bit period past
+    # mid-start, so we are now mid data-bit-0: sample it, then the rest.
+    bits = [int(dut.tx.value)]
+    for _ in range(7):
+        for _ in range(BIT):
+            await RisingEdge(dut.PCLK)
+        bits.append(int(dut.tx.value))
+    got = sum(b << i for i, b in enumerate(bits))
+    assert got == first, \
+        f"frame corrupted by write-while-busy: got 0x{got:02x}, want 0x{first:02x}"
+    # stop bit, then line must stay idle-high: the 0xEE write must NOT emit
+    for _ in range(BIT):
+        await RisingEdge(dut.PCLK)
+    assert int(dut.tx.value) == 1, "stop bit not high"
+    await wait_not_busy(dut)
+    for _ in range(BIT * 3):
+        await RisingEdge(dut.PCLK)
+        assert int(dut.tx.value) == 1, \
+            "ignored write must not transmit a second frame"
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("tx_busy", st) == 0
+    _scov.hit("uart","tx_while_busy")
+    cocotb.log.info("*** UART TX-while-busy ignored, frame intact bit-level PASS ***")
+
+
+@cocotb.test()
+async def test_rx_false_start_case_set(dut):
+    """Complete false-start/framing case set for a receiver with mid-bit
+    start validation (R_START re-samples at BAUD_DIV/2):
+      A. 1-clk spike low            -> rejected
+      B. glitch just under half bit -> rejected (high again at mid-bit)
+      C. low through mid-bit, then high (runt start that PASSES validation):
+         receiver commits to the frame and decodes subsequent line levels --
+         with the line held high it reads 0xFF. Documents the accepted
+         limitation: no post-start framing re-check exists.
+      D. clean frame immediately after each rejection still receives OK
+         (receiver returns to a good state)."""
+    await reset(dut)
+
+    # A: 1-clock spike
+    dut.rx.value = 0
+    await RisingEdge(dut.PCLK)
+    dut.rx.value = 1
+    for _ in range(BIT * 12):
+        await RisingEdge(dut.PCLK)
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("rx_valid", st) == 0, "1-clk spike accepted"
+
+    # B: low for (BAUD_DIV/2 - 1) clocks -- high again exactly at the mid-bit
+    # validation sample -> reject
+    dut.rx.value = 0
+    for _ in range(BIT // 2 - 1):
+        await RisingEdge(dut.PCLK)
+    dut.rx.value = 1
+    for _ in range(BIT * 12):
+        await RisingEdge(dut.PCLK)
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("rx_valid", st) == 0, "sub-half-bit glitch accepted"
+
+    # D1: clean frame after rejections must work
+    await drive_rx_frame(dut, 0x8C)
+    got = await rx_byte_via_model(dut)
+    assert got == 0x8C, f"post-glitch recovery: got 0x{got:02x}"
+
+    # C: runt start -- low through the mid-bit sample, then released high.
+    # Start validation passes; all 8 data samples then read the idle-high
+    # line -> the receiver reports 0xFF. This DOCUMENTS the limitation.
+    dut.rx.value = 0
+    for _ in range(BIT // 2 + 2):      # past the validation point
+        await RisingEdge(dut.PCLK)
+    dut.rx.value = 1
+    for _ in range(BIT * 12):
+        await RisingEdge(dut.PCLK)
+    st = await apb_read(dut, uart.status.offset)
+    assert uart.status.field("rx_valid", st) == 1, \
+        "runt start past mid-bit: receiver commits (as-built behavior)"
+    d = await apb_read(dut, uart.data.offset)
+    assert uart.data.field("rx", d) == 0xFF, \
+        f"runt-start frame must decode idle line as 0xFF, got 0x{uart.data.field('rx', d):02x}"
+
+    # D2: clean frame after the runt-start byte still works
+    await drive_rx_frame(dut, 0x71)
+    got = await rx_byte_via_model(dut)
+    assert got == 0x71, f"post-runt recovery: got 0x{got:02x}"
+    _scov.hit("uart","false_start_cases")
+    cocotb.log.info("*** UART false-start case set (A/B reject, C documented, D recover) PASS ***")

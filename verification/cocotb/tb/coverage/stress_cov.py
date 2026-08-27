@@ -13,7 +13,8 @@ _STORE = os.path.join(os.path.dirname(__file__), "..", "..", "stress_coverage.js
 BINS = {
     "uart": {"tx_back_to_back", "rx_overrun", "rx_glitch_reject",
              "rx_bad_stop", "midframe_reset", "tx_bitlevel",
-             "status_poll_race", "full_duplex"},
+             "status_poll_race", "full_duplex",
+             "status_peek_semantics", "bit_time_param", "tx_while_busy", "false_start_cases"},
     "spi": {"busy_handshake", "rx_all_ones", "rx_all_zeros",
             "rx_bit_pattern", "write_while_busy"},
     "ahb": {"routing_random", "routing_multiseed", "hready_stall_mux"},
