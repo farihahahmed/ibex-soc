@@ -3,11 +3,15 @@
 Isolated peripheral tests: APB VIP + directed + constrained-random + scoreboard.
 
 ## Run
+
+```bash
 cd verification/cocotb
 make -C block/uart block-regress
 make -C block/gpio block-regress
 make -C block/spi  block-regress
 make -C block all
+```
+
 ## Blocks
 | Block | TOPLEVEL | Tests |
 |-------|----------|--------|
