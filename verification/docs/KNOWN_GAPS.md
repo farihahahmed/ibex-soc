@@ -22,7 +22,7 @@ this design. Every `gf180mcu_fd_ip_sram__sram*x8m8wm1` LEF in the PDK contains a
 0.110 um tall Metal3 port rectangle on the VSS pin, against a 0.56 um minimum.
 Both macro instances flag it at identical relative offsets and our LEF copies
 are md5-identical to the PDK's. Full evidence and method in
-`docs/A45_m3_drc_report.txt`. Reported upstream.
+`gds/DRC_WAIVER.txt`. Reported upstream.
 
 ## Architecture
 

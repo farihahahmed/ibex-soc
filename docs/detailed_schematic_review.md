@@ -159,7 +159,7 @@ Run: `openlane/chip_top_full/runs/RUN_2026-08-25_09-23-07`, tag `v2-signoff`.
 
 ### Known DRC finding — Metal3 width in the SRAM macro LEF
 
-The four Magic DRC violations (M3.1, Metal3 width < 0.56 µm) are **not produced by
+The four Magic DRC violations (M3.1, Metal3 width < 0.28 µm) are **not produced by
 this design**. Every `gf180mcu_fd_ip_sram__sram*x8m8wm1` LEF in the PDK (64, 128, 256
 and 512) contains, on the **VSS** pin under `LAYER Metal3`:
 
@@ -167,10 +167,10 @@ and 512) contains, on the **VSS** pin under `LAYER Metal3`:
 RECT 118.435 30.885 206.985 30.995 ;
 ```
 
-That is a port shape 0.110 µm tall against an M3.1 minimum of 0.56 µm. Both macro
+That is a port shape 0.110 µm tall against an M3.1 minimum of 0.28 µm. Both macro
 instances flag it at identical relative offsets within the macro, and this repository's
 LEF copies are md5-identical to the PDK's. Full evidence and method:
-`docs/A45_m3_drc_report.txt`.
+`gds/DRC_WAIVER.txt`.
 
 Raised with the organizers; awaiting guidance on whether to waive.
 
@@ -215,7 +215,7 @@ reads the DEF rather than the GDS. The signoff artifact is the unmodified flow o
 ## Appendix
 
 - Signoff artifacts: `gds/` (signoff GDS, DRC result, LVS report, metrics, powered netlist)
-- DRC investigation: `docs/A45_m3_drc_report.txt`
+- DRC investigation: `gds/DRC_WAIVER.txt`
 - Reports: `FRONTEND_SYNTHESIS.md`, `BACKEND_REPORT.md`, `memory_map.md`, `PINOUT.md`, `VERIFICATION.md`
 - PnR config: `openlane/chip_top_full/config.json`
   (DIE 0,0,1100,1100; CORE 10,10,1090,1090; two `sram512x8` @ [120,300] and [560,300];
