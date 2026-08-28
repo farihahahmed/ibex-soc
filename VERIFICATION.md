@@ -1,6 +1,6 @@
 # Pico SoC — Verification Report
 
-**Last updated:** 2026-08-27
+**Last updated:** 2026-08-29
 **Gate status:** PASSING — 52 suites, 0 failures, exit code 0.
 There is one gate, `verification/cocotb/run_all_verify.sh`. Every test that
 exists and passes is in it: no excluded tests, no allowed-to-fail legs, no
@@ -399,9 +399,9 @@ Exit code **0** only if every included test PASSes.
 
 | Target | Role |
 |--------|------|
-| `sim` | Filelist + Icarus setup |
-| pyuvm / honesty | Full freeze via scripts |
-| `block` | Block regress entry |
+| `default` | RTL filelist (elaboration) |
+| `sim` | Filelist + Icarus setup of `chip_top_full` |
+| `honesty` | Full gate via `scripts/run_honesty_freeze.sh` |
 
 ```bash
 fusesoc core-info ::pico_soc:1.0.0
@@ -439,16 +439,16 @@ Full matrix: `verification/docs/REQUIREMENTS_TRACEABILITY.md`.
 **Still open, stated plainly:**
 
 - No firmware-on-gate-level run, and no automated GL vs RTL log comparison.
-- CPU trap read path is verified, but no test forces an actual trap event.
-- FSM state and arc coverage is not measured.
 - UART has no overrun flag: a second byte arriving before the first is read
   overwrites it silently.
 - The AHB decode is 2 bits wide, so every address maps to a real slave. There
   is no unmapped-address error response and `HRESP` is tied low.
 
 **Closed since the last revision:** illegal-address behaviour, concurrent
-multi-peripheral traffic, dense narrow-memory stress, and CI on real runners
-are all now in the gate.
+multi-peripheral traffic, dense narrow-memory stress, CI on real runners, a
+forced CPU-trap observation (`test_scan_trap`), reset-stress recovery
+(`test_reset_stress`), FSM state/arc coverage (40/40), and a CI-enforced line
+coverage floor are all now in the gate.
 
 ---
 
