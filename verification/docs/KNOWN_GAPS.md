@@ -19,7 +19,7 @@ and LVS matches uniquely.
 
 **Four Magic DRC violations (M3.1, Metal3 width).** These are not produced by
 this design. Every `gf180mcu_fd_ip_sram__sram*x8m8wm1` LEF in the PDK contains a
-0.110 um tall Metal3 port rectangle on the VSS pin, against a 0.56 um minimum.
+0.110 um tall Metal3 port rectangle on the VSS pin, against a 0.28 um minimum.
 Both macro instances flag it at identical relative offsets and our LEF copies
 are md5-identical to the PDK's. Full evidence and method in
 `gds/DRC_WAIVER.txt`. Reported upstream.
@@ -54,8 +54,7 @@ overwrites `rx_data` silently. Standard UARTs expose an overrun status bit.
 `cpu_clk`, a gated version of it. Edges align while running, so timing closes.
 But if the FSM gates the clock off mid-fetch, `pico_shim` freezes holding
 `inflight` and waits for an `rvalid` that already happened, wedging the CPU
-until reset. Reachable only by leaving RUN during a fetch. Never observed in 30
-tests including the countdown case.
+until reset. Reachable only by leaving RUN during a fetch. Never observed across the suite, including the countdown case.
 
 **`cpu_clk` fanout is 2,177 terminals.** Functional and timing-closed, but
 unusual. Restructuring the clock tree in RTL is future work.
