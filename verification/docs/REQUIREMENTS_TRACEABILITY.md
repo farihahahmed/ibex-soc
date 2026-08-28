@@ -170,7 +170,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 | ID | Requirement | Evidence | Status |
 |----|-------------|----------|--------|
 | R-METH-01 | Block-level MDV for UART/GPIO/SPI | `docs/BLOCK_MDV.md`, `./run_block_regress.sh` | Closed |
-| R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md`; coverage 88.8% line (own RTL) | Closed |
+| R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md`; coverage 88.7% line (own RTL) | Closed |
 | R-METH-03 | One-button official gate | `./run_all_verify.sh` — 70 tests, EXIT=0 | Closed |
 | R-METH-04 | FuseSoC targets sim / pyuvm / block | `fusesoc core-info ::pico_soc:1.0.0` | Closed |
 | R-METH-05 | Exit criteria written | Section 12 of `VERIFICATION.md` | Closed |

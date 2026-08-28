@@ -20,7 +20,7 @@ all 22 RTL modules.
 | Constrained-random | Multi-seed GPIO / UART / SPI; coverage merge | Green |
 | Firmware self-check | `primes`, `piezo_tune`, `game` via scan; pin-level checks | Green |
 | Negative tests | Scan lockout under RUN; FSM IDLE clock hold; AHB HREADY stall | Green |
-| Code coverage | Verilator line coverage: **88.8%** of our own RTL (890/1002 lines, picorv32 excluded) | Measured |
+| Code coverage | Verilator line coverage: **88.7%** of our own RTL (873/984 lines; picorv32/GF180/SRAM excluded) | Measured |
 | Gate-level | Post-PnR netlist **elaboration and reset smoke** against `gds/chip_top_full.pnl.v` — proves the netlist elaborates and drives its pins. Does not run firmware. | Smoke green |
 | Formal | Bounded model checking: **42 properties across 7 targets** | **PASSED**, in CI |
 | FSM coverage | State and arc coverage across all 10 state machines | **40/40 states (100%)** |
@@ -243,7 +243,7 @@ make -C block/spi  MODULE=test_spi_tx     COCOTB_TEST_MODULES=test_spi_tx
 | Annotate | `verilator_coverage --annotate coverage_rtl/annotate …` |
 | Policy | Section 6 of this document |
 
-**Measured:** 88.8% line coverage of our own RTL (890/1002), excluding `picorv32` and the GF180 SRAM models. Artifact: `verification/coverage/coverage.info`. Per-module figures range from 100% (`imem_narrow`, `dmem_narrow`, `pico_shim`, `rst_sync`, `apb_uart`) to 74% (`dmem_narrow_top`, whose `L_B0..L_B3` load states are unreachable because `ahb_mem` ties `ld_word_en` low). Overall toggle is secondary (wide buses). Single-word dmem does not saturate `dmem_narrow_top` line points; functional SW/LW is covered by `make dmem`.
+**Measured:** 88.7% line coverage of our own RTL (873/984), excluding `picorv32` and the GF180 SRAM models. Artifact: `verification/coverage/coverage.info`. Per-module figures range from 100% (`imem_narrow`, `dmem_narrow`, `pico_shim`, `rst_sync`, `apb_uart`) to 74% (`dmem_narrow_top`, whose `L_B0..L_B3` load states are unreachable because `ahb_mem` ties `ld_word_en` low). Overall toggle is secondary (wide buses). Single-word dmem does not saturate `dmem_narrow_top` line points; functional SW/LW is covered by `make dmem`.
 
 ```bash
 cd verification/cocotb
@@ -460,7 +460,7 @@ The gate is `verification/cocotb/run_all_verify.sh`, which must exit 0.
 3. Multi-seed random GPIO meets bin-diversity target  
 4. Firmware demos PASS at pins  
 5. Negatives in gate PASS (lockout, IDLE hold, AHB stall as present)  
-6. Line coverage of our own RTL measured and published (currently 88.8%)  
+6. Line coverage of our own RTL measured and published (currently 88.7%, CI-enforced via check_coverage_floor.py)  
 7. Gate-level smoke PASS  
 8. No expected failures in the official gate  
 
