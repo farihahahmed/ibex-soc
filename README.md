@@ -165,7 +165,7 @@ code 0. It is a single honest gate: no excluded tests, no allowed-to-fail
 legs. Detail in `VERIFICATION.md` and `verification/docs/`.
 
 **Current status (2026-08-28):** exit gate passes on the current design —
-**51 suites, 0 failures, exit code 0**. FSM state/arc coverage 40/40 (100%);
+**52 suites, 0 failures, exit code 0**. FSM state/arc coverage 40/40 (100%);
 stress-path functional coverage closed. Verified against the post-ICG RTL.
 
 **Formal:** bounded model checking via `verification/formal/run_formal.py` —

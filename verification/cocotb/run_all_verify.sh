@@ -50,6 +50,7 @@ run "chip dmem"    make COCOTB_TEST_MODULES=test_pyuvm_dmem
 run "scan readback"  make COCOTB_TEST_MODULES=test_scan_readback
 run "scan status"    make COCOTB_TEST_MODULES=test_scan_status
 run "scan trap"       make COCOTB_TEST_MODULES=test_scan_trap
+run "reset stress"    make COCOTB_TEST_MODULES=test_reset_stress
 run "clk generator"  make COCOTB_TEST_MODULES=test_clkgen
 run "fsm countdown"  make COCOTB_TEST_MODULES=test_pyuvm_countdown
 run "scan lockout"   make COCOTB_TEST_MODULES=test_pyuvm_scan_lockout
