@@ -1,4 +1,5 @@
-cocotb>=1.8.0
-cocotb-bus
-pyuvm>=2.9.0
-pytest
+# Pinned to the versions this repo's verification is developed and CI-tested
+# against, so a fresh clone reproduces the passing environment exactly.
+cocotb==2.0.1
+pyuvm==4.0.1
+pytest==9.0.3
