@@ -146,6 +146,7 @@ so the signoff artifact is the unmodified flow output. Evidence:
 | [Pinout](docs/PINOUT.md) | All 22 pins — direction and purpose |
 | [Memory map](docs/memory_map.md) | Address decode, registers, boot/stack |
 | [Front-end synthesis](docs/FRONTEND_SYNTHESIS.md) | Pre-layout area + timing feasibility (Yosys / OpenSTA) |
+| [Front-end vs back-end](docs/FE_VS_BE.md) | Synthesis estimate vs signoff, every metric reconciled |
 | [Back-end signoff](docs/BACKEND_REPORT.md) | Antenna, LVS, DRC, IR-drop, power |
 | [PCPI benchmarks](docs/PCPI_BENCHMARKS.md) | Measured CRC32 10.3× and FIR 5× results |
 | [Verification](VERIFICATION.md) | Test strategy, single gate, formal |
