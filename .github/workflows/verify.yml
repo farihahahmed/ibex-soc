@@ -62,7 +62,13 @@ jobs:
           which yosys yosys-smtbmc z3
       - name: Formal suite
         working-directory: verification/formal
-        run: SMT_SOLVER=z3 python3 run_formal.py
+        run: |
+          # 46 properties across 8 targets: run_formal.py covers 42/7
+          # (fsm, lockout, pcpi, gather, bridge, shim, fabric); scan_chain
+          # formal adds the 8th target (4 props). test_fsm formal is a
+          # duplicate of the fsm target, so it is not run here.
+          SMT_SOLVER=z3 python3 run_formal.py
+          SMT_SOLVER=z3 python3 run_scan_chain_formal.py
 
   # RTL line-coverage floor. Enforces the committed lcov artifact
   # (verification/coverage/coverage.info, picorv32/GF180/SRAM excluded as
