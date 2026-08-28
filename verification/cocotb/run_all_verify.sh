@@ -99,6 +99,17 @@ import sys; sys.path.insert(0,'.')
 from tb.coverage.stress_cov import StressCoverage
 StressCoverage.report_and_check()"
 
+# RTL line-coverage floor: fail the gate if our-own-RTL coverage drops below
+# the floor (enforced, not just reported). Reads verification/coverage/coverage.info.
+echo ""
+echo "=== coverage floor ==="
+python3 check_coverage_floor.py --floor 85 | tail -3
+cov_rc=${PIPESTATUS[0]}
+if [ "$cov_rc" -ne 0 ]; then
+  echo "GATE FAIL: coverage below floor"
+  exit 1
+fi
+
 echo "=== HONESTY FREEZE: ALL PASSED ==="
 echo "SUMMARY: SUITES PASS ${PASSED} / FAIL 0 / SKIP 0 / FAIL_OK 0"
 echo "(individual test verdicts: ./run_all_verify.sh | grep -c 'FAIL=0')"

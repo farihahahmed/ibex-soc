@@ -63,3 +63,19 @@ jobs:
       - name: Formal suite
         working-directory: verification/formal
         run: SMT_SOLVER=z3 python3 run_formal.py
+
+  # RTL line-coverage floor. Enforces the committed lcov artifact
+  # (verification/coverage/coverage.info, picorv32/GF180/SRAM excluded as
+  # third-party IP) against a floor. Coverage is enforced, not just reported;
+  # a regression below the floor fails CI. Regenerate the artifact with
+  # `make -C verification/cocotb coverage-run`.
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce coverage floor
+        working-directory: verification/cocotb
+        run: python3 check_coverage_floor.py --floor 85

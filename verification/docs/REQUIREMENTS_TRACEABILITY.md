@@ -114,7 +114,7 @@
 | R-MEM-02 | DMEM SW then LW produces expected data path | `test_pyuvm_dmem` | CHIP | DIR | Closed |
 | R-MEM-03 | Stack fits in 512 B dmem (STACKADDR 0x200) | FW sizes + dmem test; firmware README | CHIP | DIR | Closed |
 | R-MEM-04 | Dense byte/half/word stress | `test_pyuvm_dmem_stress` (in gate) | CHIP | CR | Closed |
-| R-MEM-05 | Line coverage of our own RTL | Verilator: **88.8%** (890/1002 lines), picorv32 excluded. Artifact: `verification/coverage/coverage.info` | TOOL | — | Closed |
+| R-MEM-05 | Line coverage of our own RTL | Verilator: **88.7%** (873/984 lines), picorv32/GF180/SRAM excluded as third-party IP. Artifact: `verification/coverage/coverage.info`. **Enforced**: `check_coverage_floor.py --floor 85` fails CI/gate on regression | TOOL | — | Closed |
 
 **Known limitation:** `.rodata` is not reachable by loads. The linker places read-only data in instruction memory, but `pico_shim` routes data accesses to the AHB data memory. Firmware must generate constants arithmetically. See KNOWN_GAPS.
 
