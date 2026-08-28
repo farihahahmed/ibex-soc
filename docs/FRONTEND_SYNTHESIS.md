@@ -19,7 +19,7 @@ Reproduce: `fe_report/synth_area.ys` (area) and `fe_report/fe_timing.tcl`
 | Standard cells | 14,483 |
 | Flip-flops | 2,445 (`dffq` 1,989 · `dffrnq` 445 · `dffsnq` 11) |
 | Integrated clock gates (`icgtp_1`) | 3 |
-| SRAM macros | 2 × `sram512x8` = 418,809 µm² (0.419 mm²) |
+| SRAM macros | 2 × 209,404 µm² = 418,809 µm² (0.419 mm²) |
 | **Logic + macros** | **~816,000 µm² (0.816 mm²)** |
 
 Yosys reports std-cell logic area only; SRAM macro area is added from the macro
