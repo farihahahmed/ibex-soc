@@ -66,6 +66,46 @@ Environment (agents + scoreboard + coverage)
 DUT: chip_top_full  |  block DUT (apb_uart / apb_gpio / apb_spi / …)
 ```
 
+### 3.1a Design architecture (DUT)
+
+The `chip_top_full` module wires the SoC as follows. Bring-up (scan + FSM +
+clock gating) sits outside the CPU clock domain; everything from the CPU down
+runs on the gated `cpu_clk`.
+                     chip_top_full
+clk / clk_int ──► clk_gen ──► sys_clk ──► [ICG] ──► cpu_clk (12.5 MHz)
+▲ enable
+scan_in/shift/ │
+load/i0o1 ────► scan_chain ──► test_fsm (IDLE / RUN / COUNTDOWN)
+scan_out ◄──── │ • loads program into memory
+│ • gates cpu_clk until RUN
+│ • status word: trap[0], mode[2:1], mem[3]
+▼
+┌──────────── CPU domain (cpu_clk, pico_resetn) ───────────┐
+│ picorv32 (RV32E core) ◄──► pcpi_custom (custom-0 ops) │
+│ │ trap ─────────────────────► trap_sticky → status │
+│ pico_shim (split fetch / data paths) │
+└───┬──────────────────────────────────┬───────────────────┘
+fetch data (ibex_to_ahb)
+┌───▼──────────┐ ┌─────▼───────────┐
+│ mem_subsystem│ │ ahb_interconnect│ decode HADDR[17:16]
+│ imem dmem │◄─────────────────┤ │
+│ (SRAM 512×8)│ └───┬─────────┬────┘
+└──────────────┘ dmem 00 │ │ 01/10/11
+┌─────────▼─┐ ┌───▼──────────┐
+│ ahb_mem │ │ ahb_to_apb │
+│ (dmem) │ │ bridge │
+└───────────┘ └───┬──────────┘
+apb_decoder (PADDR[17:16])
+┌───────────┬───┴───────┐
+┌───▼───┐ ┌───▼───┐ ┌───▼───┐
+│ GPIO │ │ UART │ │ SPI │
+└───┬───┘ └──┬─┬──┘ └──┬────┘
+gpio_in[1:0] / gpio_out[3:0] ───────┘ uart_rx ┘ └ uart_tx └ sclk/mosi/cs_n/miso
+
+Module instances (from `rtl/chip_top_full.sv`): `u_clkgen`, `u_scan`, `u_fsm`,
+`u_pcpi`, `u_cpu`, `u_shim`, `u_mem`, `u_adapter`, `u_ic`, `u_dmem_slave`,
+`u_bridge`, `u_apbdec`, `u_gpio`, `u_uart`, `u_spi`.
+
 ### 3.2 Stack
 
 | Component | Choice |

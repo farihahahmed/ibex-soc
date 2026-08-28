@@ -175,7 +175,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 | R-METH-04 | FuseSoC targets sim / pyuvm / block | `fusesoc core-info ::pico_soc:1.0.0` | Closed |
 | R-METH-05 | Exit criteria written | Section 12 of `VERIFICATION.md` | Closed |
 | R-METH-06 | Requirements→tests table | **this document** | Closed |
-| R-METH-07 | Architecture diagram | — | **Open** |
+| R-METH-07 | Architecture diagram | `VERIFICATION.md` §3.1a — design architecture block diagram (clocking, scan/FSM bring-up, CPU+PCPI, AHB/APB fabric, peripherals) | DOC | — | **Closed** |
 | R-METH-08 | CI on real runners | `.github/workflows/verify.yml` — lint + gate + formal, green on every push | Closed |
 | R-METH-09 | Formal property proofs | `verification/formal/` — scan chain and clock FSM, both PASSED, in CI | Closed |
 | R-METH-10 | Per-block lint of every RTL module | `scripts/lint_blocks.sh` — 22 blocks, in CI | Closed |
@@ -214,7 +214,6 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
   would require force-initialising all ~2,477 netlist flops with reset-
   synchronised timing, which is disproportionate for a sim-only artifact already
   covered by LVS.
-- **R-METH-07** — architecture diagram
 
 See `verification/docs/KNOWN_GAPS.md` for design limitations that are deliberate
 or accepted, as distinct from verification gaps.
