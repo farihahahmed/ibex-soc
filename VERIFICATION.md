@@ -334,7 +334,7 @@ counts rising edges specifically, and found it immediately. Fixed in
 | Status | Smoke path green |
 | Open | Automated GL↔RTL compare; full firmware on GL |
 
-Related PD notes (not sim): `docs/TIMING_REPORT.md`, `docs/AREA_REPORT.md`, `docs/PINOUT.md`.
+Related PD notes (not sim): `docs/FRONTEND_SYNTHESIS.md`, `docs/BACKEND_REPORT.md`, `docs/PINOUT.md`.
 
 ---
 
@@ -479,7 +479,7 @@ Per-run artifacts: cocotb `results.xml` in the active directory. Freeze logs via
 | FuseSoC | `pico_soc.core` |
 | Firmware | `firmware/` |
 | Memory map | `docs/memory_map.md` |
-| Timing / area / pinout | `docs/TIMING_REPORT.md`, `docs/AREA_REPORT.md`, `docs/PINOUT.md` |
+| Timing / area / pinout | `docs/FRONTEND_SYNTHESIS.md`, `docs/BACKEND_REPORT.md`, `docs/PINOUT.md` |
 
 ---
 

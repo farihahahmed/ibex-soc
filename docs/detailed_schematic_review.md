@@ -216,7 +216,7 @@ reads the DEF rather than the GDS. The signoff artifact is the unmodified flow o
 
 - Signoff artifacts: `gds/` (signoff GDS, DRC result, LVS report, metrics, powered netlist)
 - DRC investigation: `docs/A45_m3_drc_report.txt`
-- Reports: `AREA_REPORT.md`, `TIMING_REPORT.md`, `memory_map.md`, `PINOUT.md`, `VERIFICATION.md`
+- Reports: `FRONTEND_SYNTHESIS.md`, `BACKEND_REPORT.md`, `memory_map.md`, `PINOUT.md`, `VERIFICATION.md`
 - PnR config: `openlane/chip_top_full/config.json`
   (DIE 0,0,1100,1100; CORE 10,10,1090,1090; two `sram512x8` @ [120,300] and [560,300];
   CLOCK_PERIOD 32; DIODE_ON_PORTS both)

@@ -115,7 +115,7 @@ Run: `openlane/chip_top_full/runs/RUN_2026-08-28_09-52-02`
 | DRC | 4 × M3.1 — SRAM-macro, waived (see below) |
 | IR drop | 0.04% worst (2.05 mV) |
 | Power | 48.3 mW (nom_tt) |
-| Area / detail | `docs/AREA_REPORT.md`, `docs/BACKEND_REPORT.md` |
+| Area / detail | `docs/FRONTEND_SYNTHESIS.md`, `docs/BACKEND_REPORT.md` |
 
 **CPU clock fmax:** 13.2 MHz worst corner (ss_125C_4v50) vs 12.5 MHz operating.
 
@@ -145,8 +145,7 @@ so the signoff artifact is the unmodified flow output. Evidence:
 | --- | --- |
 | [Pinout](docs/PINOUT.md) | All 22 pins — direction and purpose |
 | [Memory map](docs/memory_map.md) | Address decode, registers, boot/stack |
-| [Area report](docs/AREA_REPORT.md) | Placed area, utilization, cell breakdown |
-| [Timing report](docs/TIMING_REPORT.md) | STA across all 9 PVT corners |
+| [Front-end synthesis](docs/FRONTEND_SYNTHESIS.md) | Pre-layout area + timing feasibility (Yosys / OpenSTA) |
 | [Back-end signoff](docs/BACKEND_REPORT.md) | Antenna, LVS, DRC, IR-drop, power |
 | [PCPI benchmarks](docs/PCPI_BENCHMARKS.md) | Measured CRC32 10.3× and FIR 5× results |
 | [Verification](VERIFICATION.md) | Test strategy, single gate, formal |
@@ -185,7 +184,7 @@ bus fabric), plus dedicated scan-chain and FSM runners. All green in CI.
 The repository was originally named `ibex-soc`. An early Ibex-based floorplan
 could not meet the area constraint — its hardened CPU macro alone was
 0.743 mm² and could not tile with the SRAMs — so the core was replaced with
-synthesized PicoRV32. `docs/AREA_REPORT.md` covers this in full.
+synthesized PicoRV32. `docs/FRONTEND_SYNTHESIS.md` covers the synthesis results.
 
 The CPU clock gate was later changed from a combinational AND
 (`clk & run_gate_q`) to a PDK integrated clock-gating cell (`icgtp_1`,
