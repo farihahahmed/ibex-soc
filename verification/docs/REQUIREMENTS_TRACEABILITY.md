@@ -85,7 +85,7 @@
 | R-UART-04 | RX bit-bang → DATA → software path | `test_pyuvm_uart_rx_e2e`, `test_pyuvm_uart_rx` | CHIP | DIR | Closed |
 | R-UART-05 | Firmware streams characters (primes) | `test_pyuvm_primes` | CHIP | DIR | Closed |
 | R-UART-06 | Predictor/scoreboard matches TX byte | block uart tx-sb / regress | BLOCK | DIR | Closed |
-| R-UART-07 | A status read does NOT clear rx_valid; only a DATA read does | `uart.sv` splits STATUS/DATA on `addr[2]`; exercised by `test_pyuvm_uart_rx_e2e` | CHIP | DIR | **Partial** — behaviour exercised, not directly asserted |
+| R-UART-07 | A status read does NOT clear rx_valid; only a DATA read does | `uart.sv` splits STATUS/DATA on `addr[2]`; directly asserted by `block/uart/test_uart_rx_valid_clear` (repeated STATUS reads preserve rx_valid; DATA read returns the byte and clears it) | CHIP | DIR | **Closed** |
 | R-UART-08 | Silicon baud rate is correct for the shipped clock | `CLK_FREQ`/`BAUD_RATE` give BAUD_DIV 289 → 115,340 baud, +0.12% error | DOC | — | Closed |
 
 **Registers:** STATUS `0x0002_0000` (bit0 tx_busy, bit1 rx_valid); DATA `0x0002_0004`
@@ -201,7 +201,6 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 ## Open items (do not claim closed)
 
 - **R-BOOT-09** — trap read path verified, but no test forces an actual trap
-- **R-UART-07** — STATUS/DATA rx_valid semantics exercised but not directly asserted
 - **R-GL-02** — `make gl-firmware` scan-loads real firmware (`fw_gpio_walk`)
   into the **signoff netlist's** SRAM using the same 48-bit scan protocol as the
   RTL environment. Confirmed in gate-level: the netlist elaborates, resets

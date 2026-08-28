@@ -64,6 +64,7 @@ run "block spi tx"     bash -c 'cd block/spi && make MODULE=test_spi_tx COCOTB_T
 # prove the protocol - UART framing and the STATUS/DATA split, GPIO
 # output readback and input synchronisation, SPI Mode 0 polarity and
 # exactly eight clock edges per byte.
+run "uart rx_valid clear" bash -c 'cd block/uart && make MODULE=test_uart_rx_valid_clear COCOTB_TEST_MODULES=test_uart_rx_valid_clear'
 run "uart protocol"    bash -c 'cd block/uart && make protocol'
 run "uart ral"         bash -c 'cd block/uart && make ral'
 run "uart stress"      bash -c 'cd block/uart && make stress'

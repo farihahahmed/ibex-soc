@@ -41,6 +41,7 @@ tx-sb-multi:
 
 rx:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx
+	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx_valid_clear
 
 rx-sb:
 	$(MAKE) clean && $(MAKE) COCOTB_TEST_MODULES=test_uart_rx_scoreboard
