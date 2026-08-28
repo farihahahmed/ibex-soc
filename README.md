@@ -80,9 +80,11 @@ in `PINOUT.md`.
 | SPI | `spi_sclk`, `spi_mosi`, `spi_cs_n` | out | SPI master (e.g. LCD) |
 | Power | `VDD`, `VSS` | — | 5.0 V supply |
 
-Bring-up (FSM start/config, state observation, program load) goes through the
-**scan chain** rather than dedicated pins — a Columbia-style approach that saved
-4 pins.
+Bring-up goes through the **scan chain** rather than dedicated pins: FSM
+start/mode, clock config, program load, and status/state readback are all
+shifted in and out over the existing scan interface. Giving each of those four
+functions its own pin would have cost 4 extra pins; folding them into the scan
+chain keeps the design at 22.
 
 ### **Signoff status**
 
