@@ -11,9 +11,9 @@ make -C block all
 ## Blocks
 | Block | TOPLEVEL | Tests |
 |-------|----------|--------|
-| UART | apb_uart | smoke, TX, RX, random |
-| GPIO | apb_gpio | smoke, write, read, random |
-| SPI | apb_spi | smoke, TX, RX, tx_random, random |
+| UART | apb_uart | smoke, TX (byte / neg / random), RX, `rx_valid` clear, protocol (bad start-bit, baud/div), RAL, stress, TX scoreboards |
+| GPIO | apb_gpio | smoke, write, read, random, protocol, RAL, inout (direction) |
+| SPI | apb_spi | smoke, TX, RX, tx_random, random, protocol (mode-0, 8 edges/byte, `cs_n` framing), RAL, loopback |
 
 ## Shared VIP
 tb/agents/apb/ — ApbItem, ApbDriver, ApbMonitor, ApbAgent
