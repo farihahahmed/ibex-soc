@@ -55,7 +55,7 @@
 | R-MAP-07 | Illegal / unmapped address behaviour | `test_pyuvm_illegal_addr` (in gate) | CHIP | NEG | Closed |
 | R-MAP-08 | Concurrent multi-peripheral traffic | `test_pyuvm_concurrent` (in gate) | CHIP | CR | Closed |
 
-**Memory map source of truth:** repo root `memory_map.md`
+**Memory map source of truth:** `docs/memory_map.md`
 **Known limitation:** `HADDR[17:16]` is a 2-bit decode, so every address maps to a real slave — there is no unmapped-address error response, and `HRESP` is tied low. See KNOWN_GAPS.
 
 ---
@@ -158,8 +158,8 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 |----|-------------|-------|-------|------|--------|
 | R-GL-01 | Post-PnR netlist boots and drives pins | `make -C verification/gl gl-smoke` against `gds/chip_top_full.pnl.v` | GL | DIR | Closed |
 | R-GL-02 | GL vs RTL produce the same result for the same program | — | GL | DIR | **Open** — no firmware-on-GL run and no log comparison yet |
-| R-PD-01 | Timing closed on all corners | `TIMING_REPORT.md` | DOC | — | Closed |
-| R-PD-02 | Area / pinout documented | `AREA_REPORT.md`, `PINOUT.md` | DOC | — | Closed |
+| R-PD-01 | Timing closed on all corners | `docs/TIMING_REPORT.md` | DOC | — | Closed |
+| R-PD-02 | Area / pinout documented | `docs/AREA_REPORT.md`, `docs/PINOUT.md` | DOC | — | Closed |
 | R-PD-03 | Antenna and LVS clean on the signoff run | run metrics: `antenna__violating__nets` 0, netgen "match uniquely" | DOC | — | Closed |
 | R-PD-04 | DRC violations explained | 4 × M3.1, traced to a 0.110 µm Metal3 port on the **VSS** pin of the GF180 SRAM macro LEF, not to this design. `docs/A45_m3_drc_report.txt` | DOC | — | Closed (reported upstream) |
 

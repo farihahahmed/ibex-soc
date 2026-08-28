@@ -43,7 +43,7 @@ Chip and block verification share agents and scoreboarding. Constrained-random, 
 | Implementation | GF180MCU; OpenLane / LibreLane physical flow (outside this report) |
 
 RTL: `rtl/chip_top_full.sv` and modules under `rtl/`.  
-Address map: `memory_map.md`.
+Address map: `docs/memory_map.md`.
 
 ---
 
@@ -334,7 +334,7 @@ counts rising edges specifically, and found it immediately. Fixed in
 | Status | Smoke path green |
 | Open | Automated GL↔RTL compare; full firmware on GL |
 
-Related PD notes (not sim): `TIMING_REPORT.md`, `AREA_REPORT.md`, `PINOUT.md`.
+Related PD notes (not sim): `docs/TIMING_REPORT.md`, `docs/AREA_REPORT.md`, `docs/PINOUT.md`.
 
 ---
 
@@ -478,8 +478,8 @@ Per-run artifacts: cocotb `results.xml` in the active directory. Freeze logs via
 | Freeze scripts | `run_all_verify.sh`, `run_block_regress.sh` |
 | FuseSoC | `pico_soc.core` |
 | Firmware | `firmware/` |
-| Memory map | `memory_map.md` |
-| Timing / area / pinout | `TIMING_REPORT.md`, `AREA_REPORT.md`, `PINOUT.md` |
+| Memory map | `docs/memory_map.md` |
+| Timing / area / pinout | `docs/TIMING_REPORT.md`, `docs/AREA_REPORT.md`, `docs/PINOUT.md` |
 
 ---
 

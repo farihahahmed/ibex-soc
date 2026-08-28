@@ -100,7 +100,7 @@ once the CPU clock is running.
 **Pinout (22 pads = 20 signal + 2 power; no bidirectional):** clk, clk_int, rst_n;
 scan_in/shift/load/out/i0o1; gpio_in[1:0], gpio_out[4:0]; uart_tx/rx;
 spi_sclk/mosi/cs_n; VDD/VSS. FSM control/state are scan-accessed, not pins.
-`spi_miso` omitted (output-only LCD interface). See `PINOUT.md`.
+`spi_miso` is a dedicated SPI data input (synchronized). See `PINOUT.md`.
 
 ---
 
