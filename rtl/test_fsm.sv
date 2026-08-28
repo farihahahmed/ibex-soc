@@ -37,16 +37,26 @@ module test_fsm (
         endcase
     end
 
-    // glitch-free clock gate: sample the enable on the FALLING edge of clk so it
-    // is stable while clk is high (no chopped pulses). Neg-edge flop maps to a
-    // standard cell -- no latch inference.
+    // Clock gate: use the PDK integrated clock-gating cell (icgtp_1), matching
+    // clk_gen.sv. Register the enable on posedge clk so E is stable and settled
+    // before the ICG's internal latch samples it on the low phase of clk; the
+    // latch then holds E steady through the high phase, so Q = clk & E can never
+    // emit a runt pulse. This replaces the old hand-rolled `clk & run_gate_q`
+    // AND, which the tools did not recognise as a clock gate: it produced a
+    // 2250-fanout net off a weak 1x cell (antenna + slew + router congestion).
     logic run_gate_q;
-    always_ff @(negedge clk or negedge rst_n) begin
+    always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) run_gate_q <= 1'b0;
         else        run_gate_q <= run_gate;
     end
 
-    assign cpu_clk       = clk & run_gate_q;
+    gf180mcu_fd_sc_mcu7t5v0__icgtp_1 u_cpu_icg (
+        .CLK (clk),
+        .E   (run_gate_q),
+        .TE  (1'b0),
+        .Q   (cpu_clk)
+    );
+
     assign scan_owns_mem = (mode == IDLE);
     assign mode_o        = mode;
 endmodule
