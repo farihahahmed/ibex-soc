@@ -37,16 +37,29 @@ Full methodology and reproduction steps: [PCPI benchmarks](docs/PCPI_BENCHMARKS.
 
 **Real-world applications**
 
-- **`crc32.b` / `crc32.w` — data integrity.** Checksum a UART or SPI message to
-  catch corruption. One instruction replaces a 1 KB lookup table that wouldn't
-  fit in this chip's 512 B of data memory. Reflected polynomial `0xEDB88320`
-  (zlib / Ethernet compatible).
-- **`mac` / `macrd` / `macclr` — signed multiply-accumulate.** The heart of
-  DSP. The `fir_demo` runs a 5-tap filter over a noisy square wave and cuts the
-  ripple 5× (30 → 6), printed live over UART.
-- **`popcnt` / `brev` — bit operations.** Population count and bit-reverse in
-  one cycle instead of a software loop — useful for protocol parsing, hashing,
-  and error-correction.
+#### Digital signal processing — the FIR filter demo
+
+The signed multiply-accumulate instructions (`mac` / `macrd` / `macclr`) are the
+core of digital signal processing: filtering, audio, motor control, sensor
+fusion. The `fir_demo` firmware shows it end to end — a 5-tap moving-average
+filter (taps 1-2-4-2-1) runs over a noisy ±100 square wave and **cuts the noise
+ripple 5×, from 30 down to 6**, while preserving the signal, printing raw vs
+filtered pairs live over UART. Every tap is one `mac` instruction instead of a
+multiply-then-add software sequence.
+
+#### Data integrity — CRC32
+
+`crc32.b` / `crc32.w` checksum a UART or SPI message to catch corruption in
+transit — the same check used by Ethernet and zip files. One instruction
+replaces a 1 KB lookup table that wouldn't fit in this chip's 512 B of data
+memory (reflected polynomial `0xEDB88320`, zlib/Ethernet compatible). This is
+the **10.34× speedup** in the table above.
+
+#### Bit manipulation — popcount & bit-reverse
+
+`popcnt` and `brev` do in one cycle what is a software loop otherwise — counting
+set bits and reversing bit order. Used in error-correction codes, hashing, FFT
+reordering, and protocol parsing.
 
 The accelerator lives entirely inside the CPU — no bus, no memory, **no pins**;
 any unclaimed encoding traps. You observe its results through UART or GPIO.
