@@ -168,14 +168,29 @@ legs. Detail in `VERIFICATION.md` and `verification/docs/`.
 **52 suites, 0 failures, exit code 0**. FSM state/arc coverage 40/40 (100%);
 stress-path functional coverage closed. Verified against the post-ICG RTL.
 
-**Formal:** bounded model checking via `verification/formal/run_formal.py` —
-**46 properties across 8 targets** (FSM, lockout, PCPI, gather, bridge, shim,
-bus fabric), plus dedicated scan-chain and FSM runners. All green in CI.
+**Formal:** bounded model checking (Yosys + SMT) proves these hold for *all*
+input sequences up to the bound, not just simulated stimulus. All green in CI
+on every push — **46 properties across 8 targets**:
+
+| Target | Properties | Proves |
+|--------|-----------:|--------|
+| fabric | 11 | AHB interconnect decode / routing |
+| pcpi | 7 | unclaimed `funct3` never raises `pcpi_ready` |
+| shim | 6 | `pico_shim` fetch / data split |
+| lockout | 5 | no IMEM write while the CPU is running |
+| gather | 5 | fetch / gather word assembly |
+| bridge | 5 | AHB→APB bridge protocol |
+| scan_chain | 4 | scan load / target decode |
+| fsm | 3 | clock-gating FSM transitions |
+| **Total** | **46** | **8 targets** |
+
+Reproduce: `cd verification/formal && python3 run_formal.py && python3 run_scan_chain_formal.py`
+(set `SMT_SOLVER=z3` to match CI; defaults to yices locally).
 
 ### **Tooling**
 
 - Simulation: Icarus Verilog, cocotb, pyuvm
-- Formal: Yosys + yosys-smtbmc (yices)
+- Formal: Yosys + yosys-smtbmc (yices / z3)
 - Synthesis and P&R: Yosys, LibreLane / OpenROAD
 - Signoff: Magic, Netgen
 - Optional core packaging: FuseSoC (`pico_soc.core`)
