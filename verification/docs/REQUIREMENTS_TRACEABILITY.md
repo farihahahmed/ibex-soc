@@ -3,7 +3,7 @@
 **Purpose:** Map each design requirement to the test(s) that prove it.
 **Rule:** A requirement is *closed* only when at least one listed test is **PASS** in the official gate (`./run_all_verify.sh`).
 **Last updated:** 2026-08-27
-**Gate:** 70 tests across 44 suites, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
+**Gate:** 51 suites, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
 
 ---
 
@@ -171,7 +171,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 |----|-------------|----------|--------|
 | R-METH-01 | Block-level MDV for UART/GPIO/SPI | `docs/BLOCK_MDV.md`, `./run_block_regress.sh` | Closed |
 | R-METH-02 | Chip pyuvm env + scoreboard + coverage | `docs/PYUVM_ARCHITECTURE.md`; coverage 88.7% line (own RTL) | Closed |
-| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 70 tests, EXIT=0 | Closed |
+| R-METH-03 | One-button official gate | `./run_all_verify.sh` — 51 suites, EXIT=0 | Closed |
 | R-METH-04 | FuseSoC targets sim / pyuvm / block | `fusesoc core-info ::pico_soc:1.0.0` | Closed |
 | R-METH-05 | Exit criteria written | Section 12 of `VERIFICATION.md` | Closed |
 | R-METH-06 | Requirements→tests table | **this document** | Closed |
@@ -190,7 +190,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 
 | Command | Covers |
 |---------|--------|
-| `./run_all_verify.sh` | The whole gate: 70 tests across 44 suites. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi, negative/corner/stress, and all 11 block suites (uart, gpio, spi, mem, fsm, scan, scan_fsm, ahb, ahb_to_apb, apb_decoder, clkgen) |
+| `./run_all_verify.sh` | The whole gate: 51 suites. Chip smoke/random/firmware/dmem/scan/clkgen/pcpi, negative/corner/stress, and all 11 block suites (uart, gpio, spi, mem, fsm, scan, scan_fsm, ahb, ahb_to_apb, apb_decoder, clkgen) |
 | `./run_block_regress.sh` | R-UART-\*, R-GPIO-\*, R-SPI-\*, R-BOOT-03/04/06, R-MAP-04..06 |
 | `scripts/lint_blocks.sh` | R-METH-10 — 22 blocks |
 | `verification/formal/run_*_formal.py` | R-BOOT-11, R-BOOT-12, R-METH-09 |
@@ -210,7 +210,7 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
   which synthesis does not preserve, so those non-resettable flops power up X in
   GL. This is a **simulation artifact, not a netlist or silicon defect** —
   logical equivalence to the RTL is proven by LVS (0 errors) and functional
-  correctness by the RTL cocotb gate (49 suites). A full GL-execution close
+  correctness by the RTL cocotb gate (51 suites). A full GL-execution close
   would require force-initialising all ~2,477 netlist flops with reset-
   synchronised timing, which is disproportionate for a sim-only artifact already
   covered by LVS.

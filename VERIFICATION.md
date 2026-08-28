@@ -1,7 +1,7 @@
 # Pico SoC — Verification Report
 
 **Last updated:** 2026-08-27
-**Gate status:** PASSING — 70 tests across 44 suites, 0 failures, exit code 0.
+**Gate status:** PASSING — 51 suites, 0 failures, exit code 0.
 There is one gate, `verification/cocotb/run_all_verify.sh`. Every test that
 exists and passes is in it: no excluded tests, no allowed-to-fail legs, no
 masked exit codes. It runs in CI on every push alongside a per-block lint of
@@ -22,7 +22,7 @@ all 22 RTL modules.
 | Negative tests | Scan lockout under RUN; FSM IDLE clock hold; AHB HREADY stall | Green |
 | Code coverage | Verilator line coverage: **88.7%** of our own RTL (873/984 lines; picorv32/GF180/SRAM excluded) | Measured |
 | Gate-level | Post-PnR netlist **elaboration and reset smoke** against `gds/chip_top_full.pnl.v` — proves the netlist elaborates and drives its pins. Does not run firmware. | Smoke green |
-| Formal | Bounded model checking: **42 properties across 7 targets** | **PASSED**, in CI |
+| Formal | Bounded model checking: **46 properties across 8 targets** | **PASSED**, in CI |
 | FSM coverage | State and arc coverage across all 10 state machines | **40/40 states (100%)** |
 | CI | GitHub Actions: per-block lint (22 modules), full gate, formal, gate-level | Green, no allowed-to-fail legs |
 | Packaging | FuseSoC targets; one-button freeze; requirements→tests table | Present |
@@ -338,7 +338,7 @@ rather than for the stimulus a testbench happens to apply.
 |---|---|
 | `lint` | Standalone elaboration of all 22 RTL blocks (`scripts/lint_blocks.sh`) |
 | `gate` | The full 30-test gate |
-| `formal` | All 42 properties |
+| `formal` | All 46 properties |
 | `gate-level` | Netlist boots and drives its pins |
 
 No job is marked allowed-to-fail. CI caught two real problems during
