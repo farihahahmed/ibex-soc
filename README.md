@@ -24,31 +24,32 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 
 ### **PCPI custom accelerator**
 
-**Measured highlight:** CRC32 runs **10.34× faster** than the software bitwise loop (39,143 → 3,785 cycles, gate-level), and the MAC-based FIR filter cuts noise ripple **5×** (30 → 6). See [PCPI benchmarks](docs/PCPI_BENCHMARKS.md).
+Seven single-cycle custom instructions on PicoRV32's PCPI interface (custom-0
+opcode `0x0B`) — each does in one cycle what would otherwise take a software
+loop. Measured on the gate-level SoC:
 
-A single-cycle co-processor on PicoRV32's PCPI interface (custom-0 opcode
-`0x0B`, selected by `funct3`). Each instruction does in **one cycle** what would
-otherwise take a software loop. It lives entirely inside the CPU — no bus, no
-memory, **no pins** — and any unclaimed encoding falls through to the CPU's
-illegal-instruction trap. You observe its results through UART or GPIO.
+| Workload | Software | Custom | Gain |
+| --- | ---: | ---: | ---: |
+| CRC32 (64 bytes) | 39,143 cyc | 3,785 cyc | **10.34× faster** |
+| FIR noise ripple | 30 | 6 | **5× cleaner** |
 
-**What it's for**
+Full methodology and reproduction steps: [PCPI benchmarks](docs/PCPI_BENCHMARKS.md).
 
-- **CRC32 — data integrity (`crc32.b`, `crc32.w`).** Checksum a UART or SPI
-  message to detect corruption in transit. A software CRC needs a 1 KB lookup
-  table that won't fit in this chip's 512 B data memory; this does it in one
-  instruction with no table. Uses the reflected IEEE 802.3 polynomial
-  `0xEDB88320`, so results match zlib and Ethernet.
-- **Signed MAC — digital filtering (`mac`, `macrd`, `macclr`).** Multiply-
-  accumulate is the heart of DSP. The `fir_demo` firmware runs a 5-tap
-  moving-average filter (taps 1-2-4-2-1) over a noisy ±100 square wave and cuts
-  the ripple from 30 down to 6 — a **5× noise reduction** — printing raw vs
-  filtered values over UART so you can watch it work.
-- **Bit ops (`popcnt`, `brev`).** Population count and bit-reverse in one
-  instruction instead of a loop — useful for protocol parsing, hashing, and
-  error-correction codes.
+**What the instructions do**
 
-**Instruction encoding**
+- **`crc32.b` / `crc32.w` — data integrity.** Checksum a UART or SPI message to
+  catch corruption. One instruction replaces a 1 KB lookup table that wouldn't
+  fit in this chip's 512 B of data memory. Reflected polynomial `0xEDB88320`
+  (zlib / Ethernet compatible).
+- **`mac` / `macrd` / `macclr` — signed multiply-accumulate.** The heart of
+  DSP. The `fir_demo` runs a 5-tap filter over a noisy square wave and cuts the
+  ripple 5× (30 → 6), printed live over UART.
+- **`popcnt` / `brev` — bit operations.** Population count and bit-reverse in
+  one cycle instead of a software loop — useful for protocol parsing, hashing,
+  and error-correction.
+
+The accelerator lives entirely inside the CPU — no bus, no memory, **no pins**;
+any unclaimed encoding traps. You observe its results through UART or GPIO.
 
 | funct3 | Instruction | Operation |
 | --- | --- | --- |
@@ -62,7 +63,7 @@ illegal-instruction trap. You observe its results through UART or GPIO.
 
 Verified by directed cocotb tests (`chip crc32`, `chip pcpi`, `pcpi cycles`,
 FIR) and 7 formal properties: an unclaimed `funct3` never raises `pcpi_ready`,
-`pcpi_wr == pcpi_ready`, single-cycle completion, and `pcpi_wait` stays low.
+`pcpi_wr == pcpi_ready`, single-cycle completion, `pcpi_wait` stays low.
 
 ### **Pinout (22 pins: 20 signal + 2 power)**
 
