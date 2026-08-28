@@ -15,10 +15,39 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 | **Clock gating** | CPU clock gated by an integrated clock-gating cell (ICG), FSM-controlled |
 | **Bus** | AHB-Lite + APB |
 | **Peripherals** | GPIO, UART, SPI |
+| **Accelerator** | PCPI custom co-processor (CRC32, popcount, bit-reverse, signed MAC) |
 | **Bring-up** | Scan chain and clock-gating FSM |
 | **Process** | GF180MCU, open PDK |
 | **Die** | 1100 × 1100 µm (A45 slot allows 1110 × 1110) |
 | **Utilization** | 82.0% |
+
+### **PCPI custom accelerator**
+
+A single-cycle co-processor on PicoRV32's PCPI interface, in the RISC-V
+custom-0 opcode space (`0x0B`), selected by `funct3`. It sits entirely inside
+the CPU boundary — it never touches the bus, memory, or pins — and any
+unclaimed encoding falls through to PicoRV32's illegal-instruction trap.
+
+| funct3 | Instruction | Operation |
+| --- | --- | --- |
+| `000` | `crc32.b` | Fold one byte (`rs2[7:0]`) into a running CRC32 in `rs1` |
+| `001` | `crc32.w` | Fold a full word (`rs2[31:0]`) into the CRC32 in `rs1` |
+| `010` | `popcnt` | Population count (set bits) of `rs1` |
+| `011` | `brev` | Bit-reverse `rs1` |
+| `100` | `mac` | Signed 16×16 multiply-accumulate: `acc += rs1[15:0] * rs2[15:0]` |
+| `101` | `macrd` | Read the MAC accumulator (no modify) |
+| `110` | `macclr` | Clear the MAC accumulator |
+
+CRC uses the reflected IEEE 802.3 polynomial `0xEDB88320`, so results match
+zlib and Ethernet. The CRC ops exist because a table-driven CRC needs a 1 KB
+lookup table that does not fit this chip's 512 B data memory; `popcnt`/`brev`
+replace multi-instruction software loops; the signed MAC is the core of digital
+filtering (see the FIR firmware demo).
+
+Verified by directed cocotb tests (`chip crc32`, `chip pcpi`, `pcpi cycles`,
+FIR), and by formal (7 properties): unclaimed `funct3` never raises
+`pcpi_ready`, `pcpi_wr == pcpi_ready`, single-cycle completion, `pcpi_wait`
+tied low.
 
 ### **Signoff status**
 
