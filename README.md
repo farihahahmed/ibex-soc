@@ -21,33 +21,68 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 | **Die** | 1100 × 1100 µm (A45 slot allows 1110 × 1110) |
 | **Utilization** | 82.0% |
 
+
 ### **PCPI custom accelerator**
 
-A single-cycle co-processor on PicoRV32's PCPI interface, in the RISC-V
-custom-0 opcode space (`0x0B`), selected by `funct3`. It sits entirely inside
-the CPU boundary — it never touches the bus, memory, or pins — and any
-unclaimed encoding falls through to PicoRV32's illegal-instruction trap.
+A single-cycle co-processor on PicoRV32's PCPI interface (custom-0 opcode
+`0x0B`, selected by `funct3`). Each instruction does in **one cycle** what would
+otherwise take a software loop. It lives entirely inside the CPU — no bus, no
+memory, **no pins** — and any unclaimed encoding falls through to the CPU's
+illegal-instruction trap. You observe its results through UART or GPIO.
+
+**What it's for**
+
+- **CRC32 — data integrity (`crc32.b`, `crc32.w`).** Checksum a UART or SPI
+  message to detect corruption in transit. A software CRC needs a 1 KB lookup
+  table that won't fit in this chip's 512 B data memory; this does it in one
+  instruction with no table. Uses the reflected IEEE 802.3 polynomial
+  `0xEDB88320`, so results match zlib and Ethernet.
+- **Signed MAC — digital filtering (`mac`, `macrd`, `macclr`).** Multiply-
+  accumulate is the heart of DSP. The `fir_demo` firmware runs a 5-tap
+  moving-average filter (taps 1-2-4-2-1) over a noisy ±100 square wave and cuts
+  the ripple from 30 down to 6 — a **5× noise reduction** — printing raw vs
+  filtered values over UART so you can watch it work.
+- **Bit ops (`popcnt`, `brev`).** Population count and bit-reverse in one
+  instruction instead of a loop — useful for protocol parsing, hashing, and
+  error-correction codes.
+
+**Instruction encoding**
 
 | funct3 | Instruction | Operation |
 | --- | --- | --- |
-| `000` | `crc32.b` | Fold one byte (`rs2[7:0]`) into a running CRC32 in `rs1` |
-| `001` | `crc32.w` | Fold a full word (`rs2[31:0]`) into the CRC32 in `rs1` |
-| `010` | `popcnt` | Population count (set bits) of `rs1` |
+| `000` | `crc32.b` | Fold one byte (`rs2[7:0]`) into the running CRC32 in `rs1` |
+| `001` | `crc32.w` | Fold a word (`rs2[31:0]`) into the CRC32 in `rs1` |
+| `010` | `popcnt` | Count set bits in `rs1` |
 | `011` | `brev` | Bit-reverse `rs1` |
-| `100` | `mac` | Signed 16×16 multiply-accumulate: `acc += rs1[15:0] * rs2[15:0]` |
-| `101` | `macrd` | Read the MAC accumulator (no modify) |
+| `100` | `mac` | `acc += signed(rs1[15:0]) * signed(rs2[15:0])`; return `acc` |
+| `101` | `macrd` | Read the MAC accumulator (no change) |
 | `110` | `macclr` | Clear the MAC accumulator |
 
-CRC uses the reflected IEEE 802.3 polynomial `0xEDB88320`, so results match
-zlib and Ethernet. The CRC ops exist because a table-driven CRC needs a 1 KB
-lookup table that does not fit this chip's 512 B data memory; `popcnt`/`brev`
-replace multi-instruction software loops; the signed MAC is the core of digital
-filtering (see the FIR firmware demo).
-
 Verified by directed cocotb tests (`chip crc32`, `chip pcpi`, `pcpi cycles`,
-FIR), and by formal (7 properties): unclaimed `funct3` never raises
-`pcpi_ready`, `pcpi_wr == pcpi_ready`, single-cycle completion, `pcpi_wait`
-tied low.
+FIR) and 7 formal properties: an unclaimed `funct3` never raises `pcpi_ready`,
+`pcpi_wr == pcpi_ready`, single-cycle completion, and `pcpi_wait` stays low.
+
+### **Pinout (22 pins: 20 signal + 2 power)**
+
+Verified against the signed-off netlist (`gds/chip_top_full.pnl.v`). Full detail
+in `PINOUT.md`.
+
+| Group | Pins | Dir | Purpose |
+| --- | --- | --- | --- |
+| Clock | `clk`, `clk_int` | in | 25 MHz input; `clk_int` picks internal vs external source |
+| Reset | `rst_n` | in | Active-low reset |
+| Scan | `scan_in`, `scan_shift`, `scan_load`, `scan_i0o1` | in | Program load, config, and control via scan chain |
+| Scan | `scan_out` | out | Scan readback |
+| GPIO | `gpio_in[1:0]` | in | 2 buttons |
+| GPIO | `gpio_out[3:0]` | out | 4 LEDs (or piezo) |
+| UART | `uart_rx`, `uart_tx` | in / out | Serial console |
+| SPI | `spi_miso` | in | SPI data in (e.g. sensor) |
+| SPI | `spi_sclk`, `spi_mosi`, `spi_cs_n` | out | SPI master (e.g. LCD) |
+| Power | `VDD`, `VSS` | — | 5.0 V supply |
+
+Bring-up (FSM start/config, state observation, program load) goes through the
+**scan chain** rather than dedicated pins — a Columbia-style approach that saved
+4 pins.
 
 ### **Signoff status**
 
