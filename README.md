@@ -35,7 +35,7 @@ loop. Measured on the gate-level SoC:
 
 Full methodology and reproduction steps: [PCPI benchmarks](docs/PCPI_BENCHMARKS.md).
 
-**Real-world applications**
+### **Real-world applications**
 
 #### Digital signal processing — the FIR filter demo
 
