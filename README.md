@@ -24,6 +24,8 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 
 ### **PCPI custom accelerator**
 
+**Measured highlight:** CRC32 runs **10.34× faster** than the software bitwise loop (39,143 → 3,785 cycles, gate-level), and the MAC-based FIR filter cuts noise ripple **5×** (30 → 6). See [PCPI benchmarks](docs/PCPI_BENCHMARKS.md).
+
 A single-cycle co-processor on PicoRV32's PCPI interface (custom-0 opcode
 `0x0B`, selected by `funct3`). Each instruction does in **one cycle** what would
 otherwise take a software loop. It lives entirely inside the CPU — no bus, no
@@ -132,6 +134,7 @@ so the signoff artifact is the unmodified flow output. Evidence:
 | [Area report](docs/AREA_REPORT.md) | Placed area, utilization, cell breakdown |
 | [Timing report](docs/TIMING_REPORT.md) | STA across all 9 PVT corners |
 | [Back-end signoff](docs/BACKEND_REPORT.md) | Antenna, LVS, DRC, IR-drop, power |
+| [PCPI benchmarks](docs/PCPI_BENCHMARKS.md) | Measured CRC32 10.3× and FIR 5× results |
 | [Verification](VERIFICATION.md) | Test strategy, single gate, formal |
 | [Schematic review](docs/detailed_schematic_review.md) | Block-by-block design review |
 
