@@ -40,3 +40,4 @@ verification/formal/build_*.smt2
 fe_report/*.synth.v
 fe_report/*.log
 fe_report/*.rpt
+fusesoc.conf
