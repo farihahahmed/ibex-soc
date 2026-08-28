@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SMT2 = ROOT / "formal_test_fsm.smt2"
 RTL = ROOT / "rtl" / "test_fsm.sv"
 FORMAL = ROOT / "verification" / "formal" / "test_fsm_formal.sv"
+ICG = ROOT / "verification" / "cocotb" / "models" / "gf180mcu_fd_sc_mcu7t5v0__icgtp_1.v"
 
 def run(cmd, **kw):
     print("+", " ".join(cmd))
@@ -24,7 +25,7 @@ def main():
         return 1
 
     yosys_script = f"""
-read_verilog -sv {RTL} {FORMAL}
+read_verilog -sv {RTL} {FORMAL} {ICG}
 prep -top test_fsm_formal
 async2sync
 dffunmap

@@ -6,7 +6,8 @@ COCOTB_TEST_MODULES ?= test_scan_fsm_int
 VERILOG_SOURCES = \
   scan_fsm_wrap.sv \
   ../../../../rtl/scan_chain.sv \
-  ../../../../rtl/test_fsm.sv
+  ../../../../rtl/test_fsm.sv \
+  ../../models/gf180mcu_fd_sc_mcu7t5v0__icgtp_1.v
 
 COMPILE_ARGS += -g2012
 export PYTHONPATH := $(abspath ../../../../verification/cocotb):$(PYTHONPATH)
