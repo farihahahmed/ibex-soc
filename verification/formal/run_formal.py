@@ -15,6 +15,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 RTL  = ROOT / "rtl"
+ICG  = ROOT / "verification" / "cocotb" / "models" / "gf180mcu_fd_sc_mcu7t5v0__icgtp_1.v"
 
 # name -> (RTL sources, properties file, top module, BMC depth)
 TARGETS = {
@@ -33,6 +34,8 @@ SOLVER = os.environ.get("SMT_SOLVER", "yices")
 def prove(name):
     srcs, props, top, depth = TARGETS[name]
     files = " ".join(str(RTL / s) for s in srcs) + " " + str(HERE / props)
+    if "test_fsm.sv" in srcs:
+        files += " " + str(ICG)
     smt2  = HERE / f"build_{name}.smt2"
     smt2.parent.mkdir(parents=True, exist_ok=True)
 
