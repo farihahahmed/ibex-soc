@@ -35,7 +35,7 @@ loop. Measured on the gate-level SoC:
 
 Full methodology and reproduction steps: [PCPI benchmarks](docs/PCPI_BENCHMARKS.md).
 
-**What the instructions do**
+**Real-world applications**
 
 - **`crc32.b` / `crc32.w` — data integrity.** Checksum a UART or SPI message to
   catch corruption. One instruction replaces a 1 KB lookup table that wouldn't
