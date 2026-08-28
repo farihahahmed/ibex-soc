@@ -33,7 +33,7 @@
 | R-BOOT-06 | CLKGEN / scan targets decode correctly | block `scan` clkgen / fsm | BLOCK | DIR | Closed |
 | R-BOOT-07 | Scan can read IMEM words back (tgt=3) | `test_scan_readback` — 4 addresses incl. the last word of imem | CHIP | DIR | Closed |
 | R-BOOT-08 | Status word readable via scan (tgt=3, addr[13]=1) | `test_scan_status` — FSM mode and memory ownership observed in IDLE and RUN | CHIP | DIR | Closed |
-| R-BOOT-09 | CPU trap is observable after the CPU halts | Status word bit 0: sticky, synchronised into `sys_clk`. Read path proven by `test_scan_status` | CHIP | DIR | **Partial** — path verified; a real trap event has not been forced |
+| R-BOOT-09 | CPU trap is observable after the CPU halts | Status word bit 0: sticky, synchronised into `sys_clk`. `test_scan_trap` loads an illegal instruction, runs the CPU, and observes the trap bit set and sticky via the status word | CHIP | DIR | **Closed** |
 | R-BOOT-10 | Clock divider ratio and glitch-free source switch | `test_clkgen` — 10 / 80 / 10 ns, both switch directions, no clock stop | CHIP | DIR | Closed |
 | R-BOOT-11 | Scan chain formal properties hold | `verification/formal/run_scan_chain_formal.py` — bounded model check, PASSED | BLOCK | FORMAL | Closed |
 | R-BOOT-12 | Clock-gating FSM formal properties hold | `verification/formal/run_test_fsm_formal.py` — bounded model check, PASSED | BLOCK | FORMAL | Closed |
@@ -200,7 +200,6 @@ Verified twice: standalone against a Python model, and end-to-end through the CP
 
 ## Open items (do not claim closed)
 
-- **R-BOOT-09** — trap read path verified, but no test forces an actual trap
 - **R-GL-02** — `make gl-firmware` scan-loads real firmware (`fw_gpio_walk`)
   into the **signoff netlist's** SRAM using the same 48-bit scan protocol as the
   RTL environment. Confirmed in gate-level: the netlist elaborates, resets
