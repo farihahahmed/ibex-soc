@@ -312,8 +312,9 @@ Bounded model checking with Yosys/SymbiYosys, run in CI.
 | `bridge` | AMBA APB compliance: SETUP always precedes ACCESS, PENABLE never held two cycles | 5 |
 | `shim` | Single outstanding transaction; read data routed from the bus actually selected | 6 |
 | `fabric` | AHB decode is one-hot; the response mux follows the *registered* selection, matching AHB pipelining | 11 |
+| `scan_chain` | Scan load / target decode; address handling | 4 |
 
-Run with `python3 verification/formal/run_formal.py`. Four properties are
+Run with `python3 verification/formal/run_formal.py` and `python3 verification/formal/run_scan_chain_formal.py` (46 properties across 8 targets; set `SMT_SOLVER=z3` to match CI, default yices). Four properties are
 withheld with stated reasons rather than weakened into assertions that cannot
 fail: two depend on `run_gate_q`, clocked on `negedge`, which the BMC transform
 does not preserve faithfully; one needs to exclude every countdown reload
@@ -337,7 +338,7 @@ rather than for the stimulus a testbench happens to apply.
 | Job | Scope |
 |---|---|
 | `lint` | Standalone elaboration of all 22 RTL blocks (`scripts/lint_blocks.sh`) |
-| `gate` | The full 30-test gate |
+| `gate` | The full 52-suite gate |
 | `formal` | All 46 properties |
 | `gate-level` | Netlist boots and drives its pins |
 
