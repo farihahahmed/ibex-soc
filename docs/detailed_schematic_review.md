@@ -26,7 +26,7 @@ all the way through to silicon.
 The processor is a PicoRV32 core configured as **RV32E + M + C**: the embedded
 16-register variant, with hardware multiply and divide and the compressed
 instruction extension. On top of the standard ISA, the chip adds a custom
-co-processor (described in section 4) that accelerates common byte-oriented
+co-processor (described in section 5) that accelerates common byte-oriented
 operations. The system runs from a single 25 MHz input clock that is divided
 on-chip to a **12.5 MHz** operating frequency for the CPU, buses, and
 peripherals.
@@ -53,7 +53,57 @@ pins** (20 signal plus 2 power), running on a single 5 V supply.
 
 ---
 
-## 2. Architecture and how the chip is built
+## 2. Project history and roadmap
+
+The design reached its current form through a sequence of deliberate decisions,
+each made in response to a concrete constraint. The path is worth telling, because
+it shows the planning behind the chip rather than just its final state.
+
+**The project started with an Ibex core and had to change.** The repository was
+originally an Ibex-based SoC, but an early floorplan could not meet the area
+constraint: the hardened Ibex CPU macro alone was 0.743 mm², and it could not tile
+alongside the SRAM macros inside the available die. Rather than force a design that
+would not fit, the core was replaced with a **synthesized PicoRV32** — a much
+smaller, more flexible core that places and routes as standard cells instead of a
+fixed macro. This was the first major planning decision: recognize the area problem
+early, and pivot the core choice before committing to physical design.
+
+**The smaller core freed area, and that area became the accelerator.** Moving from
+the large Ibex macro to synthesized PicoRV32 left the design comfortably under its
+area budget — utilization would have been low, meaning a lot of the die was doing
+nothing. Rather than ship a mostly-empty chip, that freed area was put to use: a
+**custom PCPI accelerator** was added to give the microcontroller genuinely useful
+capability — hardware CRC32, a signed multiply-accumulate for digital filtering,
+and bit-manipulation instructions. This turned a constraint (a core that was too
+big) into a differentiator (a small chip that does real DSP and data-integrity
+work), and it brought final utilization up to a healthy **82%**. The accelerator's
+measured results are in section 5.
+
+**Physical design drove two more refinements.** During place-and-route, the CPU
+clock gate — originally a plain combinational AND — caused a persistent antenna
+violation, high-fanout slew, and a routing failure. It was replaced with a PDK
+integrated clock-gating cell, which resolved all three and was proven equivalent by
+formal and simulation (section 6). Separately, one GPIO output pin was reassigned
+as a dedicated SPI data input, so the fabricated chip could actually receive SPI
+data — a late but deliberate usability decision for the real silicon.
+
+**The result.** These decisions — pivot the core to fit the area, use the freed
+area for an accelerator, fix the clock gating for clean routing, and spend a pin on
+SPI input — produced a design that is complete, useful, and signed off. Each was a
+response to something learned along the way, not a change of direction after the
+fact.
+
+| Milestone | Decision | Driver |
+| --- | --- | --- |
+| Core selection | Ibex → synthesized PicoRV32 | Ibex macro (0.743 mm²) could not tile with the SRAMs |
+| Feature scope | Add the PCPI accelerator | Smaller core freed area; use it for real capability |
+| Clock gating | Combinational gate → PDK ICG cell | Antenna, slew, and routing failures on the gated clock |
+| Silicon usability | One GPIO output → dedicated SPI input | Let the fabricated chip receive SPI data |
+| Signoff | Clean tapeout on GF180MCU | All checks met or defensibly waived |
+
+---
+
+## 3. Architecture and how the chip is built
 
 The whole SoC is integrated into a single top-level module, `chip_top_full`, and
 that top level has been taken all the way through synthesis, placement, clock-tree
@@ -66,7 +116,7 @@ bring-up FSM, and the peripherals. The second, `cpu_clk`, is a clock-gated versi
 that drives the CPU and the buses, so the processor can be held cleanly while a
 program is loaded and released only when the design is ready to run. The gating is
 done with a PDK integrated clock-gating cell rather than hand-built logic, for
-reasons explained in section 5.
+reasons explained in section 6.
 
 **CPU and memory path.** The PicoRV32 core fetches instructions and performs data
 loads and stores through a small shim, `pico_shim`, that splits the instruction
@@ -124,14 +174,14 @@ SPI.
 
 ---
 
-## 3. Synthesis results (front-end)
+## 4. Synthesis results (front-end)
 
 Before committing to place-and-route, the full SoC was synthesized to confirm it
 fits and closes timing. The area estimate comes from Yosys, and the timing from
 OpenSTA, both mapped to the GF180 5 V standard-cell library at nominal conditions.
 These are pre-layout, logic-only estimates — before placement, clock-tree
 synthesis, and routing — and their purpose is to prove the design is feasible
-ahead of the much longer back-end flow. Section 8 then shows how well these
+ahead of the much longer back-end flow. Section 9 then shows how well these
 estimates held up against the final silicon.
 
 ### Area (post-synthesis)
@@ -184,7 +234,7 @@ them.
 
 ---
 
-## 4. Custom accelerator and headline results
+## 5. Custom accelerator and headline results
 
 The most distinctive part of the design is a custom co-processor attached to
 PicoRV32's PCPI interface. It implements **seven single-cycle instructions** in
@@ -240,7 +290,7 @@ protocol parsing. The accelerator makes them cheap on a very small chip.
 
 ---
 
-## 5. Design decisions and tradeoffs
+## 6. Design decisions and tradeoffs
 
 Every significant choice in this design was made deliberately, with the cost and
 benefit understood in advance. The interesting engineering is in these tradeoffs,
@@ -333,7 +383,7 @@ reader of this document has the full picture without needing another file.
 
 ---
 
-## 6. Verification
+## 7. Verification
 
 The design is backed by comprehensive verification across three complementary
 axes — dynamic simulation, formal proof, and structural coverage — all gated by a
@@ -388,7 +438,7 @@ formal properties, and the gate-level smoke. No job is allowed to fail.
 
 ---
 
-## 7. Signoff results
+## 8. Signoff results
 
 The tapeout objective is met: a signed-off GDS exists and all signoff checks are
 clean or explicitly and defensibly waived. The numbers below are from the signoff
@@ -417,7 +467,7 @@ geometry and the byte-level match to the PDK, is in `gds/DRC_WAIVER.txt`.
 
 **Estimate versus silicon.** Because this review was written after layout, every
 pre-layout synthesis estimate can be checked against the real signoff number.
-Section 8 works through that reconciliation in full — it is one of the strongest
+Section 9 works through that reconciliation in full — it is one of the strongest
 pieces of evidence that the design was sound, because the early feasibility
 estimate matched what the silicon became.
 
@@ -433,7 +483,7 @@ papered over.
 
 ---
 
-## 8. Front-end estimate versus silicon
+## 9. Front-end estimate versus silicon
 
 Because this review was written after layout, every pre-layout synthesis estimate
 can be checked against what the silicon actually became. This is worth doing in
