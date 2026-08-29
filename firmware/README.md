@@ -5,11 +5,28 @@ scan-loadable hex words, and loaded over the scan chain. Each fits the **512 B**
 instruction memory; the stack starts at the top of the 512 B data memory
 (`STACKADDR = 0x200`) and grows down.
 
+**Demonstration programs**
+
 | File | Size | Words | Demo | Drives |
 |------|-----:|------:|------|--------|
 | `primes.c` | 116 B | 29 | primes streamed to a terminal (MUL/DIV/MOD) | UART tx |
 | `piezo_tune.c` | 172 B | 43 | "Happy Birthday" tone | GPIO out[0] (piezo) |
 | `game.c` | 122 B | 31 | dodge game on an SPI LCD | SPI sclk/mosi |
+| `fir_demo.c` | 284 B | 71 | 5-tap FIR filter via signed MAC (5× noise reduction) | UART tx |
+| `crc_demo.c` | 92 B | 23 | CRC32 checksum via custom instruction (10.3× vs software) | UART tx |
+| `pcpi_demo.c` | 190 B | 48 | all 7 custom-0 instructions, checked vs Python golden model | UART tx |
+| `cycles_demo.c` | 280 B | 70 | custom-instruction vs software cycle counts | UART tx |
+
+**Verification self-tests** (run in the cocotb gate)
+
+| File | Size | Words | Checks |
+|------|-----:|------:|--------|
+| `fw_gpio_walk.c` | 110 B | 28 | walking-1 across GPIO outputs, readback verified |
+| `fw_dmem_walk.c` | 240 B | 60 | data-memory write/read/invert, stuck-bit detection |
+| `fw_uart_echo.c` | 110 B | 28 | RX three bytes, buffer, TX back |
+| `fw_spi_loop.c` | 84 B | 21 | one SPI transfer, MISO readback |
+| `fw_pcpi_check.c` | 94 B | 24 | custom-instruction result check |
+| `cycles_min.c` | 98 B | 25 | minimal cycle-count bracket (GPIO markers) |
 
 `link.ld` places code at **0x0** (`PROGADDR_RESET = 0x0`); `_start` is pinned
 first via the `.text.start` section. UART output uses a busy-wait `putc`: poll
