@@ -124,7 +124,7 @@ width) are not produced by this design. They originate in the GF180 SRAM macro
 LEFs: every `gf180mcu_fd_ip_sram__sram*x8m8wm1` LEF contains a 0.110 µm tall
 Metal3 port rectangle on the **VSS** pin, against an M3.1 minimum of 0.28 µm.
 Both macro instances flag it at identical relative offsets, and our LEF copies
-are md5-identical to the PDK's. They are macro-internal, not routing-induced,
+are md5-identical to the PDK's. An independent KLayout DRC of the foundry deck run directly on the GDS reports zero violations, confirming these are LEF-abstract artifacts, not real geometry. They are macro-internal, not routing-induced,
 so the signoff artifact is the unmodified flow output. Evidence:
 `gds/DRC_WAIVER.txt` (full evidence + waiver summary).
 

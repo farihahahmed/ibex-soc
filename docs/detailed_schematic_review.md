@@ -462,7 +462,7 @@ PDK contains a 0.110 µm-tall Metal3 rectangle on its VSS pin, against a 0.28 µ
 minimum. Both SRAM instances in the design flag it at identical relative offsets,
 and our copies of the macro are md5-identical to the PDK's originals — so the
 violations come from the unmodified foundry IP, not from anything the design does.
-The issue has been reported upstream, and the full evidence, including the exact
+An independent KLayout DRC of the foundry deck, run directly on the GDS, reports zero violations — confirming the Magic flags come from the macro LEF abstract, not the fabricated geometry. The issue has been reported upstream, and the full evidence, including the exact
 geometry and the byte-level match to the PDK, is in `gds/DRC_WAIVER.txt`.
 
 **Estimate versus silicon.** Because this review was written after layout, every
