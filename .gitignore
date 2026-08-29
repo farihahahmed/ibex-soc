@@ -41,3 +41,4 @@ fe_report/*.synth.v
 fe_report/*.log
 fe_report/*.rpt
 fusesoc.conf
+drc_screenshots/
