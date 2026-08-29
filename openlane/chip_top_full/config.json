@@ -14,14 +14,14 @@
   "DIE_AREA": [
     0,
     0,
-    1100,
-    1100
+    1110,
+    1110
   ],
   "CORE_AREA": [
     10,
     10,
-    1090,
-    1090
+    1100,
+    1100
   ],
   "PL_MAX_DISPLACEMENT_X": 1000,
   "PL_MAX_DISPLACEMENT_Y": 1000,
