@@ -115,7 +115,7 @@ Module instances (from `rtl/chip_top_full.sv`): `u_clkgen`, `u_scan`, `u_fsm`,
 | Structure | UVM phases, agents, sequencers, analysis ports |
 | Block bus VIP | APB driver + monitor |
 | Coverage | Functional (Python) + Verilator code coverage |
-| Packaging | FuseSoC `::pico_soc:1.0.0` (`sim` / `pyuvm` / `block` / honesty) |
+| Packaging | FuseSoC `::pico_soc:1.0.0` (`default` / `sim` / `honesty`) |
 | Gate-level | Post-PnR netlist + Icarus |
 
 ### 3.3 Directory map
