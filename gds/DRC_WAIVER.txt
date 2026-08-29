@@ -72,3 +72,18 @@ REPRODUCE
   grep "width \*m3,rm3" $PDK_ROOT/gf180mcuD/libs.tech/magic/gf180mcuD.tech
   awk '/PIN VSS/{f=1}/END VSS/{f=0}f' openlane/chip_top_full/macros/sram512x8.lef | grep -B1 "118.435 30.885"
   md5sum openlane/chip_top_full/macros/sram512x8.lef <PDK>/...sram512x8m8wm1.lef
+
+--- Independent KLayout DRC cross-check (2026-08-29) ---
+To confirm the M3.1 flags are not real GDS geometry, the signed-off GDS was
+run through the GF180MCU KLayout DRC deck (the foundry-authored
+gf180mcu.drc, identical rule metal3.width(0.28um)), directly on
+gds/chip_top_full.gds.
+
+Result: ZERO violations, including zero M3.1. The KLayout run loaded
+1,572,104 polygons (metal3_drawn: 36,834), executed rule M3.1, and completed
+all BEOL rules in 1475 s with an empty violation database.
+
+Conclusion: the four Magic (LibreLane) M3.1 findings originate in the SRAM
+macro's LEF abstract, not in the actual GDS geometry. Two independent tools
+therefore agree the fabricated geometry is DRC-clean.
+Evidence: gds/klayout_drc.log (full run) and gds/klayout_drc.lyrdb (empty result).
