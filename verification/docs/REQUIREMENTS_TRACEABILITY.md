@@ -2,7 +2,7 @@
 
 **Purpose:** Map each design requirement to the test(s) that prove it.
 **Rule:** A requirement is *closed* only when at least one listed test is **PASS** in the official gate (`./run_all_verify.sh`).
-**Last updated:** 2026-08-27
+**Last updated:** 2026-08-29
 **Gate:** 52 suites, 0 failures, exit code 0. One gate, no excluded tests, no allowed-to-fail legs.
 
 ---
