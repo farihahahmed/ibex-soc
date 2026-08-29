@@ -18,7 +18,7 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 | **Accelerator** | PCPI custom co-processor (CRC32, popcount, bit-reverse, signed MAC) |
 | **Bring-up** | Scan chain and clock-gating FSM |
 | **Process** | GF180MCU, open PDK |
-| **Die** | 1100 × 1100 µm (A45 slot allows 1110 × 1110) |
+| **Die** | 1100 × 1100 µm |
 | **Utilization** | 82.0% |
 
 
