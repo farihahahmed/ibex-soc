@@ -18,8 +18,8 @@ place-and-route and signoff. IEEE Chipathon 2026 submission (project A45).
 | **Accelerator** | PCPI custom co-processor (CRC32, popcount, bit-reverse, signed MAC) |
 | **Bring-up** | Scan chain and clock-gating FSM |
 | **Process** | GF180MCU, open PDK |
-| **Die** | 1100 × 1100 µm |
-| **Utilization** | 82.0% |
+| **Die** | 1110 × 1110 µm |
+| **Utilization** | 80.5% |
 
 
 ### **PCPI custom accelerator**
@@ -105,16 +105,16 @@ chain keeps the design at 22.
 ### **Signoff status**
 
 Artifact: `gds/chip_top_full.gds` (unmodified LibreLane output)
-Run: `openlane/chip_top_full/runs/RUN_2026-08-28_09-52-02`
+Run: `openlane/chip_top_full/runs/RUN_2026-08-29_12-40-30`
 
 | Check | Result |
 | --- | --- |
-| LVS | Match uniquely (`gds/lvs_report.rpt`) |
+| LVS | Match uniquely — 16,728 devices (`gds/lvs_report.rpt`) |
 | Antenna | **0 violations** |
 | Timing | Clean, all 9 corners — setup +4.17 ns, hold +0.33 ns |
-| DRC | 4 × M3.1 — SRAM-macro, waived (see below) |
+| DRC | 4 × M3.1 — SRAM-macro LEF, waived; KLayout on GDS = 0 (see below) |
 | IR drop | 0.04% worst (2.05 mV) |
-| Power | 48.3 mW (nom_tt) |
+| Power | 48.1 mW (nom_tt) |
 | Area / detail | `docs/FRONTEND_SYNTHESIS.md`, `docs/BACKEND_REPORT.md` |
 
 **CPU clock fmax:** 13.2 MHz worst corner (ss_125C_4v50) vs 12.5 MHz operating.
@@ -164,7 +164,7 @@ export PYTHONPATH="$(pwd):${PYTHONPATH}"
 code 0. It is a single honest gate: no excluded tests, no allowed-to-fail
 legs. Detail in `VERIFICATION.md` and `verification/docs/`.
 
-**Current status (2026-08-28):** exit gate passes on the current design —
+**Current status (2026-08-29):** exit gate passes on the current design —
 **52 suites, 0 failures, exit code 0**. FSM state/arc coverage 40/40 (100%);
 stress-path functional coverage closed. Verified against the post-ICG RTL.
 
