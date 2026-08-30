@@ -9,7 +9,7 @@ final signed-off results.
 
 This review was written **after physical design was completed**, so every number
 reported here comes from the actual signed-off chip rather than an early estimate.
-The signoff run is `RUN_2026-08-28_09-52-02` and the artifact is
+The signoff run is `RUN_2026-08-29_12-40-30` and the artifact is
 `gds/chip_top_full.gds`. Where a pre-layout synthesis estimate and the final
 signoff differ, the two are reconciled line by line in `docs/FE_VS_BE.md`.
 
@@ -35,7 +35,7 @@ On-chip memory is **1 KB total** — 512 bytes of instruction memory and 512 byt
 of data memory — built from the GF180 8-bit-wide SRAM macros. The CPU reaches
 memory and peripherals over an AHB-Lite bus for instruction fetch and data
 access, with an AHB-to-APB bridge feeding the peripheral block: GPIO, UART, and
-SPI. The whole design fits in a **1100 × 1100 µm** die and uses exactly **22
+SPI. The whole design fits in a **1110 × 1110 µm** die and uses exactly **22
 pins** (20 signal plus 2 power), running on a single 5 V supply.
 
 | Specification | Value |
@@ -48,7 +48,7 @@ pins** (20 signal plus 2 power), running on a single 5 V supply.
 | Bring-up | Scan chain + clock-gating FSM |
 | Operating frequency | 12.5 MHz (from a 25 MHz input, divided by two on-chip) |
 | Process | GF180MCU, single 5 V standard-cell library |
-| Die size | 1100 × 1100 µm |
+| Die size | 1110 × 1110 µm |
 | Pins | 22 (20 signal + 2 power) |
 
 ---
@@ -76,7 +76,7 @@ nothing. Rather than ship a mostly-empty chip, that freed area was put to use: a
 capability — hardware CRC32, a signed multiply-accumulate for digital filtering,
 and bit-manipulation instructions. This turned a constraint (a core that was too
 big) into a differentiator (a small chip that does real DSP and data-integrity
-work), and it brought final utilization up to a healthy **82%**. The accelerator's
+work), and it brought final utilization up to a healthy **80.5%**. The accelerator's
 measured results are in section 5.
 
 **Physical design drove two more refinements.** During place-and-route, the CPU
@@ -203,7 +203,7 @@ box. The logic is flop-dominated, as expected for a CPU SoC with a CRC and MAC
 datapath — the largest single area consumers are the datapath flip-flops, the
 multiplexers, and the reset flip-flops. This post-synthesis area stays roughly
 stable through placement; the back-end then adds the clock tree, buffering, and
-fill on top, reaching a final signoff utilization of 82% in the 1.21 mm² die.
+fill on top, reaching a final signoff utilization of 80.5% in the 1.232 mm² die.
 
 ### Timing (ideal clocks)
 
@@ -446,13 +446,13 @@ run on the current design.
 
 | Check | Result |
 | --- | --- |
-| LVS (layout vs schematic) | Matches uniquely, 16,805 devices |
+| LVS (layout vs schematic) | Matches uniquely, 16,728 devices |
 | Antenna | 0 violations |
 | Timing | Clean across all 9 corners — setup slack +4.17 ns, hold slack +0.33 ns |
 | DRC | 4 violations (M3.1), all inside the SRAM macro — waived with evidence |
-| IR drop | 0.04% worst case (2.05 mV) |
-| Power | 48.3 mW nominal |
-| Utilization | 82.0% |
+| IR drop | 0.031% worst case (1.56 mV) |
+| Power | 48.1 mW nominal |
+| Utilization | 80.5% |
 | CPU maximum frequency | 13.2 MHz at the worst corner, against 12.5 MHz operating |
 
 **The DRC waiver is a foundry-macro issue, not a flaw in this design.** All four
@@ -502,10 +502,10 @@ after placement, clock-tree synthesis, routing, antenna repair, and fill.
 
 | Metric | Front-end (synthesis) | Back-end (signoff) | Why it differs |
 | --- | ---: | ---: | --- |
-| Sequential-cell area | 160,704 µm² | 162,873 µm² | +1.3% — the resizer up-sized a few flops; near-identical |
-| Placed instance area | — | 1,144,440 µm² | Back-end includes buffers, diodes, fill, and both SRAM macros |
-| Die area | — | 1,210,000 µm² (1100×1100) | Fixed floorplan, not a synthesis output |
-| Core utilization | — | 82.0% | Placed cell area over core area; no front-end equivalent |
+| Sequential-cell area | 160,704 µm² | 162,904 µm² | +1.3% — the resizer up-sized a few flops; near-identical |
+| Placed instance area | — | 1,163,850 µm² | Back-end includes buffers, diodes, fill, and both SRAM macros |
+| Die area | — | 1,232,100 µm² (1110×1110) | Fixed floorplan, not a synthesis output |
+| Core utilization | — | 80.5% | Placed cell area over core area; no front-end equivalent |
 | SRAM macros | 2 × 209,404 µm² | 2 × 209,404 µm² | Identical — the hardened macro is unchanged by either flow |
 
 The sequential area — the actual datapath registers — matches within 1.3% from
@@ -516,20 +516,20 @@ built.**
 
 | Metric | Front-end | Back-end | Why it differs |
 | --- | ---: | ---: | --- |
-| Functional standard cells | 14,483 | 32,263 | +17,780 — physical infrastructure, broken down below |
-| Fill cells | 0 | 38,227 | Fill is a back-end-only step; non-functional |
-| Total instances | 14,483 | 70,492 | Functional + fill + macros |
+| Functional standard cells | 14,483 | 32,140 | +17,657 — physical infrastructure, broken down below |
+| Fill cells | 0 | 39,534 | Fill is a back-end-only step; non-functional |
+| Total instances | 14,483 | 71,676 | Functional + fill + macros |
 | Flip-flops | 2,445 | 2,477 | +32 — clock-tree synthesis added a few registers |
 | Integrated clock gates | 3 | 3 | Identical — the clock gates survive unchanged |
 
-The +17,780 back-end cells are all physical steps the front end cannot model, and
+The +17,657 back-end cells are all physical steps the front end cannot model, and
 their breakdown shows the growth is infrastructure, not new logic:
 
 | Added cell class | Count | Purpose |
 | --- | ---: | --- |
-| Antenna diodes | 10,858 | Protect gates from charge during etch |
-| Timing-repair buffers | 781 | Fix setup and transition on real routed nets |
-| Hold buffers | 265 | Add delay to meet hold with real clock skew |
+| Antenna diodes | 10,641 | Protect gates from charge during etch |
+| Timing-repair buffers | 745 | Fix setup and transition on real routed nets |
+| Hold buffers | 264 | Add delay to meet hold with real clock skew |
 | Clock tree, resizer, taps | ~5,876 | Clock buffers, driver up-sizing, well taps |
 
 This is the healthy shape of a front-end-to-back-end transition: the functional
@@ -582,8 +582,8 @@ operating frequency.
 
 Synthesis predicted the design accurately: sequential area within 1.3%, flip-flop
 count within 32, integrated-clock-gate count exact, and timing closing at the
-target period. The back end then added physical infrastructure — roughly 10,900
-antenna diodes, 5,900 clock-tree and resizer cells, and 38,000 fill cells — and,
+target period. The back end then added physical infrastructure — roughly 10,600
+antenna diodes, 5,900 clock-tree and resizer cells, and 39,500 fill cells — and,
 with real parasitics, actually *improved* setup slack from a pessimistic +0.20 ns
 to a comfortable +4.17 ns while meeting hold on all nine corners. The early
 feasibility analysis held all the way through signoff. The complete comparison is
