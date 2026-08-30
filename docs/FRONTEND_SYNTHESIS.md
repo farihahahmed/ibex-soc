@@ -25,7 +25,7 @@ Reproduce: `fe_report/synth_area.ys` (area) and `fe_report/fe_timing.tcl`
 Yosys reports std-cell logic area only; SRAM macro area is added from the macro
 LEF (Yosys black-boxes hardened macros). This is post-synthesis logic area — it
 stays roughly stable through placement; the back-end adds clock-tree, buffering,
-and fill on top (final signoff utilization 82 % in a 1.21 mm² die).
+and fill on top (final signoff utilization 80.5 % in a 1.232 mm² die).
 
 Largest area consumers: `dffq` flops (127k µm²), `mux2` (52k), `dffrnq` (33k),
 `nand2` (27k) — flop-dominated, as expected for a CPU SoC with a CRC/MAC
