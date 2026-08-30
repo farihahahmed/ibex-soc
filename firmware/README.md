@@ -62,8 +62,16 @@ or `-mabi=ilp32` assumes 32 registers, which this core does not have.
 
 ## Run in simulation
 
-`tb/tb_demo.sv` scan-loads a program (from the matching `tb/g_*_prog.svh`),
-configures the FSM to RUN, and checks peripheral pin activity.
+The firmware runs in the cocotb/pyuvm gate: each program is scan-loaded into the
+instruction memory, the FSM is configured to RUN, and peripheral pin activity is
+checked against a scoreboard. All demos are part of the official gate:
 
-**Note:** the verification environment has not yet been updated for the 1 KB
-memory configuration. See `VERIFICATION.md`.
+```bash
+cd verification/cocotb
+export PYTHONPATH="$(pwd):${PYTHONPATH}"
+make primes   # UART prime stream
+make piezo    # GPIO[0] piezo tone
+make game     # SPI activity
+```
+
+See `VERIFICATION.md` for the full gate.
