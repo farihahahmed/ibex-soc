@@ -14,8 +14,9 @@ against a 400 limit — 0.9% over, on Metal4. Seven configurations were tried to
 clear it: placement density 52 and 48, `GRT_ADJUSTMENT` 0.15, clock periods 30,
 34 and 45 ns, `DRT_ANTENNA_REPAIR_ITERS` (which crashes detailed routing at this
 utilisation), a larger 1110x1110 die, and a macro nudge. None produced fewer
-than one violation and several produced more. Timing closes on all nine corners
-and LVS matches uniquely.
+than one violation and several produced more. **This documents an earlier
+exploration; the final 1110x1110 signoff run is antenna-clean (0 violations),
+with timing closed on all nine corners and LVS matching uniquely.**
 
 **Four Magic DRC violations (M3.1, Metal3 width).** These are not produced by
 this design. Every `gf180mcu_fd_ip_sram__sram*x8m8wm1` LEF in the PDK contains a
