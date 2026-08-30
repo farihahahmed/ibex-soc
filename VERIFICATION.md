@@ -71,9 +71,8 @@ DUT: chip_top_full  |  block DUT (apb_uart / apb_gpio / apb_spi / …)
 The `chip_top_full` module wires the SoC as follows. Bring-up (scan + FSM +
 clock gating) sits outside the CPU clock domain; everything from the CPU down
 runs on the gated `cpu_clk`.
+```text
                      chip_top_full
-```text
-```text
 clk / clk_int ──► clk_gen ──► sys_clk ──► [ICG] ──► cpu_clk (12.5 MHz)
 ▲ enable
 scan_in/shift/ │
@@ -102,7 +101,6 @@ apb_decoder (PADDR[17:16])
 ┌───▼───┐ ┌───▼───┐ ┌───▼───┐
 │ GPIO │ │ UART │ │ SPI │
 └───┬───┘ └──┬─┬──┘ └──┬────┘
-```
 gpio_in[1:0] / gpio_out[3:0] ───────┘ uart_rx ┘ └ uart_tx └ sclk/mosi/cs_n/miso
 ```
 
