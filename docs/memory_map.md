@@ -47,6 +47,5 @@ All three demo firmwares fit comfortably — the largest is 172 B.
 ## History
 
 The v1 signoff used 256 B instruction and 64 B data memory on a 1000 × 1000 µm
-die. Growing the die to 1100 × 1100 (within the 1110 × 1110 A45 slot) freed
-enough area to triple total memory to 1 KB while keeping the full RV32E+M+C
-core. See `FRONTEND_SYNTHESIS.md`.
+die. Growing the die to the full 1110 × 1110 A45 slot freed enough area to
+triple total memory to 1 KB while keeping the full RV32E+M+C core. See `FRONTEND_SYNTHESIS.md`.

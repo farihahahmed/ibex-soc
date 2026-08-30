@@ -5,7 +5,7 @@ A like-for-like comparison of the **pre-layout synthesis estimate** (Yosys
 OpenROAD, real parasitics), both on the same ICG RTL.
 
 - Front-end source: `fe_report/` (`synth_area.ys`, `fe_timing.tcl`)
-- Back-end source: `openlane/chip_top_full/runs/RUN_2026-08-28_09-52-02/final/metrics.json`
+- Back-end source: `openlane/chip_top_full/runs/RUN_2026-08-29_12-40-30/final/metrics.json`
 
 Front-end and back-end measure different things on purpose: the front end tells
 you whether the **logic** fits and closes; the back end tells you what the
@@ -18,10 +18,10 @@ why it differs.
 | Metric | Front-end (synthesis) | Back-end (signoff) | Why it differs |
 | --- | ---: | ---: | --- |
 | Std-cell logic area | 397,658 µm² | — | FE is logic only; BE reports placed area instead (next rows) |
-| Sequential-cell area | 160,704 µm² | 162,873 µm² | +1.3% — resizer up-sized some flops; near-identical |
-| Instance (placed) area | — | 1,144,440 µm² | BE includes buffers, diodes, fill, and both SRAM macros |
-| Die area | — | 1,210,000 µm² (1100×1100) | Fixed floorplan; not a synthesis output |
-| Core utilization | — | 82.0% | Placed cell area / core area; no FE equivalent |
+| Sequential-cell area | 160,704 µm² | 162,904 µm² | +1.3% — resizer up-sized some flops; near-identical |
+| Instance (placed) area | — | 1,163,850 µm² | BE includes buffers, diodes, fill, and both SRAM macros |
+| Die area | — | 1,232,100 µm² (1110×1110) | Fixed floorplan; not a synthesis output |
+| Core utilization | — | 80.5% | Placed cell area / core area; no FE equivalent |
 | SRAM macros | 2 × 209,404 µm² (from LEF) | 2 × 209,404 µm² | Identical — hardened macro, unchanged by either flow |
 
 Sequential area matches within 1.3% front to back — the datapath the synthesis
@@ -31,18 +31,18 @@ predicted is the datapath that was built.
 
 | Metric | Front-end | Back-end | Why it differs |
 | --- | ---: | ---: | --- |
-| Std cells (functional) | 14,483 | 32,263 | +17,780 — see breakdown below |
-| Fill cells | 0 | 38,227 | Fill is a back-end-only step (fills empty core area; non-functional) |
-| Total instances | 14,483 | 70,492 | Functional + fill + macros |
+| Std cells (functional) | 14,483 | 32,140 | +17,657 — see breakdown below |
+| Fill cells | 0 | 39,534 | Fill is a back-end-only step (fills empty core area; non-functional) |
+| Total instances | 14,483 | 71,676 | Functional + fill + macros |
 | Flip-flops | 2,445 | 2,477 | +32 — CTS/resizer added a few clock-domain registers |
 | Integrated clock gates | 3 | 3 | Identical — the cpu_clk / clk_gen ICGs survive unchanged |
 
-**Where the +17,780 back-end cells come from** (all post-synthesis physical
+**Where the +17,657 back-end cells come from** (all post-synthesis physical
 steps the front end cannot model):
 
 | Added cell class | Count | Purpose |
 | --- | ---: | --- |
-| Antenna diodes | 10,858 | Protect gates from charge during etch (antenna repair) |
+| Antenna diodes | 10,641 | Protect gates from charge during etch (antenna repair) |
 | Timing-repair buffers | 781 | Fix setup/transition on real routed nets |
 | Hold buffers | 265 | Add delay to meet hold with real clock skew |
 | CTS + resizer + taps | ~5,876 | Clock-tree buffers, driver up-sizing, well taps |
@@ -97,16 +97,16 @@ the logic closes at the target period. The CPU domain is the binding one.
 | LVS | Clean (0 errors) |
 | DRC | 4 — all in the GF180 SRAM macro, waived |
 | IR drop (worst) | 2.05 mV (0.04%) |
-| Routed wirelength | 1,452,207 µm |
-| Vias | 152,630 (single-cut) |
-| Power (nom_tt) | 48.3 mW |
+| Routed wirelength | 1,285,066 µm |
+| Vias | 143,484 (single-cut) |
+| Power (nom_tt) | 48.1 mW |
 | Max-slew / max-cap | 5,020 / 235 — advisory, non-gating, timing met |
 
-## Bottom line
+## In summary
 
 Synthesis predicted the design accurately: **sequential area within 1.3%**,
 **flop count within 32**, **ICG count exact**, and **timing closing at the
-target period**. The back end adds physical infrastructure (10,858 diodes, ~5.9k
-CTS/resizer cells, 38k fill) and, with real parasitics, *improves* setup slack
+target period**. The back end adds physical infrastructure (10,641 diodes, ~5.9k
+CTS/resizer cells, 39.5k fill) and, with real parasitics, *improves* setup slack
 from a pessimistic +0.20 ns to a comfortable +4.17 ns while meeting hold on all
 nine PVT corners. Front-end feasibility held all the way through signoff.

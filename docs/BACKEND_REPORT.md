@@ -1,8 +1,8 @@
 # Back-End Signoff Report — chip_top_full
 
-**Run:** `RUN_2026-08-28_09-52-02`
+**Run:** `RUN_2026-08-29_12-40-30`
 **PDK:** gf180mcuD · **Std-cell library:** gf180mcu_fd_sc_mcu7t5v0
-**Flow:** LibreLane (Classic, 80 stages) · **Date:** 2026-08-28
+**Flow:** LibreLane (Classic, 80 stages) · **Date:** 2026-08-29
 
 ---
 
@@ -14,7 +14,7 @@
 | LVS errors | **0** ✅ |
 | Setup violations | **0** ✅ |
 | Hold violations | **0** ✅ |
-| Magic DRC | 4 (foundry SRAM macro — waived) |
+| Magic DRC | 4 (foundry SRAM macro — waived; KLayout on GDS = 0) |
 
 The design meets timing, passes LVS, and is antenna-clean. The only DRC
 errors originate inside the hardened SRAM macro
@@ -62,17 +62,17 @@ the design.
 
 | Metric | Value |
 |---|---|
-| Die area | 1,210,000 µm² (1100 × 1100 µm = 1.21 mm²) |
-| Core area | 1,163,900 µm² |
-| Instance (cell) area | 1,144,440 µm² |
-| Core utilization | **82.0%** |
-| Total instances | 70,492 |
-| Antenna diode cells | 10,858 |
-| Hold-fix buffers | 265 |
-| Timing-repair buffers | 781 |
+| Die area | 1,232,100 µm² (1110 × 1110 µm = 1.232 mm²) |
+| Core area | 1,183,300 µm² |
+| Instance (cell) area | 1,163,850 µm² |
+| Core utilization | **80.5%** |
+| Total instances | 71,676 |
+| Antenna diode cells | 10,641 |
+| Hold-fix buffers | 264 |
+| Timing-repair buffers | 745 |
 | Macros | 2 × SRAM 512×8 |
 
-82% utilization is high but routed clean with zero DRC (excl. SRAM).
+80.5% utilization routed clean with zero DRC (excl. SRAM).
 
 ---
 
@@ -80,10 +80,10 @@ the design.
 
 | Component | Power |
 |---|---|
-| Internal | 41.72 mW |
-| Switching | 6.60 mW |
+| Internal | 41.78 mW |
+| Switching | 6.26 mW |
 | Leakage | 0.008 mW |
-| **Total** | **48.33 mW** |
+| **Total** | **48.05 mW** |
 
 ---
 
@@ -91,8 +91,8 @@ the design.
 
 | Metric | Value |
 |---|---|
-| Worst VDD drop | 2.05 mV (0.04% of 5.0 V) |
-| Average VDD drop | 0.037 mV |
+| Worst VDD drop | 1.56 mV (0.031% of 5.0 V) |
+| Average VDD drop | < 0.01 mV |
 | Worst on-chip VDD | 4.998 V |
 | Power-grid violations | **0** |
 
@@ -105,10 +105,10 @@ IR drop is negligible — the PDN is comfortably over-provisioned for a
 
 | Metric | Value |
 |---|---|
-| Routed wirelength | 1,452,207 µm (~1.45 m) |
-| Global-route estimate | 1,930,958 µm |
-| Total nets routed | 15,723 |
-| Total vias | 152,630 (all single-cut) |
+| Routed wirelength | 1,285,066 µm (~1.29 m) |
+| Global-route estimate | 1,050,660 µm |
+| Total nets routed | 15,688 |
+| Total vias | 143,484 (all single-cut) |
 | Route DRC errors | 0 (converged over 7 iterations) |
 
 ---
@@ -136,7 +136,7 @@ out-of-scope / known-benign items for a production tapeout:**
   performs static IR drop only, not EM current-density signoff. Given
   48 mW total power and 0.04% IR drop, EM risk is low, but a dedicated
   EMIR step would be required if the shuttle/foundry mandates it.
-- **Single-cut vias only** (152,630 vias, 0 multi-cut). No via
+- **Single-cut vias only** (143,484 vias, 0 multi-cut). No via
   redundancy was applied. Acceptable for prototype; enable multi-cut
   vias for improved via-EM reliability on a production run.
 - **2 floating nets** (RSZ-0020). Traced to intentionally-unconnected
@@ -147,7 +147,7 @@ out-of-scope / known-benign items for a production tapeout:**
   design. LVS is fully clean (0 unmatched nets/pins/devices), so these
   cause no connectivity error. Benign — no fix required.
 
-- `cpu_clk` still presents a high physical fanout (~2254 terminals) that
+- `cpu_clk` still presents a high physical fanout (~2177 terminals) that
   CTS buffers as a wide net rather than a deep tree. This did not impede
   signoff: hold is met with positive slack, proving the tree functions.
   Optional future optimization, not a blocker.
